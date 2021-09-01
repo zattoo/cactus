@@ -42,28 +42,13 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
     changelogAfter.versions.forEach((item) => {
         const versionAfter = item.version;
         const dateAfter = item.date;
-        const bodyAfter = item.body;
-
         const itemBefore = mapBefore[versionAfter] || {};
-
-        const versionBefore = itemBefore.version;
         const dateBefore = itemBefore.date;
-        const bodyBefore = itemBefore.body;
 
         if (!dateBefore && dateAfter) {
             core.info(`New ${versionAfter} candidate detected, preparing release...`);
             foundSomething = true;
             newVersions.push(item);
-        }
-
-        if (
-            dateBefore && (
-                (bodyBefore !== bodyAfter) ||
-                (dateBefore !== dateAfter) ||
-                (versionBefore !== versionAfter)
-            )
-        ) {
-            exit(`Version ${versionAfter} was already released, it cannot be modified.`, 1);
         }
 
     });
