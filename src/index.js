@@ -136,11 +136,13 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
                 const changelogPath = `projects/${project}/CHANGELOG.md`;
                 const changelog = await fse.readFile(changelogPath, 'utf-8');
                 const lastVersion = getLastVersion(version);
-                console.log(lastVersion);
+                console.log("Last version: ", lastVersion);
                 const split = `## [${lastVersion}]`;
                 const [before, after] = changelog.split(split);
                 const newEntry = `## ${item.title}\n\n${item.body}\n\n`;
-
+                console.log("Split: ",  split);
+                console.log("Before: ",  before);
+                console.log("After: ",  after);
                 await fse.writeFile(changelogPath, before + newEntry + split + after,'utf-8');
                 await exec.exec(`git add ${changelogPath}`);
                 await exec.exec(`git commit -m "Patch ${version}"`);
