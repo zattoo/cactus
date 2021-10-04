@@ -6,3 +6,4 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ## [1.0.0] - Unreleased
 
 Init
+Update package.json and package-lock.json on patch release
