@@ -135,17 +135,29 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
 
                 const packageJsonPath = `projects/${project}/package.json`;
                 const packageLockPath = 'package-lock.json';
-                const packageJson = require(packageJsonPath);
-                const packageLock = require(packageLockPath);
-                // Update versions in package.json & package-lock.json
-                packageJson.version = `${version}`;
-                packageLock.packages[`projects/${project}`].version = `${version}`;
-                await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), (error) => {
-                    if (error) console.log(error);
+
+                // Update version in package.json
+                await fse.readJson(packageJsonPath, 'utf8', (error, packageJson) => {
+                    if (error) core.info(error);
+                    else {
+                        packageJson.version = `${version}`;
+                        fse.writeJson(packageJsonPath, packageJson, (err) => {
+                            if (err) core.info(err);
+                        });
+                    }
                 });
-                await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 2), (error) => {
-                    if (error) console.log(error);
+
+                // Update version in package-lock.json
+                await fse.readJson(packageLockPath, 'utf8', (error, packageLock) => {
+                    if (error) core.info(error);
+                    else {
+                        packageLock.packages[`projects/${project}`].version = `${version}`;
+                        fse.writeJson(packageLockPath, packageLock, (err) => {
+                            if (err) core.info(err);
+                        });
+                    }
                 });
+
                 await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
                 await exec.exec(`git commit -m "Patch ${version}"`);
             }

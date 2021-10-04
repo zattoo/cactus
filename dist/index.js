@@ -8575,15 +8575,32 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             } catch (e) { // conflict
                 await exec.exec('git cherry-pick --abort');
 
-                const changelogPath = `projects/${project}/CHANGELOG.md`;
-                const changelog = await fse.readFile(changelogPath, 'utf-8');
-                const lastVersion = getLastVersion(version);
-                const split = `## [${lastVersion}]`;
-                const [before, after] = changelog.split(split);
-                const newEntry = `## ${item.title}\n\n${item.body}\n\n`;
+                const packageJsonPath = `projects/${project}/package.json`;
+                const packageLockPath = 'package-lock.json';
 
-                await fse.writeFile(changelogPath, before + newEntry + split + after,'utf-8');
-                await exec.exec(`git add ${changelogPath}`);
+                // Update version in package.json
+                await fse.readJson(packageJsonPath, 'utf8', (error, packageJson) => {
+                    if (error) core.info(error);
+                    else {
+                        packageJson.version = `${version}`;
+                        fse.writeJson(packageJsonPath, packageJson, (err) => {
+                            if (err) core.info(err);
+                        });
+                    }
+                });
+
+                // Update version in package-lock.json
+                await fse.readJson(packageLockPath, 'utf8', (error, packageLock) => {
+                    if (error) core.info(error);
+                    else {
+                        packageLock.packages[`projects/${project}`].version = `${version}`;
+                        fse.writeJson(packageLockPath, packageLock, (err) => {
+                            if (err) core.info(err);
+                        });
+                    }
+                });
+
+                await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
                 await exec.exec(`git commit -m "Patch ${version}"`);
             }
 
