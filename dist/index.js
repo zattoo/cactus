@@ -8575,15 +8575,20 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             } catch (e) { // conflict
                 await exec.exec('git cherry-pick --abort');
 
-                const changelogPath = `projects/${project}/CHANGELOG.md`;
-                const changelog = await fse.readFile(changelogPath, 'utf-8');
-                const lastVersion = getLastVersion(version);
-                const split = `## [${lastVersion}]`;
-                const [before, after] = changelog.split(split);
-                const newEntry = `## ${item.title}\n\n${item.body}\n\n`;
-
-                await fse.writeFile(changelogPath, before + newEntry + split + after,'utf-8');
-                await exec.exec(`git add ${changelogPath}`);
+                const packageJsonPath = `projects/${project}/package.json`;
+                const packageLockPath = 'package-lock.json';
+                const packageJson = fse.readJson(packageJsonPath);
+                const packageLock = fse.readJson(packageLockPath);
+                // Update versions in package.json & package-lock.json
+                packageJson.version = `${version}`;
+                packageLock.packages[`projects/${project}`].version = `${version}`;
+                await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), (error) => {
+                    if (error) console.log(error);
+                });
+                await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 2), (error) => {
+                    if (error) console.log(error);
+                });
+                await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
                 await exec.exec(`git commit -m "Patch ${version}"`);
             }
 
