@@ -139,13 +139,13 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
                 // Update version in package.json
                 await fse.readJson(packageJsonPath, 'utf8', (packageJson) => {
                     packageJson.version = `${version}`;
-                    fse.writeJson(packageJsonPath, packageJson);
+                    fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4));
                 });
 
                 // Update version in package-lock.json
                 await fse.readJson(packageLockPath, 'utf8', (packageLock) => {
                     packageLock.packages[`projects/${project}`].version = `${version}`;
-                    fse.writeJson(packageLockPath, packageLock);
+                    fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4));
                 });
 
                 await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
