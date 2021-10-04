@@ -137,25 +137,15 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
                 const packageLockPath = 'package-lock.json';
 
                 // Update version in package.json
-                await fse.readJson(packageJsonPath, 'utf8', (error, packageJson) => {
-                    if (error) core.info(error);
-                    else {
-                        packageJson.version = `${version}`;
-                        fse.writeJson(packageJsonPath, packageJson, (err) => {
-                            if (err) core.info(err);
-                        });
-                    }
+                await fse.readJson(packageJsonPath, 'utf8', (packageJson) => {
+                    packageJson.version = `${version}`;
+                    fse.writeJson(packageJsonPath, packageJson);
                 });
 
                 // Update version in package-lock.json
-                await fse.readJson(packageLockPath, 'utf8', (error, packageLock) => {
-                    if (error) core.info(error);
-                    else {
-                        packageLock.packages[`projects/${project}`].version = `${version}`;
-                        fse.writeJson(packageLockPath, packageLock, (err) => {
-                            if (err) core.info(err);
-                        });
-                    }
+                await fse.readJson(packageLockPath, 'utf8', (packageLock) => {
+                    packageLock.packages[`projects/${project}`].version = `${version}`;
+                    fse.writeJson(packageLockPath, packageLock);
                 });
 
                 await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
