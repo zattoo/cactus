@@ -133,19 +133,20 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             } catch (e) { // conflict
                 await exec.exec('git cherry-pick --abort');
 
+                const packageJsonPath = `projects/${project}/package.json`;
+                const packageLockPath = 'package-lock.json';
+
                 // Update version in package.json
                 const updatePackageJson = async () =>  {
-                    const packageJsonPath = `projects/${project}/package.json`;
-                    const package = await fse.readJson(packageJsonPath);
-                    package.version = `${version}`;
+                    const package = await fse.readJson(packageJsonPath, 'utf8');
+                    package.version = version;
                     await fse.writeFile(packageJsonPath, JSON.stringify(package, null, 4));
                 };
 
                 // Update version in package-lock.json
                 const updatePackageLock = async () =>  {
-                    const packageLockPath = 'package-lock.json';
-                    const package = await fse.readJson(packageLockPath);
-                    package.version = `${version}`;
+                    const package = await fse.readJson(packageLockPath, 'utf8');
+                    package.packages[`projects/${project}`].version = version;
                     await fse.writeFile(packageLockPath, JSON.stringify(package, null, 4));
                 };
 
