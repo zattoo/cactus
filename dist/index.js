@@ -8575,20 +8575,26 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             } catch (e) { // conflict
                 await exec.exec('git cherry-pick --abort');
 
-                const packageJsonPath = `projects/${project}/package.json`;
-                const packageLockPath = 'package-lock.json';
-
                 // Update version in package.json
-                await fse.readJson(packageJsonPath, 'utf8', (error, packageJson) => {
-                    packageJson.version = `${version}`;
-                    fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4));
-                });
+                const updatePackageJson = async () =>  {
+                    const packageJsonPath = `projects/${project}/package.json`;
+                    const package = await fse.readJson(packageJsonPath);
+                    package.version = `${version}`;
+                    await fse.writeFile(packageJsonPath, JSON.stringify(package, null, 4));
+                };
 
                 // Update version in package-lock.json
-                await fse.readJson(packageLockPath, 'utf8', (error, packageLock) => {
-                    packageLock.packages[`projects/${project}`].version = `${version}`;
-                    fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4));
-                });
+                const updatePackageLock = async () =>  {
+                    const packageLockPath = 'package-lock.json';
+                    const package = await fse.readJson(packageLockPath);
+                    package.version = `${version}`;
+                    await fse.writeFile(packageLockPath, JSON.stringify(package, null, 4));
+                };
+
+                await Promise.all([
+                    updatePackageJson,
+                    updatePackageLock,
+                ]);
 
                 await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
                 await exec.exec(`git commit -m "Patch ${version}"`);
