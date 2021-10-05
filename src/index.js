@@ -139,14 +139,14 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
                 // Update version in package.json
                 const updatePackageJson = async () =>  {
                     const package = await fse.readJson(packageJsonPath, 'utf8');
-                    package.version = version;
+                    package.version = `${version}`;
                     await fse.writeFile(packageJsonPath, JSON.stringify(package, null, 4));
                 };
 
                 // Update version in package-lock.json
                 const updatePackageLock = async () =>  {
                     const package = await fse.readJson(packageLockPath, 'utf8');
-                    package.packages[`projects/${project}`].version = version;
+                    package.packages[`projects/${project}`].version = `${version}`;
                     await fse.writeFile(packageLockPath, JSON.stringify(package, null, 4));
                 };
 
