@@ -15,10 +15,6 @@ const isEmpty = (value) => {
     );
 };
 
-const getLastVersion = (version) => {
-    return version.slice(0, -1) + (Number(version[version.length - 1]) - 1);
-};
-
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
         core.error(message);
@@ -140,14 +136,14 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
                 const updatePackageJson = async () =>  {
                     const package = await fse.readJson(packageJsonPath, 'utf8');
                     package.version = version;
-                    await fse.writeFile(packageJsonPath, JSON.stringify(package, null, 4));
+                    await fse.writeFile(packageJsonPath, JSON.stringify(package, null, 4).concat('\n'));
                 };
 
                 // Update version in package-lock.json
                 const updatePackageLock = async () =>  {
                     const package = await fse.readJson(packageLockPath, 'utf8');
                     package.packages[`projects/${project}`].version = version;
-                    await fse.writeFile(packageLockPath, JSON.stringify(package, null, 4));
+                    await fse.writeFile(packageLockPath, JSON.stringify(package, null, 4).concat('\n'));
                 };
 
                 await Promise.all([
