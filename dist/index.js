@@ -8576,16 +8576,16 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
 
                 // Update version in package.json
                 const updatePackageJson = async () =>  {
-                    const package = await fse.readJson(packageJsonPath, 'utf8');
-                    package.version = version;
-                    await fse.writeFile(packageJsonPath, JSON.stringify(package, null, 4).concat('\n'));
+                    const packageJson = await fse.readJson(packageJsonPath, 'utf8');
+                    packageJson.version = version;
+                    await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
                 };
 
                 // Update version in package-lock.json
                 const updatePackageLock = async () =>  {
-                    const package = await fse.readJson(packageLockPath, 'utf8');
-                    package.packages[`projects/${project}`].version = version;
-                    await fse.writeFile(packageLockPath, JSON.stringify(package, null, 4).concat('\n'));
+                    const packageLock = await fse.readJson(packageLockPath, 'utf8');
+                    packageLock.packages[`projects/${project}`].version = version;
+                    await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
                 };
 
                 await Promise.all([
