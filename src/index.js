@@ -15,10 +15,6 @@ const isEmpty = (value) => {
     );
 };
 
-const getLastVersion = (version) => {
-    return version.slice(0, -1) + (Number(version[version.length - 1]) - 1);
-};
-
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
         core.error(message);
@@ -133,15 +129,29 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             } catch (e) { // conflict
                 await exec.exec('git cherry-pick --abort');
 
-                const changelogPath = `projects/${project}/CHANGELOG.md`;
-                const changelog = await fse.readFile(changelogPath, 'utf-8');
-                const lastVersion = getLastVersion(version);
-                const split = `## [${lastVersion}]`;
-                const [before, after] = changelog.split(split);
-                const newEntry = `## ${item.title}\n\n${item.body}\n\n`;
+                const packageJsonPath = `projects/${project}/package.json`;
+                const packageLockPath = 'package-lock.json';
 
-                await fse.writeFile(changelogPath, before + newEntry + split + after,'utf-8');
-                await exec.exec(`git add ${changelogPath}`);
+                // Update version in package.json
+                const updatePackageJson = async () =>  {
+                    const packageJson = await fse.readJson(packageJsonPath, 'utf8');
+                    packageJson.version = version;
+                    await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
+                };
+
+                // Update version in package-lock.json
+                const updatePackageLock = async () =>  {
+                    const packageLock = await fse.readJson(packageLockPath, 'utf8');
+                    packageLock.packages[`projects/${project}`].version = version;
+                    await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
+                };
+
+                await Promise.all([
+                    updatePackageJson(),
+                    updatePackageLock(),
+                ]);
+
+                await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
                 await exec.exec(`git commit -m "Patch ${version}"`);
             }
 
