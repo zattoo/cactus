@@ -6047,7 +6047,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         if (!dateBefore && dateAfter) {
             core.info(`New ${versionAfter}-${project} version detected, preparing candidate...`);
             foundSomething = true;
-            newVersions.push(item);
+            newVersions.push([item, changelogAfter]);
         }
     });
 
@@ -6088,7 +6088,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         exit('No changelog changes', 0);
     }
 
-    const cut = async (project, item) => {
+    const cut = async (project, item, changelog) => {
         const {version} = item;
         const release = version.slice(0, -2);
         const releaseBranch = `release/${project}/${release}`;
@@ -6140,9 +6140,14 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             await fsp.writeFile(packageLockPath, JSON.stringify(content, null, 4).concat('\n'));
         };
 
+        const updateChangelog = async () =>  {
+            console.log('changelog', changelog);
+        };
+
         await Promise.all([
             updatePackageJson(),
             updatePackageLock(),
+            updateChangelog(),
         ]);
 
         await exec.exec(`git add --all`);
@@ -6282,7 +6287,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
 
         if (!isEmpty(newVersions)) {
-            await Promise.all(newVersions.map((version) => cut(project, version)));
+            await Promise.all(newVersions.map(([version, changelog]) => cut(project, version, changelog)));
         }
     };
 
