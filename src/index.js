@@ -116,7 +116,9 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.version = version;
 
-            return fse.writeJson(packageJsonPath, content);
+            console.log('content', content);
+
+            await fse.writeJson(packageJsonPath, content);
         };
 
         const updatePackageLock = async () =>  {
@@ -124,7 +126,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.packages[`projects/${project}`].version = version;
 
-            return fse.writeJson(packageJsonPath, content);
+            await fse.writeJson(packageJsonPath, content);
         };
 
         await Promise.all([

@@ -8634,7 +8634,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             console.log('content', content);
 
-            return fse.writeJson(packageJsonPath, content);
+            await fse.writeJson(packageJsonPath, content);
         };
 
         const updatePackageLock = async () =>  {
@@ -8642,12 +8642,12 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.packages[`projects/${project}`].version = version;
 
-            return fse.writeJson(packageJsonPath, content);
+            await fse.writeJson(packageJsonPath, content);
         };
 
         await Promise.all([
-            updatePackageJson,
-            updatePackageLock,
+            updatePackageJson(),
+            updatePackageLock(),
         ]);
 
         await exec.exec(`git add --all`);
