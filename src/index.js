@@ -116,6 +116,8 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.version = version;
 
+            console.log('content', content);
+
             return fse.writeJson(packageJsonPath, content);
         };
 
