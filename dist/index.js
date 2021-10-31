@@ -8636,7 +8636,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.version = version;
 
-            await fse.write(packageJsonPath, JSON.stringify(content, null, 4).concat('\n'));
+            await fse.writeFile(packageJsonPath, JSON.stringify(content, null, 4).concat('\n'));
         };
 
         const updatePackageLock = async () =>  {
@@ -8648,7 +8648,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.packages[`projects/${project}`].version = version;
 
-            await fse.write(packageLockPath, JSON.stringify(content, null, 4).concat('\n'));
+            await fse.writeFile(packageLockPath, JSON.stringify(content, null, 4).concat('\n'));
         };
 
         await Promise.all([
