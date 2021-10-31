@@ -8575,8 +8575,6 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
     const {context} = github;
     const {payload} = context;
 
-    console.log('payload', payload);
-
     const {
         after,
         before,
@@ -8593,6 +8591,8 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
     });
 
     const {files} = commit.data;
+
+    console.log('files', files);
 
     if (isEmpty(files)) {
         exit('No changes', 0);
