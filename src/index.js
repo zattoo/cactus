@@ -131,22 +131,25 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
         console.log('commit', commit);
 
-        await Promise.all([
-            octokit.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: pr.number,
-                labels: ['release', 'needs qa'],
-            }),
-            // octokit.rest.issues.addAssignees({
-            //     owner,
-            //     repo,
-            //     issue_number: pr.number,
-            //     assignees: [commit.user],
-            // }),
-        ]);
+        await octokit.rest.issues.addLabels({
+            owner,
+            repo,
+            issue_number: pr.number,
+            labels: ['release', 'needs qa'],
+        });
 
-        console.log('pr', pr);
+        const user = await octokit.rest.search.users({
+            q: `${commit.author.email} in:email`,
+        });
+
+        // octokit.rest.issues.addAssignees({
+        //     owner,
+        //     repo,
+        //     issue_number: pr.number,
+        //     assignees: [commit.user],
+        // }),
+
+        console.log('user', user);
     };
 
     const processChanges = async (item) => {
