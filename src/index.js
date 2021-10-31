@@ -132,7 +132,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.packages[`projects/${project}`].version = version;
 
-            await fse.writeJson(packageJsonPath, content);
+            await fse.writeJson(packageLockPath, content);
         };
 
         await Promise.all([
