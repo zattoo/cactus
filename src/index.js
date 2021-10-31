@@ -116,8 +116,6 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.version = version;
 
-            console.log('content', content);
-
             return fse.writeJson(packageJsonPath, content);
         };
 
@@ -130,8 +128,8 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         };
 
         await Promise.all([
-            updatePackageJson,
-            updatePackageLock,
+            updatePackageJson(),
+            updatePackageLock(),
         ]);
 
         await exec.exec(`git add --all`);
