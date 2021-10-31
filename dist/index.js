@@ -8562,7 +8562,6 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             foundSomething = true;
             newVersions.push(item);
         }
-
     });
 
     return newVersions;
@@ -8605,13 +8604,14 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
     const cut = async (project, item) => {
         const {version} = item;
         const release = version.slice(0, -2);
+        const releaseBranch = `release/${project}/${release}`;
         const first = Number(version[version.length - 1]) === 0;
 
         if (!first) {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
-        const releaseBranch = `release/${project}/${release}`;
+        await exec.exec(`git fetch`);
 
         const {data: commit} = await octokit.rest.git.getCommit({
             owner,
