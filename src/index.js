@@ -1,5 +1,4 @@
 const core = require('@actions/core');
-const exec = require('@actions/exec');
 const github = require('@actions/github');
 const parseChangelog = require('changelog-parser');
 
@@ -111,7 +110,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             }),
         ]);
 
-        await octokit.rest.pulls.create({
+        const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
             title: `Release Candidate ${release}-${project}`,
@@ -119,6 +118,8 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             head: candidateBranch,
             base: releaseBranch,
         });
+
+        console.log('pr', pr);
     };
 
     const processChanges = async (item) => {
