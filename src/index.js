@@ -1,7 +1,6 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const github = require('@actions/github');
-const fsp = require('fs').promises;
 const parseChangelog = require('changelog-parser');
 
 let foundSomething = false;
