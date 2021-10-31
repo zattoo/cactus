@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const github = require('@actions/github');
-const fse = require('fs-extra');
+const fsp = require('fs').promises;
 const parseChangelog = require('changelog-parser');
 
 let foundSomething = false;
@@ -112,7 +112,8 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         const packageLockPath = 'package-lock.json';
 
         const updatePackageJson = async () =>  {
-            const content = await fse.readJson(packageJsonPath, 'utf8');
+            const data = await fsp.readFile(packageJsonPath, 'utf8');
+            const content = JSON.parse(data);
 
             if (content.version === version) {
                 return Promise.resolve();
@@ -120,11 +121,12 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.version = version;
 
-            await fse.writeFile(packageJsonPath, JSON.stringify(content, null, 4).concat('\n'));
+            await fsp.writeFile(packageJsonPath, JSON.stringify(content, null, 4).concat('\n'));
         };
 
         const updatePackageLock = async () =>  {
-            const content = await fse.readJson(packageLockPath, 'utf8');
+            const data = await fsp.readFile(packageLockPath, 'utf8');
+            const content = JSON.parse(data);
 
             if (content.packages[`projects/${project}`].version === version) {
                 return Promise.resolve();
@@ -132,7 +134,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
             content.packages[`projects/${project}`].version = version;
 
-            await fse.writeFile(packageLockPath, JSON.stringify(content, null, 4).concat('\n'));
+            await fsp.writeFile(packageLockPath, JSON.stringify(content, null, 4).concat('\n'));
         };
 
         await Promise.all([
