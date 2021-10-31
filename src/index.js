@@ -114,15 +114,21 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         const updatePackageJson = async () =>  {
             const content = await fse.readJson(packageJsonPath, 'utf8');
 
-            content.version = version;
+            if (content.version === version) {
+                return Promise.resolve();
+            }
 
-            console.log('content', content);
+            content.version = version;
 
             await fse.writeJson(packageJsonPath, content);
         };
 
         const updatePackageLock = async () =>  {
             const content = await fse.readJson(packageLockPath, 'utf8');
+
+            if (content.packages[`projects/${project}`].version === version) {
+                return Promise.resolve();
+            }
 
             content.packages[`projects/${project}`].version = version;
 
