@@ -93,6 +93,8 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
+        await exec.exec(`git fetch`);
+
         const {data: commit} = await octokit.rest.git.getCommit({
             owner,
             repo,
