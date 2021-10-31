@@ -93,12 +93,13 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
-        const [{data: commit}] = await Promise.all([
-            octokit.rest.git.getCommit({
-                owner,
-                repo,
-                commit_sha: after,
-            }),
+        const {data: commit} = await octokit.rest.git.getCommit({
+            owner,
+            repo,
+            commit_sha: after,
+        });
+
+        await Promise.all([
             exec.exec(`git config user.name ${commit.author.name}`),
             exec.exec(`git config user.email ${commit.author.email}`),
         ]);
