@@ -25,7 +25,7 @@ const exit = (message, exitCode) => {
     process.exit(exitCode);
 };
 
-const getNewVersions = (changelogBefore, changelogAfter) => {
+const getNewVersions = (project, changelogBefore, changelogAfter) => {
     let newVersions = [];
 
     const mapBefore = changelogBefore.versions.reduce((result, item) => {
@@ -42,7 +42,7 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
         const dateBefore = itemBefore.date;
 
         if (!dateBefore && dateAfter) {
-            core.info(`New ${versionAfter} candidate detected, preparing release...`);
+            core.info(`New ${versionAfter}-${project} version detected, preparing candidate...`);
             foundSomething = true;
             newVersions.push(item);
         }
@@ -95,11 +95,49 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
+        const packageJsonPath = `projects/${project}/package.json`;
+        const packageLockPath = 'package-lock.json';
+
+        const updatePackageJson = async () =>  {
+            const packageJson = await fse.readJson(packageJsonPath, 'utf8');
+            packageJson.version = version;
+            await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
+        };
+
+        const updatePackageLock = async () =>  {
+            const packageLock = await fse.readJson(packageLockPath, 'utf8');
+            packageLock.packages[`projects/${project}`].version = version;
+            await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
+        };
+
+        await Promise.all([
+            updatePackageJson,
+            updatePackageLock,
+        ]);
+
+        await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
+        await exec.exec(`git commit -m "Set ${version} release version to ${project} project"`);
+
         const releaseBranch = `release/${project}/${release}`;
+
+        await exec.exec(`git push origin ${releaseBranch}`);
+
+        // try {
+        //     await octokit.rest.git.createRef({
+        //         owner,
+        //         repo,
+        //         ref: `refs/heads/${releaseBranch}`,
+        //         sha: after,
+        //     });
+        //     core.info(`Branch ${releaseBranch} created.\nSee ${releaseUrl}`);
+        // } catch {
+        //     core.info(`Release ${releaseBranch} already exist.\nSee ${releaseUrl}`);
+        // }
+
         // const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
 
         console.log('version', version);
-        console.log('version', release);
+        console.log('release', release);
         console.log('releaseBranch', releaseBranch);
 
         // if (first) {
@@ -142,18 +180,7 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
         //         const packageLockPath = 'package-lock.json';
         //
         //         // Update version in package.json
-        //         const updatePackageJson = async () =>  {
-        //             const packageJson = await fse.readJson(packageJsonPath, 'utf8');
-        //             packageJson.version = version;
-        //             await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
-        //         };
-        //
-        //         // Update version in package-lock.json
-        //         const updatePackageLock = async () =>  {
-        //             const packageLock = await fse.readJson(packageLockPath, 'utf8');
-        //             packageLock.packages[`projects/${project}`].version = version;
-        //             await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-        //         };
+
         //
         //         await Promise.all([
         //             updatePackageJson(),
@@ -229,7 +256,7 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             await parseChangelog({text: textAfter}),
         ]);
 
-        const newVersions = getNewVersions(changelogBefore, changelogAfter);
+        const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
 
         if (!isEmpty(newVersions)) {
             await Promise.all(newVersions.map((version) => cut(project, version)));
