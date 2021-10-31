@@ -93,16 +93,20 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
-        const releaseBranch = `release/${project}/${release}`;
-
-        await octokit.rest.git.createRef({
-            owner,
-            repo,
-            ref: `refs/heads/${releaseBranch}`,
-            sha: before,
-        });
-
-        const candidateBranch = `candidate/${project}/${version}`;
+        await Promise.all([
+            await octokit.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/heads/release/${project}/${release}`,
+                sha: before,
+            }),
+            await octokit.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/heads/candidate/${project}/${version}`,
+                sha: after,
+            }),
+        ]);
     };
 
     const processChanges = async (item) => {
