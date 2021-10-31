@@ -8611,8 +8611,6 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
-        await exec.exec(`git fetch`);
-
         const {data: commit} = await octokit.rest.git.getCommit({
             owner,
             repo,
@@ -8647,8 +8645,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         ]);
 
         await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
-        await exec.exec(`git commit -m "Set ${version} release version to ${project} project"`);
-
+        await exec.exec(`git commit -m 'Set ${version} release version to ${project} project'`);
         await exec.exec(`git push origin ${releaseBranch}`);
 
         // try {
