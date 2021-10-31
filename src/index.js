@@ -109,10 +109,11 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         const releaseBranch = `release/${project}/${release}`;
         const candidateBranch = `candidate/${project}/${version}`;
 
-        await exec.exec(`git checkout -b ${releaseBranch} ${before}`);
+        await exec.exec(`git checkout ${before}`);
+        await exec.exec(`git checkout -b ${releaseBranch}`);
         await exec.exec(`git push origin ${releaseBranch}`);
-        await exec.exec(`git checkout -b ${candidateBranch} ${after}`);
-        await exec.exec(`git push origin ${candidateBranch}`);
+        // await exec.exec(`git checkout -b ${candidateBranch} ${after}`);
+        // await exec.exec(`git push origin ${candidateBranch}`);
     };
 
     const processChanges = async (item) => {
