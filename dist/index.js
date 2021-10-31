@@ -8592,8 +8592,6 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
 
     const {files} = commit.data;
 
-    console.log('files', files);
-
     if (isEmpty(files)) {
         exit('No changes', 0);
     }
@@ -8604,12 +8602,21 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
         exit('No changelog changes', 0);
     }
 
-    const release = async (project, item) => {
-        // const {version} = item;
-        // const releaseBranch = `release/${project}/${version.slice(0, -2)}`;
+    const cut = async (project, item) => {
+        const {version} = item;
+        const release = version.slice(0, -2);
+        const first = Number(version[version.length - 1]) === 0;
+
+        if (!first) {
+            exit(`This is not a first change to ${release} release`, 0);
+        }
+
+        const releaseBranch = `release/${project}/${release}`;
         // const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
-        // const patchBranch = `patch/${project}/${version}`;
-        // const first = Number(version[version.length - 1]) === 0;
+
+        console.log('version', version);
+        console.log('version', release);
+        console.log('releaseBranch', releaseBranch);
 
         // if (first) {
         //     core.info(`Creating release branch ${releaseBranch}...`);
@@ -8707,7 +8714,7 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
         // }
     };
 
-    const analyzeChangelog = async (item) => {
+    const processChanges = async (item) => {
         const {filename} = item;
 
         const split = filename.split('/');
@@ -8741,11 +8748,11 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
         const newVersions = getNewVersions(changelogBefore, changelogAfter);
 
         if (!isEmpty(newVersions)) {
-            await Promise.all(newVersions.map((version) => release(project, version)));
+            await Promise.all(newVersions.map((version) => cut(project, version)));
         }
     };
 
-    await Promise.all(changelogs.map(analyzeChangelog));
+    await Promise.all(changelogs.map(processChanges));
 
     if (!foundSomething) {
         exit('No release candidates were found', 0);
