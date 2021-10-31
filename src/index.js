@@ -59,6 +59,8 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
     const {context} = github;
     const {payload} = context;
 
+    console.log('payload', payload);
+
     const {
         after,
         before,
@@ -87,106 +89,106 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
     }
 
     const release = async (project, item) => {
-        const {version} = item;
-        const releaseBranch = `release/${project}/${version.slice(0, -2)}`;
-        const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
-        const patchBranch = `patch/${project}/${version}`;
-        const first = Number(version[version.length - 1]) === 0;
+        // const {version} = item;
+        // const releaseBranch = `release/${project}/${version.slice(0, -2)}`;
+        // const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
+        // const patchBranch = `patch/${project}/${version}`;
+        // const first = Number(version[version.length - 1]) === 0;
 
-        if (first) {
-            core.info(`Creating release branch ${releaseBranch}...`);
-
-            try {
-                await octokit.rest.git.createRef({
-                    owner,
-                    repo,
-                    ref: `refs/heads/${releaseBranch}`,
-                    sha: after,
-                });
-                core.info(`Branch ${releaseBranch} created.\nSee ${releaseUrl}`);
-            } catch {
-                core.info(`Release ${releaseBranch} already exist.\nSee ${releaseUrl}`);
-            }
-        } else {
-            await exec.exec(`git fetch`);
-
-            const {data: commit} = await octokit.rest.git.getCommit({
-                owner,
-                repo,
-                commit_sha: after,
-            });
-
-            await Promise.all([
-                exec.exec(`git config user.name ${commit.author.name}`),
-                exec.exec(`git config user.email ${commit.author.email}`),
-            ]);
-
-            await exec.exec(`git checkout -b ${releaseBranch} origin/${releaseBranch}`);
-            await exec.exec(`git checkout -b ${patchBranch}`);
-
-            try {
-                await exec.exec(`git cherry-pick ${after}`);
-            } catch (e) { // conflict
-                await exec.exec('git cherry-pick --abort');
-
-                const packageJsonPath = `projects/${project}/package.json`;
-                const packageLockPath = 'package-lock.json';
-
-                // Update version in package.json
-                const updatePackageJson = async () =>  {
-                    const packageJson = await fse.readJson(packageJsonPath, 'utf8');
-                    packageJson.version = version;
-                    await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
-                };
-
-                // Update version in package-lock.json
-                const updatePackageLock = async () =>  {
-                    const packageLock = await fse.readJson(packageLockPath, 'utf8');
-                    packageLock.packages[`projects/${project}`].version = version;
-                    await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-                };
-
-                await Promise.all([
-                    updatePackageJson(),
-                    updatePackageLock(),
-                ]);
-
-                await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
-                await exec.exec(`git commit -m "Patch ${version}"`);
-            }
-
-            await exec.exec(`git push origin ${patchBranch}`);
-
-            const {data: user} = await octokit.rest.search.users({q: `${commit.author.email} in:email`});
-
-            const username = user && user.items[0] && user.items[0].login;
-
-            const {data: pr} = await octokit.rest.pulls.create({
-                owner,
-                repo,
-                title: `🍒 ${version}`,
-                body: `Cherry-pick got conflict and can't be merged automatically.\n${username ? '@' + username : commit.author.name}, please copy your changes to this PR manually.`,
-                head: patchBranch,
-                base: releaseBranch,
-                draft: true,
-            });
-
-            if (username) {
-                await octokit.rest.issues.addAssignees({
-                    owner,
-                    repo,
-                    issue_number: pr.number,
-                    assignees: [username]
-                });
-            }
-
-            await octokit.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: pr.number,
-                labels: ['patch'],
-            })
-        }
+        // if (first) {
+        //     core.info(`Creating release branch ${releaseBranch}...`);
+        //
+        //     try {
+        //         await octokit.rest.git.createRef({
+        //             owner,
+        //             repo,
+        //             ref: `refs/heads/${releaseBranch}`,
+        //             sha: after,
+        //         });
+        //         core.info(`Branch ${releaseBranch} created.\nSee ${releaseUrl}`);
+        //     } catch {
+        //         core.info(`Release ${releaseBranch} already exist.\nSee ${releaseUrl}`);
+        //     }
+        // } else {
+        //     await exec.exec(`git fetch`);
+        //
+        //     const {data: commit} = await octokit.rest.git.getCommit({
+        //         owner,
+        //         repo,
+        //         commit_sha: after,
+        //     });
+        //
+        //     await Promise.all([
+        //         exec.exec(`git config user.name ${commit.author.name}`),
+        //         exec.exec(`git config user.email ${commit.author.email}`),
+        //     ]);
+        //
+        //     await exec.exec(`git checkout -b ${releaseBranch} origin/${releaseBranch}`);
+        //     await exec.exec(`git checkout -b ${patchBranch}`);
+        //
+        //     try {
+        //         await exec.exec(`git cherry-pick ${after}`);
+        //     } catch (e) { // conflict
+        //         await exec.exec('git cherry-pick --abort');
+        //
+        //         const packageJsonPath = `projects/${project}/package.json`;
+        //         const packageLockPath = 'package-lock.json';
+        //
+        //         // Update version in package.json
+        //         const updatePackageJson = async () =>  {
+        //             const packageJson = await fse.readJson(packageJsonPath, 'utf8');
+        //             packageJson.version = version;
+        //             await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
+        //         };
+        //
+        //         // Update version in package-lock.json
+        //         const updatePackageLock = async () =>  {
+        //             const packageLock = await fse.readJson(packageLockPath, 'utf8');
+        //             packageLock.packages[`projects/${project}`].version = version;
+        //             await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
+        //         };
+        //
+        //         await Promise.all([
+        //             updatePackageJson(),
+        //             updatePackageLock(),
+        //         ]);
+        //
+        //         await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
+        //         await exec.exec(`git commit -m "Patch ${version}"`);
+        //     }
+        //
+        //     await exec.exec(`git push origin ${patchBranch}`);
+        //
+        //     const {data: user} = await octokit.rest.search.users({q: `${commit.author.email} in:email`});
+        //
+        //     const username = user && user.items[0] && user.items[0].login;
+        //
+        //     const {data: pr} = await octokit.rest.pulls.create({
+        //         owner,
+        //         repo,
+        //         title: `🍒 ${version}`,
+        //         body: `Cherry-pick got conflict and can't be merged automatically.\n${username ? '@' + username : commit.author.name}, please copy your changes to this PR manually.`,
+        //         head: patchBranch,
+        //         base: releaseBranch,
+        //         draft: true,
+        //     });
+        //
+        //     if (username) {
+        //         await octokit.rest.issues.addAssignees({
+        //             owner,
+        //             repo,
+        //             issue_number: pr.number,
+        //             assignees: [username]
+        //         });
+        //     }
+        //
+        //     await octokit.rest.issues.addLabels({
+        //         owner,
+        //         repo,
+        //         issue_number: pr.number,
+        //         labels: ['patch'],
+        //     })
+        // }
     };
 
     const analyzeChangelog = async (item) => {

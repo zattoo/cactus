@@ -1209,6 +1209,7 @@ function toCommandProperties(annotationProperties) {
     }
     return {
         title: annotationProperties.title,
+        file: annotationProperties.file,
         line: annotationProperties.startLine,
         endLine: annotationProperties.endLine,
         col: annotationProperties.startColumn,
@@ -2114,27 +2115,67 @@ module.exports = require("timers");
 /***/ }),
 
 /***/ 226:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports) {
 
 "use strict";
 
-
-module.exports = {
-  // Export promiseified graceful-fs:
-  ...__webpack_require__(869),
-  // Export extra methods:
-  ...__webpack_require__(43),
-  ...__webpack_require__(774),
-  ...__webpack_require__(615),
-  ...__webpack_require__(472),
-  ...__webpack_require__(171),
-  ...__webpack_require__(727),
-  ...__webpack_require__(959),
-  ...__webpack_require__(353),
-  ...__webpack_require__(517),
-  ...__webpack_require__(322),
-  ...__webpack_require__(723)
+Object.defineProperty(exports, "__esModule", { value: true });
+class BasicCredentialHandler {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+    }
+    prepareRequest(options) {
+        options.headers['Authorization'] =
+            'Basic ' +
+                Buffer.from(this.username + ':' + this.password).toString('base64');
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication(response) {
+        return false;
+    }
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
+    }
 }
+exports.BasicCredentialHandler = BasicCredentialHandler;
+class BearerCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        options.headers['Authorization'] = 'Bearer ' + this.token;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication(response) {
+        return false;
+    }
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
+    }
+}
+exports.BearerCredentialHandler = BearerCredentialHandler;
+class PersonalAccessTokenCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        options.headers['Authorization'] =
+            'Basic ' + Buffer.from('PAT:' + this.token).toString('base64');
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication(response) {
+        return false;
+    }
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
+    }
+}
+exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
 
 
 /***/ }),
@@ -2202,6 +2243,32 @@ module.exports = function(md, options) {
   }
   return output;
 };
+
+
+/***/ }),
+
+/***/ 232:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+  // Export promiseified graceful-fs:
+  ...__webpack_require__(869),
+  // Export extra methods:
+  ...__webpack_require__(43),
+  ...__webpack_require__(774),
+  ...__webpack_require__(615),
+  ...__webpack_require__(472),
+  ...__webpack_require__(171),
+  ...__webpack_require__(727),
+  ...__webpack_require__(959),
+  ...__webpack_require__(353),
+  ...__webpack_require__(517),
+  ...__webpack_require__(322),
+  ...__webpack_require__(723)
+}
 
 
 /***/ }),
@@ -5821,12 +5888,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
+exports.getIDToken = exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
 const command_1 = __webpack_require__(431);
 const file_command_1 = __webpack_require__(102);
 const utils_1 = __webpack_require__(82);
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
+const oidc_utils_1 = __webpack_require__(742);
 /**
  * The code to exit an action
  */
@@ -6095,6 +6163,12 @@ function getState(name) {
     return process.env[`STATE_${name}`] || '';
 }
 exports.getState = getState;
+function getIDToken(aud) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield oidc_utils_1.OidcClient.getIDToken(aud);
+    });
+}
+exports.getIDToken = getIDToken;
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -8443,7 +8517,7 @@ exports.getCmdPath = getCmdPath;
 const core = __webpack_require__(470);
 const exec = __webpack_require__(986);
 const github = __webpack_require__(469);
-const fse = __webpack_require__(226);
+const fse = __webpack_require__(232);
 const parseChangelog = __webpack_require__(734);
 
 let foundSomething = false;
@@ -8501,6 +8575,8 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
     const {context} = github;
     const {payload} = context;
 
+    console.log('payload', payload);
+
     const {
         after,
         before,
@@ -8529,106 +8605,106 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
     }
 
     const release = async (project, item) => {
-        const {version} = item;
-        const releaseBranch = `release/${project}/${version.slice(0, -2)}`;
-        const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
-        const patchBranch = `patch/${project}/${version}`;
-        const first = Number(version[version.length - 1]) === 0;
+        // const {version} = item;
+        // const releaseBranch = `release/${project}/${version.slice(0, -2)}`;
+        // const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
+        // const patchBranch = `patch/${project}/${version}`;
+        // const first = Number(version[version.length - 1]) === 0;
 
-        if (first) {
-            core.info(`Creating release branch ${releaseBranch}...`);
-
-            try {
-                await octokit.rest.git.createRef({
-                    owner,
-                    repo,
-                    ref: `refs/heads/${releaseBranch}`,
-                    sha: after,
-                });
-                core.info(`Branch ${releaseBranch} created.\nSee ${releaseUrl}`);
-            } catch {
-                core.info(`Release ${releaseBranch} already exist.\nSee ${releaseUrl}`);
-            }
-        } else {
-            await exec.exec(`git fetch`);
-
-            const {data: commit} = await octokit.rest.git.getCommit({
-                owner,
-                repo,
-                commit_sha: after,
-            });
-
-            await Promise.all([
-                exec.exec(`git config user.name ${commit.author.name}`),
-                exec.exec(`git config user.email ${commit.author.email}`),
-            ]);
-
-            await exec.exec(`git checkout -b ${releaseBranch} origin/${releaseBranch}`);
-            await exec.exec(`git checkout -b ${patchBranch}`);
-
-            try {
-                await exec.exec(`git cherry-pick ${after}`);
-            } catch (e) { // conflict
-                await exec.exec('git cherry-pick --abort');
-
-                const packageJsonPath = `projects/${project}/package.json`;
-                const packageLockPath = 'package-lock.json';
-
-                // Update version in package.json
-                const updatePackageJson = async () =>  {
-                    const packageJson = await fse.readJson(packageJsonPath, 'utf8');
-                    packageJson.version = version;
-                    await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
-                };
-
-                // Update version in package-lock.json
-                const updatePackageLock = async () =>  {
-                    const packageLock = await fse.readJson(packageLockPath, 'utf8');
-                    packageLock.packages[`projects/${project}`].version = version;
-                    await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-                };
-
-                await Promise.all([
-                    updatePackageJson(),
-                    updatePackageLock(),
-                ]);
-
-                await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
-                await exec.exec(`git commit -m "Patch ${version}"`);
-            }
-
-            await exec.exec(`git push origin ${patchBranch}`);
-
-            const {data: user} = await octokit.rest.search.users({q: `${commit.author.email} in:email`});
-
-            const username = user && user.items[0] && user.items[0].login;
-
-            const {data: pr} = await octokit.rest.pulls.create({
-                owner,
-                repo,
-                title: `🍒 ${version}`,
-                body: `Cherry-pick got conflict and can't be merged automatically.\n${username ? '@' + username : commit.author.name}, please copy your changes to this PR manually.`,
-                head: patchBranch,
-                base: releaseBranch,
-                draft: true,
-            });
-
-            if (username) {
-                await octokit.rest.issues.addAssignees({
-                    owner,
-                    repo,
-                    issue_number: pr.number,
-                    assignees: [username]
-                });
-            }
-
-            await octokit.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: pr.number,
-                labels: ['patch'],
-            })
-        }
+        // if (first) {
+        //     core.info(`Creating release branch ${releaseBranch}...`);
+        //
+        //     try {
+        //         await octokit.rest.git.createRef({
+        //             owner,
+        //             repo,
+        //             ref: `refs/heads/${releaseBranch}`,
+        //             sha: after,
+        //         });
+        //         core.info(`Branch ${releaseBranch} created.\nSee ${releaseUrl}`);
+        //     } catch {
+        //         core.info(`Release ${releaseBranch} already exist.\nSee ${releaseUrl}`);
+        //     }
+        // } else {
+        //     await exec.exec(`git fetch`);
+        //
+        //     const {data: commit} = await octokit.rest.git.getCommit({
+        //         owner,
+        //         repo,
+        //         commit_sha: after,
+        //     });
+        //
+        //     await Promise.all([
+        //         exec.exec(`git config user.name ${commit.author.name}`),
+        //         exec.exec(`git config user.email ${commit.author.email}`),
+        //     ]);
+        //
+        //     await exec.exec(`git checkout -b ${releaseBranch} origin/${releaseBranch}`);
+        //     await exec.exec(`git checkout -b ${patchBranch}`);
+        //
+        //     try {
+        //         await exec.exec(`git cherry-pick ${after}`);
+        //     } catch (e) { // conflict
+        //         await exec.exec('git cherry-pick --abort');
+        //
+        //         const packageJsonPath = `projects/${project}/package.json`;
+        //         const packageLockPath = 'package-lock.json';
+        //
+        //         // Update version in package.json
+        //         const updatePackageJson = async () =>  {
+        //             const packageJson = await fse.readJson(packageJsonPath, 'utf8');
+        //             packageJson.version = version;
+        //             await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
+        //         };
+        //
+        //         // Update version in package-lock.json
+        //         const updatePackageLock = async () =>  {
+        //             const packageLock = await fse.readJson(packageLockPath, 'utf8');
+        //             packageLock.packages[`projects/${project}`].version = version;
+        //             await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
+        //         };
+        //
+        //         await Promise.all([
+        //             updatePackageJson(),
+        //             updatePackageLock(),
+        //         ]);
+        //
+        //         await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
+        //         await exec.exec(`git commit -m "Patch ${version}"`);
+        //     }
+        //
+        //     await exec.exec(`git push origin ${patchBranch}`);
+        //
+        //     const {data: user} = await octokit.rest.search.users({q: `${commit.author.email} in:email`});
+        //
+        //     const username = user && user.items[0] && user.items[0].login;
+        //
+        //     const {data: pr} = await octokit.rest.pulls.create({
+        //         owner,
+        //         repo,
+        //         title: `🍒 ${version}`,
+        //         body: `Cherry-pick got conflict and can't be merged automatically.\n${username ? '@' + username : commit.author.name}, please copy your changes to this PR manually.`,
+        //         head: patchBranch,
+        //         base: releaseBranch,
+        //         draft: true,
+        //     });
+        //
+        //     if (username) {
+        //         await octokit.rest.issues.addAssignees({
+        //             owner,
+        //             repo,
+        //             issue_number: pr.number,
+        //             assignees: [username]
+        //         });
+        //     }
+        //
+        //     await octokit.rest.issues.addLabels({
+        //         owner,
+        //         repo,
+        //         issue_number: pr.number,
+        //         labels: ['patch'],
+        //     })
+        // }
     };
 
     const analyzeChangelog = async (item) => {
@@ -8987,6 +9063,90 @@ function clean (str) {
 
 module.exports = parseChangelog
 
+
+/***/ }),
+
+/***/ 742:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OidcClient = void 0;
+const http_client_1 = __webpack_require__(539);
+const auth_1 = __webpack_require__(226);
+const core_1 = __webpack_require__(470);
+class OidcClient {
+    static createHttpClient(allowRetry = true, maxRetry = 10) {
+        const requestOptions = {
+            allowRetries: allowRetry,
+            maxRetries: maxRetry
+        };
+        return new http_client_1.HttpClient('actions/oidc-client', [new auth_1.BearerCredentialHandler(OidcClient.getRequestToken())], requestOptions);
+    }
+    static getRequestToken() {
+        const token = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN'];
+        if (!token) {
+            throw new Error('Unable to get ACTIONS_ID_TOKEN_REQUEST_TOKEN env variable');
+        }
+        return token;
+    }
+    static getIDTokenUrl() {
+        const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL'];
+        if (!runtimeUrl) {
+            throw new Error('Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable');
+        }
+        return runtimeUrl;
+    }
+    static getCall(id_token_url) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const httpclient = OidcClient.createHttpClient();
+            const res = yield httpclient
+                .getJson(id_token_url)
+                .catch(error => {
+                throw new Error(`Failed to get ID Token. \n 
+        Error Code : ${error.statusCode}\n 
+        Error Message: ${error.result.message}`);
+            });
+            const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
+            if (!id_token) {
+                throw new Error('Response json body do not have ID Token field');
+            }
+            return id_token;
+        });
+    }
+    static getIDToken(audience) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // New ID Token is requested from action service
+                let id_token_url = OidcClient.getIDTokenUrl();
+                if (audience) {
+                    const encodedAudience = encodeURIComponent(audience);
+                    id_token_url = `${id_token_url}&audience=${encodedAudience}`;
+                }
+                core_1.debug(`ID token url is ${id_token_url}`);
+                const id_token = yield OidcClient.getCall(id_token_url);
+                core_1.setSecret(id_token);
+                return id_token;
+            }
+            catch (error) {
+                throw new Error(`Error message: ${error.message}`);
+            }
+        });
+    }
+}
+exports.OidcClient = OidcClient;
+//# sourceMappingURL=oidc-utils.js.map
 
 /***/ }),
 

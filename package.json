@@ -1,6 +1,6 @@
 {
   "name": "cactus",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Cactus Release Manager",
   "main": "action.yml",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/zattoo/cactus#readme",
   "dependencies": {
-    "@actions/core": "1.5.0",
+    "@actions/core": "1.6.0",
     "@actions/exec": "1.1.0",
     "@actions/github": "5.0.0",
     "changelog-parser": "2.8.0",
