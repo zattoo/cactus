@@ -8611,6 +8611,21 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
+        const releaseBranch = `release/${project}/${release}`;
+
+        const {data: commit} = await octokit.rest.git.getCommit({
+            owner,
+            repo,
+            commit_sha: after,
+        });
+
+        await Promise.all([
+            exec.exec(`git config user.name ${commit.author.name}`),
+            exec.exec(`git config user.email ${commit.author.email}`),
+        ]);
+
+        await exec.exec(`git checkout -b ${releaseBranch}`);
+
         const packageJsonPath = `projects/${project}/package.json`;
         const packageLockPath = 'package-lock.json';
 
@@ -8634,8 +8649,6 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
         await exec.exec(`git commit -m "Set ${version} release version to ${project} project"`);
 
-        const releaseBranch = `release/${project}/${release}`;
-
         await exec.exec(`git push origin ${releaseBranch}`);
 
         // try {
@@ -8651,10 +8664,6 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         // }
 
         // const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
-
-        console.log('version', version);
-        console.log('release', release);
-        console.log('releaseBranch', releaseBranch);
 
         // if (first) {
         //     core.info(`Creating release branch ${releaseBranch}...`);
