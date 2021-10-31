@@ -6110,6 +6110,15 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
                 sha: after,
             }),
         ]);
+
+        await octokit.rest.pulls.create({
+            owner,
+            repo,
+            title: `Release Candidate ${release}-${project}`,
+            body: item.body,
+            head: after,
+            base: before,
+        });
     };
 
     const processChanges = async (item) => {
