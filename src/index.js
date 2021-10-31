@@ -93,27 +93,16 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
-        await exec.exec(`git fetch`);
+        const releaseBranch = `release/${project}/${release}`;
 
-        const {data: commit} = await octokit.rest.git.getCommit({
+        await octokit.rest.git.createRef({
             owner,
             repo,
-            commit_sha: after,
+            ref: `refs/heads/${releaseBranch}`,
+            sha: before,
         });
 
-        await Promise.all([
-            exec.exec(`git config user.name ${commit.author.name}`),
-            exec.exec(`git config user.email ${commit.author.email}`),
-        ]);
-
-        const releaseBranch = `release/${project}/${release}`;
         const candidateBranch = `candidate/${project}/${version}`;
-
-        await exec.exec(`git checkout ${before}`);
-        await exec.exec(`git checkout -b ${releaseBranch}`);
-        await exec.exec(`git push origin ${releaseBranch}`);
-        // await exec.exec(`git checkout -b ${candidateBranch} ${after}`);
-        // await exec.exec(`git push origin ${candidateBranch}`);
     };
 
     const processChanges = async (item) => {
