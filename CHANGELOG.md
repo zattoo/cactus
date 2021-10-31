@@ -7,6 +7,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 Support release candidates cut
 
-## [1.0.0] - 07.10.21
+## [1.0.0] - 07.10.2021
 
 Initial
