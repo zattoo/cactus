@@ -92,7 +92,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             exit(`This is not a first change to ${release} release`, 0);
         }
 
-        const candidateBranch = `candidate/${project}/${version}`;
+        const rcBranch = `rc/${project}/${version}`;
         const releaseBranch = `release/${project}/${release}`;
 
         await Promise.all([
@@ -105,7 +105,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             await octokit.rest.git.createRef({
                 owner,
                 repo,
-                ref: `refs/heads/${candidateBranch}`,
+                ref: `refs/heads/${rcBranch}`,
                 sha: after,
             }),
         ]);
@@ -113,9 +113,9 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
-            title: `Release ${release}-${project}`,
+            title: `Release candidate ${release}-${project}`,
             body: item.body,
-            head: candidateBranch,
+            head: rcBranch,
             base: releaseBranch,
         })
 
