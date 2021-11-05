@@ -1,7 +1,5 @@
 const core = require('@actions/core');
-const exec = require('@actions/exec');
 const github = require('@actions/github');
-const fse = require('fs-extra');
 const parseChangelog = require('changelog-parser');
 
 let foundSomething = false;
@@ -25,7 +23,7 @@ const exit = (message, exitCode) => {
     process.exit(exitCode);
 };
 
-const getNewVersions = (changelogBefore, changelogAfter) => {
+const getNewVersions = (project, changelogBefore, changelogAfter) => {
     let newVersions = [];
 
     const mapBefore = changelogBefore.versions.reduce((result, item) => {
@@ -42,11 +40,10 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
         const dateBefore = itemBefore.date;
 
         if (!dateBefore && dateAfter) {
-            core.info(`New ${versionAfter} candidate detected, preparing release...`);
+            core.info(`New ${versionAfter}-${project} version detected, preparing candidate...`);
             foundSomething = true;
             newVersions.push(item);
         }
-
     });
 
     return newVersions;
@@ -86,110 +83,51 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
         exit('No changelog changes', 0);
     }
 
-    const release = async (project, item) => {
+    const cut = async (project, item) => {
         const {version} = item;
-        const releaseBranch = `release/${project}/${version.slice(0, -2)}`;
-        const releaseUrl = `https://github.com/zattoo/cactus/tree/${releaseBranch}`;
-        const patchBranch = `patch/${project}/${version}`;
+        const release = version.slice(0, -2);
         const first = Number(version[version.length - 1]) === 0;
 
-        if (first) {
-            core.info(`Creating release branch ${releaseBranch}...`);
-
-            try {
-                await octokit.rest.git.createRef({
-                    owner,
-                    repo,
-                    ref: `refs/heads/${releaseBranch}`,
-                    sha: after,
-                });
-                core.info(`Branch ${releaseBranch} created.\nSee ${releaseUrl}`);
-            } catch {
-                core.info(`Release ${releaseBranch} already exist.\nSee ${releaseUrl}`);
-            }
-        } else {
-            await exec.exec(`git fetch`);
-
-            const {data: commit} = await octokit.rest.git.getCommit({
-                owner,
-                repo,
-                commit_sha: after,
-            });
-
-            await Promise.all([
-                exec.exec(`git config user.name ${commit.author.name}`),
-                exec.exec(`git config user.email ${commit.author.email}`),
-            ]);
-
-            await exec.exec(`git checkout -b ${releaseBranch} origin/${releaseBranch}`);
-            await exec.exec(`git checkout -b ${patchBranch}`);
-
-            try {
-                await exec.exec(`git cherry-pick ${after}`);
-            } catch (e) { // conflict
-                await exec.exec('git cherry-pick --abort');
-
-                const packageJsonPath = `projects/${project}/package.json`;
-                const packageLockPath = 'package-lock.json';
-
-                // Update version in package.json
-                const updatePackageJson = async () =>  {
-                    const packageJson = await fse.readJson(packageJsonPath, 'utf8');
-                    packageJson.version = version;
-                    await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
-                };
-
-                // Update version in package-lock.json
-                const updatePackageLock = async () =>  {
-                    const packageLock = await fse.readJson(packageLockPath, 'utf8');
-                    packageLock.packages[`projects/${project}`].version = version;
-                    await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-                };
-
-                await Promise.all([
-                    updatePackageJson(),
-                    updatePackageLock(),
-                ]);
-
-                await exec.exec(`git add ${packageLockPath} ${packageJsonPath}`);
-                await exec.exec(`git commit -m "Patch ${version}"`);
-            }
-
-            await exec.exec(`git push origin ${patchBranch}`);
-
-            const {data: user} = await octokit.rest.search.users({q: `${commit.author.email} in:email`});
-
-            const username = user && user.items[0] && user.items[0].login;
-
-            const {data: pr} = await octokit.rest.pulls.create({
-                owner,
-                repo,
-                title: `🍒 ${version}`,
-                body: `Cherry-pick got conflict and can't be merged automatically.\n${username ? '@' + username : commit.author.name}, please copy your changes to this PR manually.`,
-                head: patchBranch,
-                base: releaseBranch,
-                draft: true,
-            });
-
-            if (username) {
-                await octokit.rest.issues.addAssignees({
-                    owner,
-                    repo,
-                    issue_number: pr.number,
-                    assignees: [username]
-                });
-            }
-
-            await octokit.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: pr.number,
-                labels: ['patch'],
-            })
+        if (!first) {
+            exit(`This is not a first change to ${release} release`, 0);
         }
+
+        const rcBranch = `rc/${project}/${version}`;
+        const releaseBranch = `release/${project}/${release}`;
+
+        await Promise.all([
+            await octokit.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/heads/${releaseBranch}`,
+                sha: before,
+            }),
+            await octokit.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/heads/${rcBranch}`,
+                sha: after,
+            }),
+        ]);
+
+        const {data: pr} = await octokit.rest.pulls.create({
+            owner,
+            repo,
+            title: `Release candidate ${release}-${project}`,
+            body: item.body,
+            head: rcBranch,
+            base: releaseBranch,
+        })
+
+        await octokit.rest.issues.addLabels({
+            owner,
+            repo,
+            issue_number: pr.number,
+            labels: ['release', 'needs qa'],
+        });
     };
 
-    const analyzeChangelog = async (item) => {
+    const processChanges = async (item) => {
         const {filename} = item;
 
         const split = filename.split('/');
@@ -220,14 +158,14 @@ const getNewVersions = (changelogBefore, changelogAfter) => {
             await parseChangelog({text: textAfter}),
         ]);
 
-        const newVersions = getNewVersions(changelogBefore, changelogAfter);
+        const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
 
         if (!isEmpty(newVersions)) {
-            await Promise.all(newVersions.map((version) => release(project, version)));
+            await Promise.all(newVersions.map((version) => cut(project, version)));
         }
     };
 
-    await Promise.all(changelogs.map(analyzeChangelog));
+    await Promise.all(changelogs.map(processChanges));
 
     if (!foundSomething) {
         exit('No release candidates were found', 0);
