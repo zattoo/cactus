@@ -4945,7 +4945,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
-            title: `Release candidate ${release}-${project}`,
+            title: `Release ${release}-${project}`,
             body: item.body,
             head: rcBranch,
             base: releaseBranch,
