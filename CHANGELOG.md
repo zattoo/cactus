@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## Unreleased
+## [2.0.3] - 01.01.2022
 
 Added `## Changelog` body heading
 
