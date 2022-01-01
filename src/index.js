@@ -84,6 +84,8 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
     }
 
     const cut = async (project, item) => {
+        console.log('item', item);
+
         const {version} = item;
         const release = version.slice(0, -2);
         const first = Number(version[version.length - 1]) === 0;
