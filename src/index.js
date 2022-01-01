@@ -84,8 +84,6 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
     }
 
     const cut = async (project, item) => {
-        console.log('item', item);
-
         const {version} = item;
         const release = version.slice(0, -2);
         const first = Number(version[version.length - 1]) === 0;
@@ -112,11 +110,13 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             }),
         ]);
 
+        const body = `## Changelog\n\n${item.body}\n`;
+
         const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
             title: `Release ${version}-${project}`,
-            body: item.body,
+            body,
             head: rcBranch,
             base: releaseBranch,
         })
