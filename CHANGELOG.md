@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## Unreleased
+
+Added `## Changelog` body heading
+
 ## [2.0.2] - 29.12.2021
 
 Added patch number to release version in PR title

@@ -110,11 +110,13 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             }),
         ]);
 
+        const body = `## Changelog\n\n${item.body}\n\n`;
+
         const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
             title: `Release ${version}-${project}`,
-            body: item.body,
+            body,
             head: rcBranch,
             base: releaseBranch,
         })
