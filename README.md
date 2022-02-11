@@ -12,6 +12,12 @@ Required. Must be user based token with write permission,
 so release creation action can trigger others,
 like deploy.
 
+### Labels
+
+`lables: multi-line string`
+
+Optional. List of labels to add to release candidate upon creation.
+
 ## Usage Example
 
 ````yaml
@@ -31,4 +37,7 @@ jobs:
       - uses: zattoo/cactus@v2
         with:
           token: ${{secrets.USER_TOKEN}}
+          labels: |
+            needs qa
+            release
 ```

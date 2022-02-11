@@ -1,6 +1,6 @@
 {
   "name": "cactus",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "Cactus Release Manager",
   "main": "action.yml",
   "scripts": {
