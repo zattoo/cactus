@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [3.0.0] - Unreleased
 
-- [breaking changes] Replace static list of labels with user input list
+- [breaking changes] Replaced static list of labels with user input list
 
 ## [2.0.3] - 01.01.2022
 
