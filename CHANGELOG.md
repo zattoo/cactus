@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.0.0] - Unreleased
+
+- [breaking changes] Replaced static list of labels with user input list
+
 ## [2.0.3] - 01.01.2022
 
 Added `## Changelog` body heading

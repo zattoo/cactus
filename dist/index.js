@@ -4883,6 +4883,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
 (async () => {
     const token = core.getInput('token', {required: true});
+    const labels = core.getMultilineInput('labels', {required: false});
     const octokit = github.getOctokit(token);
 
     const {context} = github;
@@ -4942,7 +4943,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             }),
         ]);
 
-        const body = `## Changelog\n\n${item.body}\n`;
+        const body = `## Changelog\n\n${item.body}\n\n`;
 
         const {data: pr} = await octokit.rest.pulls.create({
             owner,
@@ -4957,7 +4958,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             owner,
             repo,
             issue_number: pr.number,
-            labels: ['release', 'needs qa'],
+            labels,
         });
     };
 

@@ -51,6 +51,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
 (async () => {
     const token = core.getInput('token', {required: true});
+    const labels = core.getMultilineInput('labels', {required: false});
     const octokit = github.getOctokit(token);
 
     const {context} = github;
@@ -125,7 +126,7 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             owner,
             repo,
             issue_number: pr.number,
-            labels: ['release', 'needs qa'],
+            labels,
         });
     };
 

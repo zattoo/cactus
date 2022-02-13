@@ -2,7 +2,11 @@ name: 'Cactus'
 description: 'Cactus Release Manager'
 inputs:
   token:
+    description: 'User based token with write permission'
     required: true
+  labels:
+    description: 'List of labels to add to release candidate'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
