@@ -152,27 +152,32 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
         core.info(`Analyzing ${project} project...`);
 
-        console.log({
-            item,
-            filename,
-            split,
-            project,
-        });
+        // console.log({
+        //     item,
+        //     filename,
+        //     split,
+        //     project,
+        // });
 
-        // const [contentBefore, contentAfter] = await Promise.all([
-        //     await octokit.rest.repos.getContent({
-        //         owner,
-        //         repo,
-        //         path: filename,
-        //         ref: before,
-        //     }),
-        //     await octokit.rest.repos.getContent({
-        //         owner,
-        //         repo,
-        //         path: filename,
-        //         ref: after,
-        //     }),
-        // ]);
+        const [contentBefore, contentAfter] = await Promise.all([
+            await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: filename,
+                ref: before,
+            }),
+            await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: filename,
+                ref: after,
+            }),
+        ]);
+
+        console.log({
+            contentBefore,
+            contentAfter,
+        });
 
         // const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
         // const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
