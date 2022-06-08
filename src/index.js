@@ -1,4 +1,5 @@
 const core = require('@actions/core');
+const exec = require('@actions/exec');
 const github = require('@actions/github');
 const parseChangelog = require('changelog-parser');
 
@@ -49,9 +50,9 @@ const exit = (message, exitCode) => {
 //     return newVersions;
 // };
 
-const raiseVersion = async () => {
+// const raiseVersion = async () => {
 
-};
+// };
 
 (async () => {
     const token = core.getInput('token', {required: true});
@@ -60,7 +61,7 @@ const raiseVersion = async () => {
     const newVersion = core.getInput('new-version', {required: true});
     const octokit = github.getOctokit(token);
 
-    await raiseVersion();
+    // await raiseVersion();
 
     const {context} = github;
     const {payload} = context;
@@ -74,10 +75,26 @@ const raiseVersion = async () => {
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
 
+    const defaultBranch = repository.default_branch;
+
     console.log({
         repo,
         payload,
     });
+
+    const createMainPr = async () => {
+        const update = await octokit.rest.repos.createOrUpdateFileContents({
+            owner,
+            repo,
+            path: 'test.md',
+            message: 'Update test.md',
+            content: btoa('test content\nthat should be\nmultiline'),
+        });
+
+        console.log({update});
+    };
+
+    await createMainPr();
 
     // const commit = await octokit.rest.repos.getCommit({
     //     owner,
