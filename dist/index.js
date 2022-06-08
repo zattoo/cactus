@@ -5913,11 +5913,11 @@ const exit = (message, exitCode) => {
             });
 
             // const packageJson = await fse.readJson(packageJsonPath, 'utf8');
-            const decodeJson = atob(file.content);
+            // const decodeJson = atob(file.content);
 
-            console.log({
-                decodeJson
-            });
+            // console.log({
+            //     decodeJson
+            // });
 
             // const packageJson = JSON.parse(decodeJson);
 
