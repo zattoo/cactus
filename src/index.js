@@ -182,15 +182,20 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
         const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
 
-        console.log({
-            textBefore,
-            textAfter,
-        });
+        // console.log({
+        //     textBefore,
+        //     textAfter,
+        // });
 
-        // const [changelogBefore, changelogAfter] = await Promise.all([
-        //     await parseChangelog({text: textBefore}),
-        //     await parseChangelog({text: textAfter}),
-        // ]);
+        const [changelogBefore, changelogAfter] = await Promise.all([
+            await parseChangelog({text: textBefore}),
+            await parseChangelog({text: textAfter}),
+        ]);
+
+        console.log({
+            changelogBefore,
+            changelogAfter,
+        });
 
         // const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
 
