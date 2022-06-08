@@ -144,7 +144,7 @@ const exit = (message, exitCode) => {
         //     sha,
         // })
 
-        console.log({update});
+        // console.log({update});
     };
 
     await createMainPr();
