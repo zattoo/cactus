@@ -5877,18 +5877,34 @@ const exit = (message, exitCode) => {
 
     const defaultBranch = repository.default_branch;
 
-    console.log({
-        repo,
-        payload,
-    });
+    // console.log({
+    //     repo,
+    //     payload,
+    // });
 
     const createMainPr = async () => {
+        const content = await octokit.repos.getContents({
+            owner,
+            repo,
+            path: 'test.md',
+        });
+
+        const data = content.data;
+        const sha = data.sha;
+
+        console.log({
+            content,
+            data,
+            sha,
+        })
+
         const update = await octokit.rest.repos.createOrUpdateFileContents({
             owner,
             repo,
             path: 'test.md',
             message: 'Update test.md',
             content: btoa('test content\nthat should be\nmultiline\n\nadd this - no sha'),
+            sha,
         });
 
         console.log({update});
