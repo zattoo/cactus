@@ -105,12 +105,23 @@ const exit = (message, exitCode) => {
                 path: packageJsonPath,
             });
 
-            /*
             // const data = content.data;
             const sha = file.sha;
 
             // const packageJson = await fse.readJson(packageJsonPath, 'utf8');
-            const packageJson = JSON.parse(atob(file.content));
+            const decodeJson = atob(file.content);
+
+            console.log({
+                decodeJson
+            });
+
+            const packageJson = JSON.parse(decodeJson);
+
+            console.log({
+                packageJson
+            });
+
+            /*
             packageJson.version = newVersion;
             // await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
             const versionBumpedPackageJson = JSON.stringify(packageJson, null, 4).concat('\n');
