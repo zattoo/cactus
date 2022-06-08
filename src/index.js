@@ -210,11 +210,11 @@ const exit = (message, exitCode) => {
             }
 
             const date = format(new Date(), "dd.MM.yyyy")
-            changelogString.replace('Unreleased', date);
+            const changelogStringCut = changelogString.replace('Unreleased', date);
 
             const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
 
-            const updatedChangelog = str.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
+            const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
 
             // console.log({highestVersionEntry});
 
