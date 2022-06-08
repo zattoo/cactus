@@ -5983,7 +5983,7 @@ const exit = (message, exitCode) => {
             const content = file.content;
 
             console.log({
-                changelog,
+                content,
             });
 
             const changelogString = Buffer.from(content, 'base64');
