@@ -131,10 +131,19 @@ const exit = (message, exitCode) => {
             // const packageLock = await fse.readJson(packageLockPath, 'utf8');
             // packageLock.packages[`projects/${project}`].version = version;
             // await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-            const {data: {sha}} = await octokit.rest.repos.getContent({
+            // const {data: {sha}} = await octokit.rest.repos.getContent({
+            const {data: sha} = await octokit.rest.repos.getContent({
                 owner,
                 repo,
                 path: packageLockPath,
+                mediaType: {
+                    // format: 'raw'
+                    format: 'sha',
+                },
+            });
+
+            console.log({
+                sha,
             });
 
             const {data: jsonString} = await octokit.rest.repos.getContent({
@@ -142,11 +151,48 @@ const exit = (message, exitCode) => {
                 repo,
                 path: packageLockPath,
                 mediaType: {
+                    // format: 'raw'
                     format: 'raw'
                 },
             });
 
-            // console.log({test});
+            console.log({jsonString});
+
+            const {data: text} = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: packageLockPath,
+                mediaType: {
+                    // format: 'raw'
+                    format: 'text'
+                },
+            });
+
+            console.log({text});
+
+            const {data: full} = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: packageLockPath,
+                mediaType: {
+                    // format: 'raw'
+                    format: 'full'
+                },
+            });
+
+            console.log({full});
+
+            const {data: base} = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: packageLockPath,
+                mediaType: {
+                    // format: 'raw'
+                    format: 'base64'
+                },
+            });
+
+            console.log({base});
 
             // const sha = file.sha;
 
@@ -158,26 +204,26 @@ const exit = (message, exitCode) => {
             //     jsonString: decodeJson.toString(),
             // });
 
-            const packageLockJson = JSON.parse(jsonString);
+            // const packageLockJson = JSON.parse(jsonString);
 
-            // console.log({
-            //     packageLockJson,
+            // // console.log({
+            // //     packageLockJson,
+            // //     sha,
+            // // })
+
+            // packageLockJson.packages[`projects/${project}`].version = newVersion;
+
+            // const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
+
+            // await octokit.rest.repos.createOrUpdateFileContents({
+            //     owner,
+            //     repo,
+            //     path: packageJsonPath,
+            //     message: 'Update package-lock.json project version',
+            //     content: Buffer.from(packageLockString).toString('base64'),
             //     sha,
-            // })
-
-            packageLockJson.packages[`projects/${project}`].version = newVersion;
-
-            const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
-
-            await octokit.rest.repos.createOrUpdateFileContents({
-                owner,
-                repo,
-                path: packageJsonPath,
-                message: 'Update package-lock.json project version',
-                content: Buffer.from(packageLockString).toString('base64'),
-                sha,
-                branch,
-            });
+            //     branch,
+            // });
         };
 
         await Promise.all([
