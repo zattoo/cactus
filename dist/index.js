@@ -5898,51 +5898,59 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         exit('No changelog changes', 0);
     }
 
-    // const cut = async (project, item) => {
-    //     const {version} = item;
-    //     const release = version.slice(0, -2);
-    //     const first = Number(version[version.length - 1]) === 0;
+    const cut = async (project, item) => {
+        const {version} = item;
+        const release = version.slice(0, -2);
+        const first = Number(version[version.length - 1]) === 0;
 
-    //     if (!first) {
-    //         exit(`This is not a first change to ${release} release`, 0);
-    //     }
+        console.log({
+            project,
+            item,
+            version,
+            release,
+            first,
+        });
 
-    //     const rcBranch = `rc/${project}/${version}`;
-    //     const releaseBranch = `release/${project}/${release}`;
+        // if (!first) {
+        //     exit(`This is not a first change to ${release} release`, 0);
+        // }
 
-    //     await Promise.all([
-    //         await octokit.rest.git.createRef({
-    //             owner,
-    //             repo,
-    //             ref: `refs/heads/${releaseBranch}`,
-    //             sha: before,
-    //         }),
-    //         await octokit.rest.git.createRef({
-    //             owner,
-    //             repo,
-    //             ref: `refs/heads/${rcBranch}`,
-    //             sha: after,
-    //         }),
-    //     ]);
+        // const rcBranch = `rc/${project}/${version}`;
+        // const releaseBranch = `release/${project}/${release}`;
 
-    //     const body = `## Changelog\n\n${item.body}\n\n`;
+        // await Promise.all([
+        //     await octokit.rest.git.createRef({
+        //         owner,
+        //         repo,
+        //         ref: `refs/heads/${releaseBranch}`,
+        //         sha: before,
+        //     }),
+        //     await octokit.rest.git.createRef({
+        //         owner,
+        //         repo,
+        //         ref: `refs/heads/${rcBranch}`,
+        //         sha: after,
+        //     }),
+        // ]);
 
-    //     const {data: pr} = await octokit.rest.pulls.create({
-    //         owner,
-    //         repo,
-    //         title: `Release ${version}-${project}`,
-    //         body,
-    //         head: rcBranch,
-    //         base: releaseBranch,
-    //     })
+        // const body = `## Changelog\n\n${item.body}\n\n`;
 
-    //     await octokit.rest.issues.addLabels({
-    //         owner,
-    //         repo,
-    //         issue_number: pr.number,
-    //         labels,
-    //     });
-    // };
+        // const {data: pr} = await octokit.rest.pulls.create({
+        //     owner,
+        //     repo,
+        //     title: `Release ${version}-${project}`,
+        //     body,
+        //     head: rcBranch,
+        //     base: releaseBranch,
+        // })
+
+        // await octokit.rest.issues.addLabels({
+        //     owner,
+        //     repo,
+        //     issue_number: pr.number,
+        //     labels,
+        // });
+    };
 
     const processChanges = async (item) => {
         const {filename} = item;
@@ -5999,13 +6007,13 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
         const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
 
-        console.log({
-            newVersions
-        });
+        // console.log({
+        //     newVersions
+        // });
 
-        // if (!isEmpty(newVersions)) {
-        //     await Promise.all(newVersions.map((version) => cut(project, version)));
-        // }
+        if (!isEmpty(newVersions)) {
+            await Promise.all(newVersions.map((version) => cut(project, version)));
+        }
     };
 
     await Promise.all(changelogs.map(processChanges));
