@@ -5960,7 +5960,7 @@ const exit = (message, exitCode) => {
 
         await Promise.all([
             updatePackageJson(),
-            updatePackageLock(),
+            // updatePackageLock(),
         ]);
 
         const {data: pr} = await octokit.rest.pulls.create({
