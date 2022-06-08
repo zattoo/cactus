@@ -5802,16 +5802,16 @@ const core = __webpack_require__(470);
 const github = __webpack_require__(469);
 const parseChangelog = __webpack_require__(734);
 
-let foundSomething = false;
+// let foundSomething = false;
 
-const isEmpty = (value) => {
-    return (
-        value === undefined ||
-        value === null ||
-        (typeof value === 'object' && Object.keys(value).length === 0) ||
-        (typeof value === 'string' && value.trim().length === 0)
-    );
-};
+// const isEmpty = (value) => {
+//     return (
+//         value === undefined ||
+//         value === null ||
+//         (typeof value === 'object' && Object.keys(value).length === 0) ||
+//         (typeof value === 'string' && value.trim().length === 0)
+//     );
+// };
 
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
@@ -5823,36 +5823,44 @@ const exit = (message, exitCode) => {
     process.exit(exitCode);
 };
 
-const getNewVersions = (project, changelogBefore, changelogAfter) => {
-    let newVersions = [];
+// const getNewVersions = (project, changelogBefore, changelogAfter) => {
+//     let newVersions = [];
 
-    const mapBefore = changelogBefore.versions.reduce((result, item) => {
-        return {
-            ...result,
-            [item.version]: item,
-        };
-    }, {});
+//     const mapBefore = changelogBefore.versions.reduce((result, item) => {
+//         return {
+//             ...result,
+//             [item.version]: item,
+//         };
+//     }, {});
 
-    changelogAfter.versions.forEach((item) => {
-        const versionAfter = item.version;
-        const dateAfter = item.date;
-        const itemBefore = mapBefore[versionAfter] || {};
-        const dateBefore = itemBefore.date;
+//     changelogAfter.versions.forEach((item) => {
+//         const versionAfter = item.version;
+//         const dateAfter = item.date;
+//         const itemBefore = mapBefore[versionAfter] || {};
+//         const dateBefore = itemBefore.date;
 
-        if (!dateBefore && dateAfter) {
-            core.info(`New ${versionAfter}-${project} version detected, preparing candidate...`);
-            foundSomething = true;
-            newVersions.push(item);
-        }
-    });
+//         if (!dateBefore && dateAfter) {
+//             core.info(`New ${versionAfter}-${project} version detected, preparing candidate...`);
+//             foundSomething = true;
+//             newVersions.push(item);
+//         }
+//     });
 
-    return newVersions;
+//     return newVersions;
+// };
+
+const raiseVersion = async () => {
+
 };
 
 (async () => {
     const token = core.getInput('token', {required: true});
     const labels = core.getMultilineInput('labels', {required: false});
+    const project = core.getInput('project', {required: true});
+    const newVersion = core.getInput('new-version', {required: true});
     const octokit = github.getOctokit(token);
+
+    await raiseVersion();
 
     const {context} = github;
     const {payload} = context;
@@ -5866,157 +5874,162 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
 
-    const commit = await octokit.rest.repos.getCommit({
-        owner,
+    console.log({
         repo,
-        ref: after,
+        payload,
     });
 
-    const {files} = commit.data;
-
-    // console.log({
-    //     labels,
-    //     context,
-    //     payload,
-    //     after,
-    //     before,
-    //     repository,
-    //     repo,
+    // const commit = await octokit.rest.repos.getCommit({
     //     owner,
-    //     commit,
-    //     data: commit.data,
-    //     files,
+    //     repo,
+    //     ref: after,
     // });
 
-    if (isEmpty(files)) {
-        exit('No changes', 0);
-    }
+    // const {files} = commit.data;
 
-    const changelogs = files.filter((file) => file.filename.includes('CHANGELOG.md'));
+    // // console.log({
+    // //     labels,
+    // //     context,
+    // //     payload,
+    // //     after,
+    // //     before,
+    // //     repository,
+    // //     repo,
+    // //     owner,
+    // //     commit,
+    // //     data: commit.data,
+    // //     files,
+    // // });
 
-    if (isEmpty(changelogs)) {
-        exit('No changelog changes', 0);
-    }
+    // if (isEmpty(files)) {
+    //     exit('No changes', 0);
+    // }
 
-    const cut = async (project, item) => {
-        const {version} = item;
-        const release = version.slice(0, -2);
-        const first = Number(version[version.length - 1]) === 0;
+    // const changelogs = files.filter((file) => file.filename.includes('CHANGELOG.md'));
 
-        console.log({
-            project,
-            item,
-            version,
-            release,
-            first,
-        });
+    // if (isEmpty(changelogs)) {
+    //     exit('No changelog changes', 0);
+    // }
 
-        // if (!first) {
-        //     exit(`This is not a first change to ${release} release`, 0);
-        // }
+    // const cut = async (project, item) => {
+    //     const {version} = item;
+    //     const release = version.slice(0, -2);
+    //     const first = Number(version[version.length - 1]) === 0;
 
-        // const rcBranch = `rc/${project}/${version}`;
-        // const releaseBranch = `release/${project}/${release}`;
+    //     // console.log({
+    //     //     project,
+    //     //     item,
+    //     //     version,
+    //     //     release,
+    //     //     first,
+    //     // });
 
-        // await Promise.all([
-        //     await octokit.rest.git.createRef({
-        //         owner,
-        //         repo,
-        //         ref: `refs/heads/${releaseBranch}`,
-        //         sha: before,
-        //     }),
-        //     await octokit.rest.git.createRef({
-        //         owner,
-        //         repo,
-        //         ref: `refs/heads/${rcBranch}`,
-        //         sha: after,
-        //     }),
-        // ]);
+    //     if (!first) {
+    //         exit(`This is not a first change to ${release} release`, 0);
+    //     }
 
-        // const body = `## Changelog\n\n${item.body}\n\n`;
+    //     const rcBranch = `rc/${project}/${version}`;
+    //     const releaseBranch = `release/${project}/${release}`;
 
-        // const {data: pr} = await octokit.rest.pulls.create({
-        //     owner,
-        //     repo,
-        //     title: `Release ${version}-${project}`,
-        //     body,
-        //     head: rcBranch,
-        //     base: releaseBranch,
-        // })
+    //     await Promise.all([
+    //         await octokit.rest.git.createRef({
+    //             owner,
+    //             repo,
+    //             ref: `refs/heads/${releaseBranch}`,
+    //             sha: before,
+    //         }),
+    //         await octokit.rest.git.createRef({
+    //             owner,
+    //             repo,
+    //             ref: `refs/heads/${rcBranch}`,
+    //             sha: after,
+    //         }),
+    //     ]);
 
-        // await octokit.rest.issues.addLabels({
-        //     owner,
-        //     repo,
-        //     issue_number: pr.number,
-        //     labels,
-        // });
-    };
+    //     const body = `## Changelog\n\n${item.body}\n\n`;
 
-    const processChanges = async (item) => {
-        const {filename} = item;
+    //     const {data: pr} = await octokit.rest.pulls.create({
+    //         owner,
+    //         repo,
+    //         title: `Release ${version}-${project}`,
+    //         body,
+    //         head: rcBranch,
+    //         base: releaseBranch,
+    //     })
 
-        const split = filename.split('/');
-        const project = split[split.length - 2];
+    //     await octokit.rest.issues.addLabels({
+    //         owner,
+    //         repo,
+    //         issue_number: pr.number,
+    //         labels,
+    //     });
+    // };
 
-        core.info(`Analyzing ${project} project...`);
+    // const processChanges = async (item) => {
+    //     const {filename} = item;
 
-        // console.log({
-        //     item,
-        //     filename,
-        //     split,
-        //     project,
-        // });
+    //     const split = filename.split('/');
+    //     const project = split[split.length - 2];
 
-        const [contentBefore, contentAfter] = await Promise.all([
-            await octokit.rest.repos.getContent({
-                owner,
-                repo,
-                path: filename,
-                ref: before,
-            }),
-            await octokit.rest.repos.getContent({
-                owner,
-                repo,
-                path: filename,
-                ref: after,
-            }),
-        ]);
+    //     core.info(`Analyzing ${project} project...`);
 
-        // console.log({
-        //     contentBefore,
-        //     contentAfter,
-        // });
+    //     // console.log({
+    //     //     item,
+    //     //     filename,
+    //     //     split,
+    //     //     project,
+    //     // });
 
-        const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
-        const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
+    //     const [contentBefore, contentAfter] = await Promise.all([
+    //         await octokit.rest.repos.getContent({
+    //             owner,
+    //             repo,
+    //             path: filename,
+    //             ref: before,
+    //         }),
+    //         await octokit.rest.repos.getContent({
+    //             owner,
+    //             repo,
+    //             path: filename,
+    //             ref: after,
+    //         }),
+    //     ]);
 
-        // console.log({
-        //     textBefore,
-        //     textAfter,
-        // });
+    //     // console.log({
+    //     //     contentBefore,
+    //     //     contentAfter,
+    //     // });
 
-        const [changelogBefore, changelogAfter] = await Promise.all([
-            await parseChangelog({text: textBefore}),
-            await parseChangelog({text: textAfter}),
-        ]);
+    //     const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
+    //     const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
 
-        // console.log({
-        //     changelogBefore,
-        //     changelogAfter,
-        // });
+    //     // console.log({
+    //     //     textBefore,
+    //     //     textAfter,
+    //     // });
 
-        const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
+    //     const [changelogBefore, changelogAfter] = await Promise.all([
+    //         await parseChangelog({text: textBefore}),
+    //         await parseChangelog({text: textAfter}),
+    //     ]);
 
-        // console.log({
-        //     newVersions
-        // });
+    //     // console.log({
+    //     //     changelogBefore,
+    //     //     changelogAfter,
+    //     // });
 
-        if (!isEmpty(newVersions)) {
-            await Promise.all(newVersions.map((version) => cut(project, version)));
-        }
-    };
+    //     const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
 
-    await Promise.all(changelogs.map(processChanges));
+    //     // console.log({
+    //     //     newVersions
+    //     // });
+
+    //     if (!isEmpty(newVersions)) {
+    //         await Promise.all(newVersions.map((version) => cut(project, version)));
+    //     }
+    // };
+
+    // await Promise.all(changelogs.map(processChanges));
 
     // if (!foundSomething) {
     //     exit('No release candidates were found', 0);
