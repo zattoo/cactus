@@ -140,6 +140,9 @@ const exit = (message, exitCode) => {
                 owner,
                 repo,
                 path: packageLockPath,
+                mediaType: {
+                    format: 'raw'
+                },
             });
 
             console.log({test});
