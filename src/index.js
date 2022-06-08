@@ -131,12 +131,13 @@ const exit = (message, exitCode) => {
             // const packageLock = await fse.readJson(packageLockPath, 'utf8');
             // packageLock.packages[`projects/${project}`].version = version;
             // await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-            // const {data: file} = await octokit.rest.repos.getContent({
-            //     owner,
-            //     repo,
-            //     path: packageLockPath,
-            // });
-            const test = await octokit.rest.repos.getContent({
+            const {data: {sha}} = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: packageLockPath,
+            });
+
+            const {data: jsonString} = await octokit.rest.repos.getContent({
                 owner,
                 repo,
                 path: packageLockPath,
@@ -157,11 +158,12 @@ const exit = (message, exitCode) => {
             //     jsonString: decodeJson.toString(),
             // });
 
-            // const packageLockJson = JSON.parse(decodeJson);
+            const packageLockJson = JSON.parse(jsonString);
 
-            // console.log({
-            //     packageLockJson,
-            // })
+            console.log({
+                packageLockJson,
+                sha,
+            })
 
             // packageLockJson.packages[`projects/${project}`].version = newVersion;
 
