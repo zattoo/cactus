@@ -108,6 +108,10 @@ const exit = (message, exitCode) => {
             // const data = content.data;
             const sha = file.sha;
 
+            console.log({
+                content: file.content,
+            });
+
             // const packageJson = await fse.readJson(packageJsonPath, 'utf8');
             const decodeJson = atob(file.content);
 
@@ -115,11 +119,11 @@ const exit = (message, exitCode) => {
                 decodeJson
             });
 
-            const packageJson = JSON.parse(decodeJson);
+            // const packageJson = JSON.parse(decodeJson);
 
-            console.log({
-                packageJson
-            });
+            // console.log({
+            //     packageJson
+            // });
 
             /*
             packageJson.version = newVersion;
