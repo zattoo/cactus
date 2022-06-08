@@ -142,6 +142,7 @@ const exit = (message, exitCode) => {
             const decodeJson = Buffer.from(file.content, 'base64');
 
             console.log({
+                file,
                 filecontent: file.content,
                 jsonString: decodeJson.toString(),
             });
