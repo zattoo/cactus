@@ -5908,41 +5908,39 @@ const exit = (message, exitCode) => {
             // const data = content.data;
             const sha = file.sha;
 
-            console.log({
-                content: file.content,
-            });
+            // console.log({
+            //     content: file.content,
+            // });
 
             // const packageJson = await fse.readJson(packageJsonPath, 'utf8');
-            // const decodeJson = atob(file.content);
+            const decodeJson = Buffer.from(file.content, 'base64');
 
             // console.log({
             //     decodeJson
             // });
 
-            // const packageJson = JSON.parse(decodeJson);
+            const packageJson = JSON.parse(decodeJson);
 
             // console.log({
             //     packageJson
             // });
 
-            /*
             packageJson.version = newVersion;
             // await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
-            const versionBumpedPackageJson = JSON.stringify(packageJson, null, 4).concat('\n');
+            const packageJsonString = JSON.stringify(packageJson, null, 4).concat('\n');
+            // const packageJsonString = Buffer.from(packageJson).toString('base64');
 
             const update = await octokit.rest.repos.createOrUpdateFileContents({
                 owner,
                 repo,
                 path: packageJsonPath,
                 message: 'Update package.json version',
-                content: btoa(versionBumpedPackageJson),
+                content: Buffer.from(packageJsonString).toString('base64'),
                 sha,
                 branch,
             });
 
             return update;
-            */
-           return file;
         };
 
         const update = await updatePackageJson();
