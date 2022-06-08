@@ -5888,7 +5888,7 @@ const exit = (message, exitCode) => {
             repo,
             path: 'test.md',
             message: 'Update test.md',
-            content: btoa('test content\nthat should be\nmultiline'),
+            content: btoa('test content\nthat should be\nmultiline\n\nadd this - no sha'),
         });
 
         console.log({update});
