@@ -192,12 +192,16 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             await parseChangelog({text: textAfter}),
         ]);
 
-        console.log({
-            changelogBefore,
-            changelogAfter,
-        });
+        // console.log({
+        //     changelogBefore,
+        //     changelogAfter,
+        // });
 
-        // const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
+        const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
+
+        console.log({
+            newVersions
+        });
 
         // if (!isEmpty(newVersions)) {
         //     await Promise.all(newVersions.map((version) => cut(project, version)));
