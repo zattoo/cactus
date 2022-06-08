@@ -5943,9 +5943,9 @@ const exit = (message, exitCode) => {
 
             const packageLockJson = JSON.parse(decodeJson);
 
-            packageLock.packages[`projects/${project}`].version = newVersion;
+            packageLockJson.packages[`projects/${project}`].version = newVersion;
 
-            const packageLockString = JSON.stringify(packageLock, null, 4).concat('\n');
+            const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
 
             await octokit.rest.repos.createOrUpdateFileContents({
                 owner,
