@@ -5942,6 +5942,7 @@ const exit = (message, exitCode) => {
             const decodeJson = Buffer.from(file.content, 'base64');
 
             console.log({
+                filecontent: file.content,
                 jsonString: decodeJson.toString(),
             });
 
@@ -5978,7 +5979,7 @@ const exit = (message, exitCode) => {
             body: `Bump version`,
             head: branch,
             base: defaultBranch,
-            draft: true,
+            draft: true, // to do
         })
 
         // const update = await updatePackageJson();
