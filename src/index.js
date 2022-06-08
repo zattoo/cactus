@@ -182,21 +182,26 @@ const exit = (message, exitCode) => {
 
             const content = file.content;
 
-            console.log({
-                content,
-            });
+            // console.log({
+            //     content,
+            // });
 
             const changelogString = Buffer.from(content, 'base64').toString();
 
-            console.log({
-                changelogString,
-            });
+            // console.log({
+            //     changelogString,
+            // });
 
             const changelog = await parseChangelog({text: changelogString})
 
-            console.log({
-                changelog,
-            });
+            // console.log({
+            //     changelog,
+            // });
+
+            const highestVersion = changelog.versions[0];
+
+            console.log({highestVersion});
+
             // const decodeJson = Buffer.from(file.content, 'base64');
 
             // const packageJson = JSON.parse(decodeJson);
