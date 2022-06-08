@@ -178,6 +178,10 @@ const exit = (message, exitCode) => {
 
             const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
 
+            console.log({
+                packageLockString,
+            });
+
             const test = await octokit.rest.repos.createOrUpdateFileContents({
                 owner,
                 repo,
