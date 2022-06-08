@@ -5941,11 +5941,15 @@ const exit = (message, exitCode) => {
 
             const decodeJson = Buffer.from(file.content, 'base64');
 
-            const packageLockJson = JSON.parse(decodeJson);
-
             console.log({
-                packageLockJson,
-            })
+                jsonString: decodeJson.toString(),
+            });
+
+            // const packageLockJson = JSON.parse(decodeJson);
+
+            // console.log({
+            //     packageLockJson,
+            // })
 
             // packageLockJson.packages[`projects/${project}`].version = newVersion;
 
