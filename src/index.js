@@ -75,7 +75,7 @@ const exit = (message, exitCode) => {
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
 
-    // const defaultBranch = repository.default_branch;
+    const defaultBranch = repository.default_branch;
 
     // console.log({
     //     repo,
@@ -95,7 +95,7 @@ const exit = (message, exitCode) => {
         });
 
         const packageJsonPath = `projects/${project}/package.json`;
-        // const packageLockPath = 'package-lock.json';
+        const packageLockPath = 'package-lock.json';
 
         // Update version in package.json
         const updatePackageJson = async () =>  {
@@ -105,32 +105,17 @@ const exit = (message, exitCode) => {
                 path: packageJsonPath,
             });
 
-            // const data = content.data;
             const sha = file.sha;
 
-            // console.log({
-            //     content: file.content,
-            // });
-
-            // const packageJson = await fse.readJson(packageJsonPath, 'utf8');
             const decodeJson = Buffer.from(file.content, 'base64');
-
-            // console.log({
-            //     decodeJson
-            // });
 
             const packageJson = JSON.parse(decodeJson);
 
-            // console.log({
-            //     packageJson
-            // });
-
             packageJson.version = newVersion;
-            // await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
-            const packageJsonString = JSON.stringify(packageJson, null, 4).concat('\n');
-            // const packageJsonString = Buffer.from(packageJson).toString('base64');
 
-            const update = await octokit.rest.repos.createOrUpdateFileContents({
+            const packageJsonString = JSON.stringify(packageJson, null, 4).concat('\n');
+
+            await octokit.rest.repos.createOrUpdateFileContents({
                 owner,
                 repo,
                 path: packageJsonPath,
@@ -139,18 +124,56 @@ const exit = (message, exitCode) => {
                 sha,
                 branch,
             });
-
-            return update;
         };
 
-        const update = await updatePackageJson();
-
         // Update version in package-lock.json
-        // const updatePackageLock = async () =>  {
-        //     const packageLock = await fse.readJson(packageLockPath, 'utf8');
-        //     packageLock.packages[`projects/${project}`].version = version;
-        //     await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-        // };
+        const updatePackageLock = async () =>  {
+            // const packageLock = await fse.readJson(packageLockPath, 'utf8');
+            // packageLock.packages[`projects/${project}`].version = version;
+            // await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
+            const {data: file} = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: packageLockPath,
+            });
+
+            const sha = file.sha;
+
+            const decodeJson = Buffer.from(file.content, 'base64');
+
+            const packageLockJson = JSON.parse(decodeJson);
+
+            packageLock.packages[`projects/${project}`].version = newVersion;
+
+            const packageLockString = JSON.stringify(packageLock, null, 4).concat('\n');
+
+            await octokit.rest.repos.createOrUpdateFileContents({
+                owner,
+                repo,
+                path: packageJsonPath,
+                message: 'Update package-lock.json project version',
+                content: Buffer.from(packageLockString).toString('base64'),
+                sha,
+                branch,
+            });
+        };
+
+        await Promise.all([
+            updatePackageJson(),
+            updatePackageLock(),
+        ]);
+
+        const {data: pr} = await octokit.rest.pulls.create({
+            owner,
+            repo,
+            title: `Next ${project}`,
+            body: `Bump version`,
+            head: branch,
+            base: defaultBranch,
+            draft: false,
+        })
+
+        // const update = await updatePackageJson();
 
         // console.log({
         //     content,
@@ -158,7 +181,7 @@ const exit = (message, exitCode) => {
         //     sha,
         // })
 
-        console.log({update});
+        // console.log({update});
     };
 
     await createMainPr();
