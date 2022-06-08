@@ -5872,6 +5872,8 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         ref: after,
     });
 
+    const {files} = commit.data;
+
     console.log({
         labels,
         context,
@@ -5881,10 +5883,10 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
         repository,
         repo,
         owner,
-        commit
+        commit,
+        data: commit.data,
+        files,
     });
-
-    // const {files} = commit.data;
 
     // if (isEmpty(files)) {
     //     exit('No changes', 0);
