@@ -5947,7 +5947,7 @@ const exit = (message, exitCode) => {
                 branch,
             })).data.commit;
 
-            console.log({latestCommit});
+            const blobModeFile = '100644';
 
             const tree = await octokit.rest.git.createTree({
                 owner,
@@ -5956,16 +5956,12 @@ const exit = (message, exitCode) => {
                 tree: [
                     {
                       path: packageLockPath,
-                      mode: '100644',
+                      mode: blobModeFile,
                       content: JSON.stringify(packageLockJson, null, 4).concat('\n'),
-                    //   content: rawJson,
-                    //   content: 'fully overwrite',
                       type: 'blob',
                     },
                 ],
             });
-
-            console.log({tree});
 
             const createdCommit = (await octokit.rest.git.createCommit({
                 owner,
@@ -5976,101 +5972,17 @@ const exit = (message, exitCode) => {
                 parents: [latestCommit.sha],
             }));
 
-            console.log({createdCommit});
-
             const updateRef = await octokit.rest.git.updateRef({
                 owner,
                 repo,
-                // branch,
                 ref: `heads/${branch}`,
-                // ref: `heads/${target.branch}`,
                 sha: createdCommit.data.sha,
             });
-
-            console.log({updateRef});
-
-            // // const packageLock = await fse.readJson(packageLockPath, 'utf8');
-            // // packageLock.packages[`projects/${project}`].version = version;
-            // // await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-            // // const {data: {sha}} = await octokit.rest.repos.getContent({
-            // const {data: sha} = await octokit.rest.repos.getContent({
-            //     owner,
-            //     repo,
-            //     path: packageLockPath,
-            //     mediaType: {
-            //         format: 'sha',
-            //     },
-            // });
-
-            // // response = await octokit.repos.listCommits({
-            // //     owner,
-            // //     repo,
-            // //     sha: base,
-            // //     per_page: 1
-            // // })
-
-            // console.log({
-            //     sha,
-            //     actualSHA: sha.sha,
-            //     afterSHA: after,
-            // });
-
-            // // const {data: jsonString} = await octokit.rest.repos.getContent({
-            // //     owner,
-            // //     repo,
-            // //     path: packageLockPath,
-            // //     mediaType: {
-            // //         format: 'raw'
-            // //     },
-            // // });
-
-            // // console.log({jsonString});
-
-            // // const sha = file.sha;
-
-            // // const decodeJson = Buffer.from(file.content, 'base64');
-
-            // // console.log({
-            // //     file,
-            // //     filecontent: file.content,
-            // //     jsonString: decodeJson.toString(),
-            // // });
-
-            // const packageLockJson = JSON.parse(jsonString);
-
-            // // // console.log({
-            // // //     packageLockJson,
-            // // //     sha,
-            // // // })
-
-            // packageLockJson.packages[`projects/${project}`].version = newVersion;
-
-            // const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
-
-            // console.log({
-            //     packageLockString,
-            // });
-
-            // const test = await octokit.rest.repos.createOrUpdateFileContents({
-            //     owner,
-            //     repo,
-            //     path: packageJsonPath,
-            //     message: 'Update package-lock.json project version',
-            //     content: packageLockString,
-            //     // content: Buffer.from(packageLockString).toString('base64'),
-            //     sha,
-            //     branch,
-            // });
-
-            // console.log({test});
         };
 
-        await Promise.all([
-            // updatePackageJson(),
-            updatePackageLock(),
-        ]);
+        await updatePackageLock();
+        await updatePackageJson();
 
-        /*
         // creates the pr!
         const {data: pr} = await octokit.rest.pulls.create({
             owner,
@@ -6080,8 +5992,7 @@ const exit = (message, exitCode) => {
             head: branch,
             base: defaultBranch,
             draft: true, // to do
-        })
-        */
+        });
 
         // const update = await updatePackageJson();
 
