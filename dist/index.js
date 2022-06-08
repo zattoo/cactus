@@ -5974,13 +5974,18 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
             }),
         ]);
 
-        console.log({
-            contentBefore,
-            contentAfter,
-        });
+        // console.log({
+        //     contentBefore,
+        //     contentAfter,
+        // });
 
-        // const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
-        // const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
+        const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
+        const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
+
+        console.log({
+            textBefore,
+            textAfter,
+        });
 
         // const [changelogBefore, changelogAfter] = await Promise.all([
         //     await parseChangelog({text: textBefore}),
