@@ -5936,7 +5936,7 @@ const exit = (message, exitCode) => {
 
             console.log({latestCommit});
 
-            const tree = await octokit.git.createTree({
+            const tree = await octokit.rest.git.createTree({
                 owner,
                 repo,
                 base_tree: latestCommit.sha,
