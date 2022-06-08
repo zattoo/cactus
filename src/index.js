@@ -128,76 +128,130 @@ const exit = (message, exitCode) => {
 
         // Update version in package-lock.json
         const updatePackageLock = async () =>  {
-            // const packageLock = await fse.readJson(packageLockPath, 'utf8');
-            // packageLock.packages[`projects/${project}`].version = version;
-            // await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-            // const {data: {sha}} = await octokit.rest.repos.getContent({
-            const {data: sha} = await octokit.rest.repos.getContent({
+            const latestCommit = (await octokit.rest.repos.getBranch({
                 owner,
                 repo,
-                path: packageLockPath,
-                mediaType: {
-                    format: 'sha',
-                },
-            });
+                branch,
+            })).data.commit;
 
-            console.log({
-                sha,
-                actualSHA: sha.sha,
-            });
+            console.log({latestCommit});
 
-            const {data: jsonString} = await octokit.rest.repos.getContent({
+            const tree = await octokit.git.createTree({
                 owner,
                 repo,
-                path: packageLockPath,
-                mediaType: {
-                    format: 'raw'
-                },
+                base_tree: latestCommit.sha,
+                tree: [
+                    {
+                      path: packageLockPath,
+                      mode: '100644',
+                      content: 'fully overwrite',
+                      type: 'blob',
+                    },
+                ],
             });
 
-            // console.log({jsonString});
+            console.log({tree});
 
-            // const sha = file.sha;
+            const createdCommit = (await octokit.rest.git.createCommit({
+                owner,
+                repo,
+                branch,
+                message: 'Test Commit with GitHub API',
+                tree: tree.data.sha,
+                parents: [latestCommit.sha],
+            }));
 
-            // const decodeJson = Buffer.from(file.content, 'base64');
+            console.log({createdCommit});
 
-            // console.log({
-            //     file,
-            //     filecontent: file.content,
-            //     jsonString: decodeJson.toString(),
+            const updateRef = await octokit.rest.git.updateRef({
+                owner,
+                repo,
+                // branch,
+                ref,
+                // ref: `heads/${target.branch}`,
+                sha: createdCommit.data.sha,
+            });
+
+            console.log({updateRef});
+
+            // // const packageLock = await fse.readJson(packageLockPath, 'utf8');
+            // // packageLock.packages[`projects/${project}`].version = version;
+            // // await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
+            // // const {data: {sha}} = await octokit.rest.repos.getContent({
+            // const {data: sha} = await octokit.rest.repos.getContent({
+            //     owner,
+            //     repo,
+            //     path: packageLockPath,
+            //     mediaType: {
+            //         format: 'sha',
+            //     },
             // });
 
-            const packageLockJson = JSON.parse(jsonString);
-
-            // // console.log({
-            // //     packageLockJson,
-            // //     sha,
+            // // response = await octokit.repos.listCommits({
+            // //     owner,
+            // //     repo,
+            // //     sha: base,
+            // //     per_page: 1
             // // })
 
-            packageLockJson.packages[`projects/${project}`].version = newVersion;
+            // console.log({
+            //     sha,
+            //     actualSHA: sha.sha,
+            //     afterSHA: after,
+            // });
 
-            const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
+            // // const {data: jsonString} = await octokit.rest.repos.getContent({
+            // //     owner,
+            // //     repo,
+            // //     path: packageLockPath,
+            // //     mediaType: {
+            // //         format: 'raw'
+            // //     },
+            // // });
 
-            console.log({
-                packageLockString,
-            });
+            // // console.log({jsonString});
 
-            const test = await octokit.rest.repos.createOrUpdateFileContents({
-                owner,
-                repo,
-                path: packageJsonPath,
-                message: 'Update package-lock.json project version',
-                content: packageLockString,
-                // content: Buffer.from(packageLockString).toString('base64'),
-                sha,
-                branch,
-            });
+            // // const sha = file.sha;
 
-            console.log({test});
+            // // const decodeJson = Buffer.from(file.content, 'base64');
+
+            // // console.log({
+            // //     file,
+            // //     filecontent: file.content,
+            // //     jsonString: decodeJson.toString(),
+            // // });
+
+            // const packageLockJson = JSON.parse(jsonString);
+
+            // // // console.log({
+            // // //     packageLockJson,
+            // // //     sha,
+            // // // })
+
+            // packageLockJson.packages[`projects/${project}`].version = newVersion;
+
+            // const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
+
+            // console.log({
+            //     packageLockString,
+            // });
+
+            // const test = await octokit.rest.repos.createOrUpdateFileContents({
+            //     owner,
+            //     repo,
+            //     path: packageJsonPath,
+            //     message: 'Update package-lock.json project version',
+            //     content: packageLockString,
+            //     // content: Buffer.from(packageLockString).toString('base64'),
+            //     sha,
+            //     branch,
+            // });
+
+            // console.log({test});
         };
 
         await Promise.all([
-            updatePackageJson(),
+            // updatePackageJson(),
             updatePackageLock(),
         ]);
 
