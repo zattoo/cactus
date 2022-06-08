@@ -97,6 +97,7 @@ const exit = (message, exitCode) => {
         const packageJsonPath = `projects/${project}/package.json`;
         // const packageLockPath = 'package-lock.json';
 
+        /*
         // Update version in package.json
         const updatePackageJson = async () =>  {
             const {data: file} = await octokit.rest.repos.getContent({
@@ -128,6 +129,7 @@ const exit = (message, exitCode) => {
         };
 
         const update = await updatePackageJson();
+        */
 
         // Update version in package-lock.json
         // const updatePackageLock = async () =>  {
