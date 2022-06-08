@@ -5980,7 +5980,19 @@ const exit = (message, exitCode) => {
 
             const sha = file.sha;
 
-            const changelog = await parseChangelog({text: Buffer.from(file.content, 'base64')})
+            const content = file.content;
+
+            console.log({
+                changelog,
+            });
+
+            const changelogString = Buffer.from(content, 'base64');
+
+            console.log({
+                changelogString,
+            });
+
+            const changelog = await parseChangelog({text: changelogString})
 
             console.log({
                 changelog,
