@@ -5799,7 +5799,7 @@ module.exports = require("util");
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const core = __webpack_require__(470);
-const exec = __webpack_require__(952);
+// const exec = require('@actions/exec');
 const github = __webpack_require__(469);
 const parseChangelog = __webpack_require__(734);
 
@@ -9568,14 +9568,6 @@ exports.GraphqlResponseError = GraphqlResponseError;
 exports.graphql = graphql$1;
 exports.withCustomRequest = withCustomRequest;
 //# sourceMappingURL=index.js.map
-
-
-/***/ }),
-
-/***/ 952:
-/***/ (function(module) {
-
-module.exports = eval("require")("@actions/exec");
 
 
 /***/ }),
