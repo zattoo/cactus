@@ -141,11 +141,11 @@ const exit = (message, exitCode) => {
 
             const decodeJson = Buffer.from(file.content, 'base64');
 
-            console.log({
-                decodeJson,
-            })
+            const packageLockJson = JSON.parse(decodeJson);
 
-            // const packageLockJson = JSON.parse(decodeJson);
+            console.log({
+                packageLockJson,
+            })
 
             // packageLockJson.packages[`projects/${project}`].version = newVersion;
 
@@ -174,7 +174,7 @@ const exit = (message, exitCode) => {
             body: `Bump version`,
             head: branch,
             base: defaultBranch,
-            draft: false,
+            draft: true,
         })
 
         // const update = await updatePackageJson();
