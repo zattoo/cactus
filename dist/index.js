@@ -5967,7 +5967,7 @@ const exit = (message, exitCode) => {
                 owner,
                 repo,
                 // branch,
-                ref,
+                ref: `heads/${branch}`,
                 // ref: `heads/${target.branch}`,
                 sha: createdCommit.data.sha,
             });
