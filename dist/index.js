@@ -5941,26 +5941,30 @@ const exit = (message, exitCode) => {
 
             const decodeJson = Buffer.from(file.content, 'base64');
 
-            const packageLockJson = JSON.parse(decodeJson);
+            console.log({
+                decodeJson,
+            })
 
-            packageLockJson.packages[`projects/${project}`].version = newVersion;
+            // const packageLockJson = JSON.parse(decodeJson);
 
-            const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
+            // packageLockJson.packages[`projects/${project}`].version = newVersion;
 
-            await octokit.rest.repos.createOrUpdateFileContents({
-                owner,
-                repo,
-                path: packageJsonPath,
-                message: 'Update package-lock.json project version',
-                content: Buffer.from(packageLockString).toString('base64'),
-                sha,
-                branch,
-            });
+            // const packageLockString = JSON.stringify(packageLockJson, null, 4).concat('\n');
+
+            // await octokit.rest.repos.createOrUpdateFileContents({
+            //     owner,
+            //     repo,
+            //     path: packageJsonPath,
+            //     message: 'Update package-lock.json project version',
+            //     content: Buffer.from(packageLockString).toString('base64'),
+            //     sha,
+            //     branch,
+            // });
         };
 
         await Promise.all([
             updatePackageJson(),
-            // updatePackageLock(),
+            updatePackageLock(),
         ]);
 
         const {data: pr} = await octokit.rest.pulls.create({
