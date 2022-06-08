@@ -5946,7 +5946,7 @@ const exit = (message, exitCode) => {
                 },
             });
 
-            console.log({test});
+            // console.log({test});
 
             // const sha = file.sha;
 
