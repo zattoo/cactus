@@ -5874,29 +5874,29 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
 
     const {files} = commit.data;
 
-    console.log({
-        labels,
-        context,
-        payload,
-        after,
-        before,
-        repository,
-        repo,
-        owner,
-        commit,
-        data: commit.data,
-        files,
-    });
+    // console.log({
+    //     labels,
+    //     context,
+    //     payload,
+    //     after,
+    //     before,
+    //     repository,
+    //     repo,
+    //     owner,
+    //     commit,
+    //     data: commit.data,
+    //     files,
+    // });
 
-    // if (isEmpty(files)) {
-    //     exit('No changes', 0);
-    // }
+    if (isEmpty(files)) {
+        exit('No changes', 0);
+    }
 
-    // const changelogs = files.filter((file) => file.filename.includes('CHANGELOG.md'));
+    const changelogs = files.filter((file) => file.filename.includes('CHANGELOG.md'));
 
-    // if (isEmpty(changelogs)) {
-    //     exit('No changelog changes', 0);
-    // }
+    if (isEmpty(changelogs)) {
+        exit('No changelog changes', 0);
+    }
 
     // const cut = async (project, item) => {
     //     const {version} = item;
@@ -5944,45 +5944,52 @@ const getNewVersions = (project, changelogBefore, changelogAfter) => {
     //     });
     // };
 
-    // const processChanges = async (item) => {
-    //     const {filename} = item;
+    const processChanges = async (item) => {
+        const {filename} = item;
 
-    //     const split = filename.split('/');
-    //     const project = split[split.length - 2];
+        const split = filename.split('/');
+        const project = split[split.length - 2];
 
-    //     core.info(`Analyzing ${project} project...`);
+        core.info(`Analyzing ${project} project...`);
 
-    //     const [contentBefore, contentAfter] = await Promise.all([
-    //         await octokit.rest.repos.getContent({
-    //             owner,
-    //             repo,
-    //             path: filename,
-    //             ref: before,
-    //         }),
-    //         await octokit.rest.repos.getContent({
-    //             owner,
-    //             repo,
-    //             path: filename,
-    //             ref: after,
-    //         }),
-    //     ]);
+        console.log({
+            item,
+            filename,
+            split,
+            project,
+        });
 
-    //     const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
-    //     const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
+        // const [contentBefore, contentAfter] = await Promise.all([
+        //     await octokit.rest.repos.getContent({
+        //         owner,
+        //         repo,
+        //         path: filename,
+        //         ref: before,
+        //     }),
+        //     await octokit.rest.repos.getContent({
+        //         owner,
+        //         repo,
+        //         path: filename,
+        //         ref: after,
+        //     }),
+        // ]);
 
-    //     const [changelogBefore, changelogAfter] = await Promise.all([
-    //         await parseChangelog({text: textBefore}),
-    //         await parseChangelog({text: textAfter}),
-    //     ]);
+        // const textBefore = Buffer.from(contentBefore.data.content, 'base64').toString();
+        // const textAfter = Buffer.from(contentAfter.data.content, 'base64').toString();
 
-    //     const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
+        // const [changelogBefore, changelogAfter] = await Promise.all([
+        //     await parseChangelog({text: textBefore}),
+        //     await parseChangelog({text: textAfter}),
+        // ]);
 
-    //     if (!isEmpty(newVersions)) {
-    //         await Promise.all(newVersions.map((version) => cut(project, version)));
-    //     }
-    // };
+        // const newVersions = getNewVersions(project, changelogBefore, changelogAfter);
 
-    // await Promise.all(changelogs.map(processChanges));
+        // if (!isEmpty(newVersions)) {
+        //     await Promise.all(newVersions.map((version) => cut(project, version)));
+        // }
+    };
+
+    await Promise.all(changelogs.map(processChanges));
 
     // if (!foundSomething) {
     //     exit('No release candidates were found', 0);
