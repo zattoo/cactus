@@ -56,7 +56,7 @@ const exit = (message, exitCode) => {
 
 (async () => {
     const token = core.getInput('token', {required: true});
-    const labels = core.getMultilineInput('labels', {required: false});
+    // const labels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
     const newVersion = core.getInput('new-version', {required: true});
     const octokit = github.getOctokit(token);
@@ -75,7 +75,7 @@ const exit = (message, exitCode) => {
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
 
-    const defaultBranch = repository.default_branch;
+    // const defaultBranch = repository.default_branch;
 
     // console.log({
     //     repo,
@@ -83,29 +83,64 @@ const exit = (message, exitCode) => {
     // });
 
     const createMainPr = async () => {
-        const content = await octokit.rest.repos.getContent({
+        // const path = `projects/${project}/package.json`;
+        const branch = `next/${project}`;
+        const ref = `refs/heads/${branch}`;
+
+        await octokit.rest.git.createRef({
             owner,
             repo,
-            path: 'test.md',
+            ref,
+            sha: after,
         });
 
-        const data = content.data;
-        const sha = data.sha;
+        const packageJsonPath = `projects/${project}/package.json`;
+        // const packageLockPath = 'package-lock.json';
 
-        console.log({
-            content,
-            data,
-            sha,
-        })
+        // Update version in package.json
+        const updatePackageJson = async () =>  {
+            const {data: file} = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: packageJsonPath,
+            });
 
-        const update = await octokit.rest.repos.createOrUpdateFileContents({
-            owner,
-            repo,
-            path: 'test.md',
-            message: 'Update test.md',
-            content: btoa('test content\nthat should be\nmultiline\n\nadd this - no sha'),
-            sha,
-        });
+            // const data = content.data;
+            const sha = file.sha;
+
+            // const packageJson = await fse.readJson(packageJsonPath, 'utf8');
+            const packageJson = JSON.parse(atob(file.content));
+            packageJson.version = newVersion;
+            // await fse.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 4).concat('\n'));
+            const versionBumpedPackageJson = JSON.stringify(packageJson, null, 4).concat('\n');
+
+            const update = await octokit.rest.repos.createOrUpdateFileContents({
+                owner,
+                repo,
+                path: packageJsonPath,
+                message: 'Update package.json version',
+                content: btoa(versionBumpedPackageJson),
+                sha,
+                branch,
+            });
+
+            return update;
+        };
+
+        const update = await updatePackageJson();
+
+        // Update version in package-lock.json
+        // const updatePackageLock = async () =>  {
+        //     const packageLock = await fse.readJson(packageLockPath, 'utf8');
+        //     packageLock.packages[`projects/${project}`].version = version;
+        //     await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
+        // };
+
+        // console.log({
+        //     content,
+        //     data,
+        //     sha,
+        // })
 
         console.log({update});
     };
