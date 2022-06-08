@@ -5928,6 +5928,15 @@ const exit = (message, exitCode) => {
 
         // Update version in package-lock.json
         const updatePackageLock = async () =>  {
+            const {data: rawJson} = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: packageLockPath,
+                mediaType: {
+                    format: 'raw'
+                },
+            });
+
             const latestCommit = (await octokit.rest.repos.getBranch({
                 owner,
                 repo,
@@ -5944,7 +5953,8 @@ const exit = (message, exitCode) => {
                     {
                       path: packageLockPath,
                       mode: '100644',
-                      content: 'fully overwrite',
+                      content: rawJson,
+                    //   content: 'fully overwrite',
                       type: 'blob',
                     },
                 ],
