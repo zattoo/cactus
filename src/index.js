@@ -83,7 +83,7 @@ const exit = (message, exitCode) => {
     // });
 
     const createMainPr = async () => {
-        const content = await octokit.repos.getContents({
+        const content = await octokit.rest.repos.getContents({
             owner,
             repo,
             path: 'test.md',
