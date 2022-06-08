@@ -131,21 +131,28 @@ const exit = (message, exitCode) => {
             // const packageLock = await fse.readJson(packageLockPath, 'utf8');
             // packageLock.packages[`projects/${project}`].version = version;
             // await fse.writeFile(packageLockPath, JSON.stringify(packageLock, null, 4).concat('\n'));
-            const {data: file} = await octokit.rest.repos.getContent({
+            // const {data: file} = await octokit.rest.repos.getContent({
+            //     owner,
+            //     repo,
+            //     path: packageLockPath,
+            // });
+            const test = await octokit.rest.repos.getContent({
                 owner,
                 repo,
                 path: packageLockPath,
             });
 
-            const sha = file.sha;
+            console.log({test});
 
-            const decodeJson = Buffer.from(file.content, 'base64');
+            // const sha = file.sha;
 
-            console.log({
-                file,
-                filecontent: file.content,
-                jsonString: decodeJson.toString(),
-            });
+            // const decodeJson = Buffer.from(file.content, 'base64');
+
+            // console.log({
+            //     file,
+            //     filecontent: file.content,
+            //     jsonString: decodeJson.toString(),
+            // });
 
             // const packageLockJson = JSON.parse(decodeJson);
 
@@ -173,6 +180,8 @@ const exit = (message, exitCode) => {
             updatePackageLock(),
         ]);
 
+        /*
+        // creates the pr!
         const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
@@ -182,6 +191,7 @@ const exit = (message, exitCode) => {
             base: defaultBranch,
             draft: true, // to do
         })
+        */
 
         // const update = await updatePackageJson();
 
