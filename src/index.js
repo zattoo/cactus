@@ -85,16 +85,8 @@ const exit = (message, exitCode) => {
         repository,
     } = payload;
 
-    console.log({
-        repository,
-    });
-
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
-
-    console.log({
-        repo,
-    });
 
     const defaultBranch = repository.default_branch;
 
@@ -164,6 +156,10 @@ const exit = (message, exitCode) => {
                 owner,
                 repo,
                 path: packageLockPath,
+            });
+
+            console.log({
+                packageLockString
             });
 
             const packageLockJson = JSON.parse(packageLockString);
