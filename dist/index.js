@@ -26334,9 +26334,14 @@ const createVersionRaisePullRequest = async ({
     });
 
     // sequencial or not?
-    await updatePackageLock();
-    await updatePackageJson();
-    await updateChangelog();
+    await Promise.all([
+        updatePackageLock(),
+        updatePackageJson(),
+        updateChangelog(),
+    ]);
+    // await updatePackageLock();
+    // await updatePackageJson();
+    // await updateChangelog();
 
     await createPullRequest({
         owner,
