@@ -1,3 +1,11 @@
+/**
+ * We need to manually create the commit because of file size limits of the octokit api,
+ * wich we hit with package.lock.json
+ *
+ * More explanation:
+ * https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
+ * https://octokit.github.io/rest.js/v18
+ */
 import * as github from '@actions/github';
 
 const BLOB_MODE_FILE = '100644';
@@ -46,7 +54,7 @@ export const getRawFile = async ({
     return file;
 };
 
-export const updateFile = async ({
+export const createCommit = async ({
     owner,
     repo,
     branch,

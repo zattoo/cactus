@@ -11,7 +11,7 @@ import {
     getPayload,
     createBranch,
     getRawFile,
-    updateFile,
+    createCommit,
     createPullRequest,
 } from './github-api';
 // todo: esm
@@ -37,32 +37,6 @@ const exit = (message, exitCode) => {
     process.exit(exitCode);
 };
 
-// const getNewVersions = (project, changelogBefore, changelogAfter) => {
-//     let newVersions = [];
-
-//     const mapBefore = changelogBefore.versions.reduce((result, item) => {
-//         return {
-//             ...result,
-//             [item.version]: item,
-//         };
-//     }, {});
-
-//     changelogAfter.versions.forEach((item) => {
-//         const versionAfter = item.version;
-//         const dateAfter = item.date;
-//         const itemBefore = mapBefore[versionAfter] || {};
-//         const dateBefore = itemBefore.date;
-
-//         if (!dateBefore && dateAfter) {
-//             core.info(`New ${versionAfter}-${project} version detected, preparing candidate...`);
-//             foundSomething = true;
-//             newVersions.push(item);
-//         }
-//     });
-
-//     return newVersions;
-// };
-
 (async () => {
     const token = core.getInput('token', {required: true});
     // const labels = core.getMultilineInput('labels', {required: false});
@@ -87,16 +61,32 @@ const exit = (message, exitCode) => {
 
     const defaultBranch = repository.default_branch;
 
+    const updateFile = async (path, fileModifier) => {
+        const rawContent = await getRawFile({
+            owner,
+            repo,
+            path,
+        });
+
+        const modifiedContent = await Promise.resolve(fileModifier(rawContent));
+
+        if (!modifiedContent) {
+            return;
+        }
+
+        await createCommit({
+            owner,
+            repo,
+            branch,
+            path,
+            content: modifiedContent,
+        });
+    };
+
     const createMainPr = async () => {
         const branch = `next/${project}`;
         const ref = `refs/heads/${branch}`;
 
-        // await octokit.rest.git.createRef({
-        //     owner,
-        //     repo,
-        //     ref,
-        //     sha: after,
-        // });
         await createBranch({
             owner,
             repo,
@@ -109,130 +99,63 @@ const exit = (message, exitCode) => {
         const packageLockPath = 'package-lock.json';
 
         // Update version in package.json
-        const updatePackageJson = async () =>  {
-            const packageJsonString = await getRawFile({
-                owner,
-                repo,
-                path: packageJsonPath,
-            });
-
-            const packageJson = JSON.parse(packageJsonString);
+        const updatePackageJson = async () => updateFile(packageJsonPath, (rawFile) => {
+            const packageJson = JSON.parse(rawFile);
 
             packageJson.version = newVersion;
 
-            await updateFile({
-                owner,
-                repo,
-                branch,
-                path: packageJsonPath,
-                content: JSON.stringify(packageJson, null, 4).concat('\n'),
-            });
-
-        //     const {data: file} = await octokit.rest.repos.getContent({
+            return JSON.stringify(packageJson, null, 4).concat('\n');
+        });
+        // const updatePackageJson = async () =>  {
+        //     const packageJsonString = await getRawFile({
         //         owner,
         //         repo,
         //         path: packageJsonPath,
         //     });
 
-        //     const sha = file.sha;
-
-        //     const decodeJson = Buffer.from(file.content, 'base64');
-
-        //     const packageJson = JSON.parse(decodeJson);
+        //     const packageJson = JSON.parse(packageJsonString);
 
         //     packageJson.version = newVersion;
 
-        //     const packageJsonString = JSON.stringify(packageJson, null, 4).concat('\n');
-
-        //     await octokit.rest.repos.createOrUpdateFileContents({
+        //     await createCommit({
         //         owner,
         //         repo,
-        //         path: packageJsonPath,
-        //         message: 'Update package.json version',
-        //         content: Buffer.from(packageJsonString).toString('base64'),
-        //         sha,
         //         branch,
+        //         path: packageJsonPath,
+        //         content: JSON.stringify(packageJson, null, 4).concat('\n'),
         //     });
-        };
+        // };
 
         // Update version in package-lock.json
-        // need to manually create the commit because of file size limits of octokit api
-        // explanation: https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
-        const updatePackageLock = async () =>  {
-            // const {data: packageLockString} = await octokit.rest.repos.getContent({
-            //     owner,
-            //     repo,
-            //     path: packageLockPath,
-            //     mediaType: {
-            //         format: 'raw'
-            //     },
-            // });
-            const packageLockString = await getRawFile({
-                owner,
-                repo,
-                path: packageLockPath,
-            });
+        const updatePackageLock = async () => updateFile(packageLockPath, (rawFile) => {
+            const packageLock = JSON.parse(rawFile);
 
-            const packageLockJson = JSON.parse(packageLockString);
+            packageLock.packages[`projects/${project}`].version = newVersion;
 
-            packageLockJson.packages[`projects/${project}`].version = newVersion;
+            return JSON.stringify(packageLock, null, 4).concat('\n');
+        });
+        // const updatePackageLock = async () =>  {
+        //     const packageLockString = await getRawFile({
+        //         owner,
+        //         repo,
+        //         path: packageLockPath,
+        //     });
 
-            await updateFile({
-                owner,
-                repo,
-                branch,
-                path: packageLockPath,
-                content: JSON.stringify(packageLockJson, null, 4).concat('\n'),
-            });
+        //     const packageLockJson = JSON.parse(packageLockString);
 
-            // const latestCommit = (await octokit.rest.repos.getBranch({
-            //     owner,
-            //     repo,
-            //     branch,
-            // })).data.commit;
+        //     packageLockJson.packages[`projects/${project}`].version = newVersion;
 
-            // const blobModeFile = '100644';
+        //     await createCommit({
+        //         owner,
+        //         repo,
+        //         branch,
+        //         path: packageLockPath,
+        //         content: JSON.stringify(packageLockJson, null, 4).concat('\n'),
+        //     });
+        // };
 
-            // const tree = await octokit.rest.git.createTree({
-            //     owner,
-            //     repo,
-            //     base_tree: latestCommit.sha,
-            //     tree: [
-            //         {
-            //           path: packageLockPath,
-            //           mode: blobModeFile,
-            //           content: JSON.stringify(packageLockJson, null, 4).concat('\n'),
-            //           type: 'blob',
-            //         },
-            //     ],
-            // });
-
-            // const createdCommit = (await octokit.rest.git.createCommit({
-            //     owner,
-            //     repo,
-            //     branch,
-            //     message: 'Test Commit with GitHub API',
-            //     tree: tree.data.sha,
-            //     parents: [latestCommit.sha],
-            // }));
-
-            // const updateRef = await octokit.rest.git.updateRef({
-            //     owner,
-            //     repo,
-            //     ref: `heads/${branch}`,
-            //     sha: createdCommit.data.sha,
-            // });
-        };
-
-        const updateChangelog = async () => {
-
-            const changelogString = await getRawFile({
-                owner,
-                repo,
-                path: changelogPath,
-            });
-
-            const changelog = await parseChangelog({text: changelogString})
+        const updateChangelog = async () => updateFile(packageLockPath, async (rawFile) => {
+            const changelog = await parseChangelog({text: rawFile})
 
             const highestVersionEntry = changelog.versions[0];
 
@@ -242,7 +165,7 @@ const exit = (message, exitCode) => {
                 console.log('Skip Changelog: No unreleased version.');
                 // todo: core info
 
-                return;
+                return null;
             }
 
             const date = format(new Date(), "dd.MM.yyyy")
@@ -252,25 +175,15 @@ const exit = (message, exitCode) => {
 
             const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
 
-            await updateFile({
-                owner,
-                repo,
-                branch,
-                path: changelogPath,
-                content: updatedChangelog,
-            });
+            return updatedChangelog;
+        });
+        // const updateChangelog = async () => {
 
-        //     const {data: file} = await octokit.rest.repos.getContent({
+        //     const changelogString = await getRawFile({
         //         owner,
         //         repo,
         //         path: changelogPath,
         //     });
-
-        //     const sha = file.sha;
-
-        //     const content = file.content;
-
-        //     const changelogString = Buffer.from(content, 'base64').toString();
 
         //     const changelog = await parseChangelog({text: changelogString})
 
@@ -292,22 +205,19 @@ const exit = (message, exitCode) => {
 
         //     const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
 
-        //     await octokit.rest.repos.createOrUpdateFileContents({
+        //     await createCommit({
         //         owner,
         //         repo,
-        //         path: changelogPath,
-        //         message: 'Update Changelog version',
-        //         content: Buffer.from(updatedChangelog).toString('base64'),
-        //         sha,
         //         branch,
+        //         path: changelogPath,
+        //         content: updatedChangelog,
         //     });
-        };
+        // };
 
         await updatePackageLock();
         await updatePackageJson();
         await updateChangelog();
 
-        // creates the pr!
         await createPullRequest({
             owner,
             repo,
@@ -316,15 +226,6 @@ const exit = (message, exitCode) => {
             branch,
             base: defaultBranch,
         });
-        // const {data: pr} = await octokit.rest.pulls.create({
-        //     owner,
-        //     repo,
-        //     title: `Next ${project}`,
-        //     body: `Bump version`,
-        //     head: branch,
-        //     base: defaultBranch,
-        //     draft: true, // to do
-        // });
     };
 
     await createMainPr();
