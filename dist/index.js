@@ -26302,7 +26302,7 @@ const createVersionRaisePullRequest = async ({
         const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
         const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
 
-        const changelogDateCut = rawFile.replace('Unreleased', date);
+        const changelogDateCut = files.changelog.replace('Unreleased', date);
         const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
 
         await createCommit({
