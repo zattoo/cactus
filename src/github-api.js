@@ -95,33 +95,6 @@ export const createCommit = async ({
     });
 };
 
-export const updateFile = async ({
-    owner,
-    repo,
-    branch,
-    path,
-}, fileModifier) => {
-    const rawContent = await getRawFile({
-        owner,
-        repo,
-        path,
-    });
-
-    const modifiedContent = await Promise.resolve(fileModifier(rawContent));
-
-    if (!modifiedContent) {
-        return;
-    }
-
-    await createCommit({
-        owner,
-        repo,
-        branch,
-        path,
-        content: modifiedContent,
-    });
-};
-
 export const createPullRequest = async ({
     owner,
     repo,
@@ -138,7 +111,6 @@ export const createPullRequest = async ({
         body,
         head: branch,
         base,
-        draft: true, // to do
     });
 
     if (labels) {

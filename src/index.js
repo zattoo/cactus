@@ -9,7 +9,6 @@ import {
     getRawFile,
     createBranch,
     createCommit,
-    updateFile,
     createPullRequest,
 } from './github-api';
 
@@ -21,6 +20,43 @@ const exit = (message, exitCode) => {
     }
 
     process.exit(exitCode);
+};
+
+const editChangelog = async ({
+    rawChangelog,
+    newVersion,
+}) => {
+    const changelog = await parseChangelog({text: rawChangelog})
+
+    const {
+        title,
+        body,
+    } = changelog.versions[0].title;
+
+    if (!title.endsWith('Unreleased')) {
+        core.info('Skip Changelog: No unreleased version.');
+
+        return null;
+    }
+
+    const date = format(new Date(), "dd.MM.yyyy")
+
+    const changelogDateCut = rawChangelog.replace('Unreleased', date);
+
+    if (!newVersion) {
+        return {
+            changelog: changelogDateCut,
+            versionBody: body,
+        };
+    }
+
+    const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
+    const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
+
+    return {
+        changelog: changelogNext,
+        versionBody: body,
+    };
 };
 
 const createVersionRaisePullRequest = async ({
@@ -43,10 +79,6 @@ const createVersionRaisePullRequest = async ({
         sha: baseSha,
     });
 
-    // const packageJsonPath = `projects/${project}/package.json`;
-    // const changelogPath = `projects/${project}/CHANGELOG.md`;
-    // const packageLockPath = 'package-lock.json';
-
     const updatePackageJson = async () => {
         const packageJson = JSON.parse(files.packageJson);
 
@@ -60,18 +92,6 @@ const createVersionRaisePullRequest = async ({
             content:  JSON.stringify(packageJson, null, 4).concat('\n'),
         });
     };
-    // const updatePackageJson = async () => updateFile({
-    //     owner,
-    //     repo,
-    //     branch,
-    //     path: packageJsonPath,
-    // }, (rawFile) => {
-    //     const packageJson = JSON.parse(rawFile);
-
-    //     packageJson.version = newVersion;
-
-    //     return JSON.stringify(packageJson, null, 4).concat('\n');
-    // });
 
     const updatePackageLock = async () => {
         const packageLock = JSON.parse(files.packageLock);
@@ -87,75 +107,43 @@ const createVersionRaisePullRequest = async ({
         });
     };
 
-    // const updatePackageLock = async () => updateFile({
-    //     owner,
-    //     repo,
-    //     branch,
-    //     path: packageLockPath,
-    // }, (rawFile) => {
-    //     const packageLock = JSON.parse(rawFile);
-
-    //     packageLock.packages[`projects/${project}`].version = newVersion;
-
-    //     return JSON.stringify(packageLock, null, 4).concat('\n');
-    // });
-
     const updateChangelog = async () => {
-        const changelog = await parseChangelog({text: files.changelog})
+        const {
+            changelog,
+        } = await editChangelog({
+            rawChangelog: files.changelog,
+            newVersion,
+        });
+        // const changelog = await parseChangelog({text: files.changelog})
 
-        const highestTitle = changelog.versions[0].title;
+        // const highestTitle = changelog.versions[0].title;
 
-        if (!highestTitle.endsWith('Unreleased')) {
-            core.info('Skip Changelog: No unreleased version.');
+        // if (!highestTitle.endsWith('Unreleased')) {
+        //     core.info('Skip Changelog: No unreleased version.');
 
-            return null;
-        }
+        //     return null;
+        // }
 
-        const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
-        const date = format(new Date(), "dd.MM.yyyy")
+        // const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
+        // const date = format(new Date(), "dd.MM.yyyy")
 
-        const changelogDateCut = files.changelog.replace('Unreleased', date);
-        const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
+        // const changelogDateCut = files.changelog.replace('Unreleased', date);
+        // const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
 
         await createCommit({
             owner,
             repo,
             branch,
             path: paths.changelog,
-            content: changelogNext,
+            content: changelog,
         });
     };
-    // const updateChangelog = async () => updateFile({
-    //     owner,
-    //     repo,
-    //     branch,
-    //     path: changelogPath,
-    // }, async (rawFile) => {
-    //     const changelog = await parseChangelog({text: rawFile})
-
-    //     const highestTitle = changelog.versions[0].title;
-
-    //     if (!highestTitle.endsWith('Unreleased')) {
-    //         core.info('Skip Changelog: No unreleased version.');
-
-    //         return null;
-    //     }
-
-    //     const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
-    //     const date = format(new Date(), "dd.MM.yyyy")
-
-    //     const changelogDateCut = rawFile.replace('Unreleased', date);
-    //     const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
-
-    //     return changelogNext;
-    // });
 
     // sequencial: commit hashes need to be in order
     await updatePackageLock();
     await updatePackageJson();
     await updateChangelog();
 
-    // to do: add labels
     await createPullRequest({
         owner,
         repo,
@@ -199,66 +187,44 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ]);
 
-    // const changelogPath = `projects/${project}/CHANGELOG.md`;
-
     let changelogEntries = '';
 
     const updateChangelog = async () => {
-        const changelog = await parseChangelog({text: files.changelog})
-
         const {
-            title,
+            changelog,
             body,
-        } = changelog.versions[0];
-
-        if (!title.endsWith('Unreleased')) {
-            core.info('Skip Changelog: No unreleased version.');
-
-            return null;
-        }
+        } = await editChangelog({
+            rawChangelog: files.changelog,
+        });
 
         changelogEntries = body;
+        // const changelog = await parseChangelog({text: files.changelog})
 
-        const date = format(new Date(), "dd.MM.yyyy")
+        // const {
+        //     title,
+        //     body,
+        // } = changelog.versions[0];
 
-        const changelogDateCut = files.changelog.replace('Unreleased', date);
+        // if (!title.endsWith('Unreleased')) {
+        //     core.info('Skip Changelog: No unreleased version.');
+
+        //     return null;
+        // }
+
+        // changelogEntries = body;
+
+        // const date = format(new Date(), "dd.MM.yyyy")
+
+        // const changelogDateCut = files.changelog.replace('Unreleased', date);
 
         await createCommit({
             owner,
             repo,
             branch: rcBranch,
             path: paths.changelog,
-            content: changelogDateCut,
+            content: changelog,
         });
     };
-
-    // const updateChangelog = async () => updateFile({
-    //     owner,
-    //     repo,
-    //     branch: rcBranch,
-    //     path: paths.changelog,
-    // }, async (rawFile) => {
-    //     const changelog = await parseChangelog({text: rawFile})
-
-    //     const {
-    //         title,
-    //         body,
-    //     } = changelog.versions[0];
-
-    //     if (!title.endsWith('Unreleased')) {
-    //         core.info('Skip Changelog: No unreleased version.');
-
-    //         return null;
-    //     }
-
-    //     changelogEntries = body;
-
-    //     const date = format(new Date(), "dd.MM.yyyy")
-
-    //     const changelogDateCut = rawFile.replace('Unreleased', date);
-
-    //     return changelogDateCut;
-    // });
 
     await updateChangelog();
 
@@ -281,14 +247,6 @@ const createReleaseCandidatePullRequest = async ({
         base: releaseBranch,
         labels,
     });
-
-    // ToDo
-    // await octokit.rest.issues.addLabels({
-    //     owner,
-    //     repo,
-    //     issue_number: pr.number,
-    //     labels,
-    // });
 };
 
 (async () => {
@@ -306,9 +264,6 @@ const createReleaseCandidatePullRequest = async ({
         after,
         repository,
     } = payload;
-    // const packageJsonPath = `projects/${project}/package.json`;
-    // const changelogPath = `projects/${project}/CHANGELOG.md`;
-    // const packageLockPath = 'package-lock.json';
 
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
@@ -333,21 +288,6 @@ const createReleaseCandidatePullRequest = async ({
             ];
         }),
     ));
-
-    // const files = paths.map(async (path) => {
-    //     return await getRawFile({
-    //             owner,
-    //             repo,
-    //             path,
-    //         });
-    // });
-
-    // const packageJsonPath = `projects/${project}/package.json`;
-    // const packageJsonString = await getRawFile({
-    //     owner,
-    //     repo,
-    //     path: packageJsonPath,
-    // });
 
     await createVersionRaisePullRequest({
         owner,
