@@ -34,7 +34,7 @@ export const createBranch = async ({
     });
 };
 
-const getRawFile = async ({
+export const getRawFile = async ({
     owner,
     repo,
     path,

@@ -5,6 +5,7 @@ import {format} from 'date-fns';
 import {
     init,
     getPayload,
+    getRawFile,
     createBranch,
     updateFile,
     createPullRequest,
@@ -136,6 +137,8 @@ const createReleaseCandidatePullRequest = async ({
 
     const changelogPath = `projects/${project}/CHANGELOG.md`;
 
+    let changelogEntries = '';
+
     const updateChangelog = async () => updateFile({
         owner,
         repo,
@@ -144,13 +147,18 @@ const createReleaseCandidatePullRequest = async ({
     }, async (rawFile) => {
         const changelog = await parseChangelog({text: rawFile})
 
-        const highestTitle = changelog.versions[0].title;
+        const {
+            title,
+            body,
+        } = changelog.versions[0];
 
-        if (!highestTitle.endsWith('Unreleased')) {
+        if (!title.endsWith('Unreleased')) {
             core.info('Skip Changelog: No unreleased version.');
 
             return null;
         }
+
+        changelogEntries = body;
 
         const date = format(new Date(), "dd.MM.yyyy")
 
@@ -166,7 +174,7 @@ const createReleaseCandidatePullRequest = async ({
 
     // to do!
     // const body = `## Changelog\n\n${item.body}\n\n`;
-    const pullRequestBody = `## Changelog\n\nto do\n\n`;
+    const pullRequestBody = `## Changelog\n\n${changelogEntries}\n\n`;
 
     createPullRequest({
         owner,
@@ -212,6 +220,15 @@ const createReleaseCandidatePullRequest = async ({
 
     const defaultBranch = repository.default_branch;
 
+    const packageJsonPath = `projects/${project}/package.json`;
+    const packageJsonString = await getRawFile({
+        owner,
+        repo,
+        path: packageJsonPath,
+    });
+    const packageJson = JSON.parse(packageJsonString);
+    const releaseVersion = packageJson.version;
+
     // await createVersionRaisePullRequest({
     //     owner,
     //     repo,
@@ -226,7 +243,7 @@ const createReleaseCandidatePullRequest = async ({
         repo,
         baseSha: after,
         project,
-        releaseVersion: '1.0.0', // to do
+        releaseVersion,
     });
 
 
