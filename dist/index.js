@@ -26161,7 +26161,7 @@ const createCommit = async ({
     path,
     content,
 }) => {
-    const {data: latestCommit} = (await octokit.rest.repos.getBranch({
+    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch({
         owner,
         repo,
         branch,
