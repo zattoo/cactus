@@ -61,28 +61,6 @@ const exit = (message, exitCode) => {
 
     const defaultBranch = repository.default_branch;
 
-    const updateFile = async (path, fileModifier) => {
-        const rawContent = await getRawFile({
-            owner,
-            repo,
-            path,
-        });
-
-        const modifiedContent = await Promise.resolve(fileModifier(rawContent));
-
-        if (!modifiedContent) {
-            return;
-        }
-
-        await createCommit({
-            owner,
-            repo,
-            branch,
-            path,
-            content: modifiedContent,
-        });
-    };
-
     const createMainPr = async () => {
         const branch = `next/${project}`;
         const ref = `refs/heads/${branch}`;
@@ -97,6 +75,28 @@ const exit = (message, exitCode) => {
         const packageJsonPath = `projects/${project}/package.json`;
         const changelogPath = `projects/${project}/CHANGELOG.md`;
         const packageLockPath = 'package-lock.json';
+
+        const updateFile = async (path, fileModifier) => {
+            const rawContent = await getRawFile({
+                owner,
+                repo,
+                path,
+            });
+
+            const modifiedContent = await Promise.resolve(fileModifier(rawContent));
+
+            if (!modifiedContent) {
+                return;
+            }
+
+            await createCommit({
+                owner,
+                repo,
+                branch,
+                path,
+                content: modifiedContent,
+            });
+        };
 
         // Update version in package.json
         const updatePackageJson = async () => updateFile(packageJsonPath, (rawFile) => {
@@ -387,5 +387,6 @@ const exit = (message, exitCode) => {
     // }
 })()
     .catch((error) => {
+        console.log(error);
         exit(error, 1);
     });
