@@ -316,13 +316,26 @@ const createReleaseCandidatePullRequest = async ({
         packageLock: 'package-lock.json',
     }
 
-    const files = paths.map(async (path) => {
-        return await getRawFile({
-                owner,
-                repo,
-                path,
-            });
-    });
+    const files = Object.fromEntries(
+        Object.entries(paths).map(async ([key, path]) => {
+            return [
+                key,
+                await getRawFile({
+                    owner,
+                    repo,
+                    path,
+                })
+            ];
+        }),
+    );
+
+    // const files = paths.map(async (path) => {
+    //     return await getRawFile({
+    //             owner,
+    //             repo,
+    //             path,
+    //         });
+    // });
 
     // const packageJsonPath = `projects/${project}/package.json`;
     // const packageJsonString = await getRawFile({
