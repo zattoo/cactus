@@ -26368,7 +26368,7 @@ const createReleaseCandidatePullRequest = async ({
     // const body = `## Changelog\n\n${item.body}\n\n`;
     const pullRequestBody = `## Changelog\n\n${changelogEntries}\n\n`;
 
-    await /* Cannot get final name for export "createCommit" in "./src/github-api.js" (known exports: init getPayload createBranch getRawFile updateFile createPullRequest, known reexports: ) */ undefined({
+    await createCommit({
         owner,
         repo,
         branch: rcBranch,

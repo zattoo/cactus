@@ -51,7 +51,7 @@ export const getRawFile = async ({
     return file;
 };
 
-const createCommit = async ({
+export const createCommit = async ({
     owner,
     repo,
     branch,
