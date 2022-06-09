@@ -26429,19 +26429,6 @@ const createReleaseCandidatePullRequest = async ({
         branch: defaultBranch,
     });
 
-    // console.log({
-    //     payload,
-    //     after,
-    //     sha,
-    //     repository,
-    //     owner,
-    //     defaultBranch,
-    //     rcLabels,
-    //     versionRaiseLabels,
-    //     project,
-    //     newVersion,
-    // });
-
     const paths = {
         packageJson: `projects/${project}/package.json`,
         changelog: `projects/${project}/CHANGELOG.md`,
