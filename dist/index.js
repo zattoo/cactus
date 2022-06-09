@@ -26391,15 +26391,15 @@ const createReleaseCandidatePullRequest = async ({
         content: Object(_notfoundnode_crypto.randomBytes)(20).toString('hex') + '\n',
     });
 
-    // createPullRequest({
-    //     owner,
-    //     repo,
-    //     title: `Release ${releaseVersion}-${project}`,
-    //     body: pullRequestBody,
-    //     branch: rcBranch,
-    //     base: releaseBranch,
-    //     labels,
-    // });
+    createPullRequest({
+        owner,
+        repo,
+        title: `Release ${releaseVersion}-${project}`,
+        body: pullRequestBody,
+        branch: rcBranch,
+        base: releaseBranch,
+        labels,
+    });
 };
 
 (async () => {
@@ -26448,17 +26448,17 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ));
 
-    // await createVersionRaisePullRequest({
-    //     owner,
-    //     repo,
-    //     baseSha,
-    //     project,
-    //     newVersion,
-    //     mergeIntoBranch: defaultBranch,
-    //     files,
-    //     paths,
-    //     labels: versionRaiseLabels,
-    // });
+    await createVersionRaisePullRequest({
+        owner,
+        repo,
+        baseSha,
+        project,
+        newVersion,
+        mergeIntoBranch: defaultBranch,
+        files,
+        paths,
+        labels: versionRaiseLabels,
+    });
 
     await createReleaseCandidatePullRequest({
         owner,
