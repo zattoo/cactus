@@ -169,7 +169,7 @@ const exit = (message, exitCode) => {
             }
 
             const date = format(new Date(), "dd.MM.yyyy")
-            const changelogStringCut = changelogString.replace('Unreleased', date);
+            const changelogStringCut = rawFile.replace('Unreleased', date);
 
             const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
 
