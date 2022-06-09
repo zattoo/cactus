@@ -17,27 +17,24 @@ export const init = (token) => {
 };
 
 export const getPayload = () => {
-    const {context} = github;
-    const {payload} = context;
-
-    return payload;
+    return github.context.payload;
 };
 
 export const createBranch = async ({
     owner,
     repo,
-    ref,
+    branch,
     sha,
 }) => {
     await octokit.rest.git.createRef({
         owner,
         repo,
-        ref,
+        ref: `refs/heads/${branch}`,
         sha,
     });
 };
 
-export const getRawFile = async ({
+const getRawFile = async ({
     owner,
     repo,
     path,
@@ -54,20 +51,20 @@ export const getRawFile = async ({
     return file;
 };
 
-export const createCommit = async ({
+const createCommit = async ({
     owner,
     repo,
     branch,
     path,
     content,
 }) => {
-    const latestCommit = (await octokit.rest.repos.getBranch({
+    const {data: latestCommit} = (await octokit.rest.repos.getBranch({
         owner,
         repo,
         branch,
-    })).data.commit;
+    }));
 
-    const tree = await octokit.rest.git.createTree({
+    const {data: tree} = await octokit.rest.git.createTree({
         owner,
         repo,
         base_tree: latestCommit.sha,
@@ -81,12 +78,12 @@ export const createCommit = async ({
         ],
     });
 
-    const createdCommit = (await octokit.rest.git.createCommit({
+    const {data: createdCommit} = (await octokit.rest.git.createCommit({
         owner,
         repo,
         branch,
         message: `Update ${path}`,
-        tree: tree.data.sha,
+        tree: tree.sha,
         parents: [latestCommit.sha],
     }));
 
@@ -94,7 +91,34 @@ export const createCommit = async ({
         owner,
         repo,
         ref: `heads/${branch}`,
-        sha: createdCommit.data.sha,
+        sha: createdCommit.sha,
+    });
+};
+
+export const updateFile = async ({
+    owner,
+    repo,
+    branch,
+    path,
+}, fileModifier) => {
+    const rawContent = await getRawFile({
+        owner,
+        repo,
+        path,
+    });
+
+    const modifiedContent = await Promise.resolve(fileModifier(rawContent));
+
+    if (!modifiedContent) {
+        return;
+    }
+
+    await createCommit({
+        owner,
+        repo,
+        branch,
+        path,
+        content: modifiedContent,
     });
 };
 

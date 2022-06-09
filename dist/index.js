@@ -26120,22 +26120,19 @@ const init = (token) => {
 };
 
 const getPayload = () => {
-    const {context} = github;
-    const {payload} = context;
-
-    return payload;
+    return github.context.payload;
 };
 
 const createBranch = async ({
     owner,
     repo,
-    ref,
+    branch,
     sha,
 }) => {
     await octokit.rest.git.createRef({
         owner,
         repo,
-        ref,
+        ref: `refs/heads/${branch}`,
         sha,
     });
 };
@@ -26164,13 +26161,13 @@ const createCommit = async ({
     path,
     content,
 }) => {
-    const latestCommit = (await octokit.rest.repos.getBranch({
+    const {data: latestCommit} = (await octokit.rest.repos.getBranch({
         owner,
         repo,
         branch,
-    })).data.commit;
+    }));
 
-    const tree = await octokit.rest.git.createTree({
+    const {data: tree} = await octokit.rest.git.createTree({
         owner,
         repo,
         base_tree: latestCommit.sha,
@@ -26184,12 +26181,12 @@ const createCommit = async ({
         ],
     });
 
-    const createdCommit = (await octokit.rest.git.createCommit({
+    const {data: createdCommit} = (await octokit.rest.git.createCommit({
         owner,
         repo,
         branch,
         message: `Update ${path}`,
-        tree: tree.data.sha,
+        tree: tree.sha,
         parents: [latestCommit.sha],
     }));
 
@@ -26197,7 +26194,34 @@ const createCommit = async ({
         owner,
         repo,
         ref: `heads/${branch}`,
-        sha: createdCommit.data.sha,
+        sha: createdCommit.sha,
+    });
+};
+
+const updateFile = async ({
+    owner,
+    repo,
+    branch,
+    path,
+}, fileModifier) => {
+    const rawContent = await getRawFile({
+        owner,
+        repo,
+        path,
+    });
+
+    const modifiedContent = await Promise.resolve(fileModifier(rawContent));
+
+    if (!modifiedContent) {
+        return;
+    }
+
+    await createCommit({
+        owner,
+        repo,
+        branch,
+        path,
+        content: modifiedContent,
     });
 };
 
@@ -26221,27 +26245,11 @@ const createPullRequest = async ({
 };
 
 // CONCATENATED MODULE: ./src/index.js
-// const core = require('@actions/core');
-
-// const exec = require('@actions/exec');
-// import * as github from '@actions/github';
-// const github = require('@actions/github');
 
 
 
 
-// todo: esm
 
-// let foundSomething = false;
-
-// const isEmpty = (value) => {
-//     return (
-//         value === undefined ||
-//         value === null ||
-//         (typeof value === 'object' && Object.keys(value).length === 0) ||
-//         (typeof value === 'string' && value.trim().length === 0)
-//     );
-// };
 
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
@@ -26253,17 +26261,100 @@ const exit = (message, exitCode) => {
     process.exit(exitCode);
 };
 
+const createVersionRaisePullRequest = async ({
+    owner,
+    repo,
+    baseSha,
+    project,
+    mergeIntoBranch,
+}) => {
+    const branch = `next/${project}`;
+
+    await createBranch({
+        owner,
+        repo,
+        branch,
+        sha: baseSha,
+    });
+
+    const packageJsonPath = `projects/${project}/package.json`;
+    const changelogPath = `projects/${project}/CHANGELOG.md`;
+    const packageLockPath = 'package-lock.json';
+
+    const updatePackageJson = async () => updateFile({
+        owner,
+        repo,
+        branch,
+        path: packageJsonPath,
+    }, (rawFile) => {
+        const packageJson = JSON.parse(rawFile);
+
+        packageJson.version = newVersion;
+
+        return JSON.stringify(packageJson, null, 4).concat('\n');
+    });
+
+    const updatePackageLock = async () => updateFile({
+        owner,
+        repo,
+        branch,
+        path: packageLockPath,
+    }, (rawFile) => {
+        const packageLock = JSON.parse(rawFile);
+
+        packageLock.packages[`projects/${project}`].version = newVersion;
+
+        return JSON.stringify(packageLock, null, 4).concat('\n');
+    });
+
+    const updateChangelog = async () => updateFile({
+        owner,
+        repo,
+        branch,
+        path: changelogPath,
+    }, async (rawFile) => {
+        const changelog = await changelog_parser_default()({text: rawFile})
+
+        const highestTitle = changelog.versions[0].title;
+
+        if (!highestTitle.endsWith('Unreleased')) {
+            Object(core.info)('Skip Changelog: No unreleased version.');
+
+            return null;
+        }
+
+        const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
+        const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
+
+        const changelogDateCut = rawFile.replace('Unreleased', date);
+        const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
+
+        return changelogNext;
+    });
+
+    // sequencial or not?
+    await updatePackageLock();
+    await updatePackageJson();
+    await updateChangelog();
+
+    await createPullRequest({
+        owner,
+        repo,
+        title: `Next ${project}`,
+        body: `Bump version`,
+        branch,
+        base: mergeIntoBranch,
+    });
+};
+
 (async () => {
     const token = Object(core.getInput)('token', {required: true});
     // const labels = core.getMultilineInput('labels', {required: false});
     const project = Object(core.getInput)('project', {required: true});
     const newVersion = Object(core.getInput)('new-version', {required: true});
-    // const octokit = github.getOctokit(token);
 
     init(token);
 
-    // const {context} = github;
-    // const {payload} = context;
     const payload = getPayload();
 
     const {
@@ -26277,174 +26368,13 @@ const exit = (message, exitCode) => {
 
     const defaultBranch = repository.default_branch;
 
-    const createMainPr = async () => {
-        const branch = `next/${project}`;
-        const ref = `refs/heads/${branch}`;
-
-        await createBranch({
-            owner,
-            repo,
-            ref,
-            sha: after,
-        });
-
-        const packageJsonPath = `projects/${project}/package.json`;
-        const changelogPath = `projects/${project}/CHANGELOG.md`;
-        const packageLockPath = 'package-lock.json';
-
-        const updateFile = async (path, fileModifier) => {
-            const rawContent = await getRawFile({
-                owner,
-                repo,
-                path,
-            });
-
-            const modifiedContent = await Promise.resolve(fileModifier(rawContent));
-
-            if (!modifiedContent) {
-                return;
-            }
-
-            await createCommit({
-                owner,
-                repo,
-                branch,
-                path,
-                content: modifiedContent,
-            });
-        };
-
-        // Update version in package.json
-        const updatePackageJson = async () => updateFile(packageJsonPath, (rawFile) => {
-            const packageJson = JSON.parse(rawFile);
-
-            packageJson.version = newVersion;
-
-            return JSON.stringify(packageJson, null, 4).concat('\n');
-        });
-        // const updatePackageJson = async () =>  {
-        //     const packageJsonString = await getRawFile({
-        //         owner,
-        //         repo,
-        //         path: packageJsonPath,
-        //     });
-
-        //     const packageJson = JSON.parse(packageJsonString);
-
-        //     packageJson.version = newVersion;
-
-        //     await createCommit({
-        //         owner,
-        //         repo,
-        //         branch,
-        //         path: packageJsonPath,
-        //         content: JSON.stringify(packageJson, null, 4).concat('\n'),
-        //     });
-        // };
-
-        // Update version in package-lock.json
-        const updatePackageLock = async () => updateFile(packageLockPath, (rawFile) => {
-            const packageLock = JSON.parse(rawFile);
-
-            packageLock.packages[`projects/${project}`].version = newVersion;
-
-            return JSON.stringify(packageLock, null, 4).concat('\n');
-        });
-        // const updatePackageLock = async () =>  {
-        //     const packageLockString = await getRawFile({
-        //         owner,
-        //         repo,
-        //         path: packageLockPath,
-        //     });
-
-        //     const packageLockJson = JSON.parse(packageLockString);
-
-        //     packageLockJson.packages[`projects/${project}`].version = newVersion;
-
-        //     await createCommit({
-        //         owner,
-        //         repo,
-        //         branch,
-        //         path: packageLockPath,
-        //         content: JSON.stringify(packageLockJson, null, 4).concat('\n'),
-        //     });
-        // };
-
-        const updateChangelog = async () => updateFile(changelogPath, async (rawFile) => {
-            const changelog = await changelog_parser_default()({text: rawFile})
-
-            const highestVersionEntry = changelog.versions[0];
-
-            const title = highestVersionEntry.title;
-
-            if (!title.endsWith('Unreleased')) {
-                console.log('Skip Changelog: No unreleased version.');
-                // todo: core info
-
-                return null;
-            }
-
-            const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
-            const changelogStringCut = rawFile.replace('Unreleased', date);
-
-            const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
-
-            const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
-
-            return updatedChangelog;
-        });
-        // const updateChangelog = async () => {
-
-        //     const changelogString = await getRawFile({
-        //         owner,
-        //         repo,
-        //         path: changelogPath,
-        //     });
-
-        //     const changelog = await parseChangelog({text: changelogString})
-
-        //     const highestVersionEntry = changelog.versions[0];
-
-        //     const title = highestVersionEntry.title;
-
-        //     if (!title.endsWith('Unreleased')) {
-        //         console.log('Skip Changelog: No unreleased version.');
-        //         // todo: core info
-
-        //         return;
-        //     }
-
-        //     const date = format(new Date(), "dd.MM.yyyy")
-        //     const changelogStringCut = changelogString.replace('Unreleased', date);
-
-        //     const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
-
-        //     const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
-
-        //     await createCommit({
-        //         owner,
-        //         repo,
-        //         branch,
-        //         path: changelogPath,
-        //         content: updatedChangelog,
-        //     });
-        // };
-
-        await updatePackageLock();
-        await updatePackageJson();
-        await updateChangelog();
-
-        await createPullRequest({
-            owner,
-            repo,
-            title: `Next ${project}`,
-            body: `Bump version`,
-            branch,
-            base: defaultBranch,
-        });
-    };
-
-    await createMainPr();
+    await createVersionRaisePullRequest({
+        owner,
+        repo,
+        baseSha: after,
+        project,
+        mergeIntoBranch: defaultBranch,
+    });
 
     // const commit = await octokit.rest.repos.getCommit({
     //     owner,
