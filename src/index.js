@@ -1,12 +1,14 @@
 import * as core from '@actions/core';
 import parseChangelog from 'changelog-parser';
 import {format} from 'date-fns';
+import {randomBytes} from 'node:crypto';
 
 import {
     init,
     getPayload,
     getRawFile,
     createBranch,
+    createCommit,
     updateFile,
     createPullRequest,
 } from './github-api';
@@ -98,6 +100,7 @@ const createVersionRaisePullRequest = async ({
     await updatePackageJson();
     await updateChangelog();
 
+    // to do: add labels
     await createPullRequest({
         owner,
         repo,
@@ -175,6 +178,14 @@ const createReleaseCandidatePullRequest = async ({
     // to do!
     // const body = `## Changelog\n\n${item.body}\n\n`;
     const pullRequestBody = `## Changelog\n\n${changelogEntries}\n\n`;
+
+    await createCommit({
+        owner,
+        repo,
+        branch: rcBranch,
+        path: `projects/${project}/.release-servcie`,
+        content: randomBytes(20).toString('hex'),
+    });
 
     createPullRequest({
         owner,

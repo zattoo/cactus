@@ -16076,7 +16076,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOctokit = exports.context = void 0;
 const Context = __importStar(__webpack_require__(262));
-const utils_1 = __webpack_require__(521);
+const utils_1 = __webpack_require__(902);
 exports.context = new Context.Context();
 /**
  * Returns a hydrated octokit ready to use for GitHub Actions
@@ -17152,63 +17152,10 @@ module.exports = exports.default;
 /* 519 */,
 /* 520 */,
 /* 521 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ (function(module) {
 
-"use strict";
+module.exports = eval("require")("node:crypto");
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOctokitOptions = exports.GitHub = exports.context = void 0;
-const Context = __importStar(__webpack_require__(262));
-const Utils = __importStar(__webpack_require__(489));
-// octokit + plugins
-const core_1 = __webpack_require__(369);
-const plugin_rest_endpoint_methods_1 = __webpack_require__(842);
-const plugin_paginate_rest_1 = __webpack_require__(299);
-exports.context = new Context.Context();
-const baseUrl = Utils.getApiBaseUrl();
-const defaults = {
-    baseUrl,
-    request: {
-        agent: Utils.getProxyAgent(baseUrl)
-    }
-};
-exports.GitHub = core_1.Octokit.plugin(plugin_rest_endpoint_methods_1.restEndpointMethods, plugin_paginate_rest_1.paginateRest).defaults(defaults);
-/**
- * Convience function to correctly format Octokit Options to pass into the constructor.
- *
- * @param     token    the repo PAT or GITHUB_TOKEN
- * @param     options  other options to set
- */
-function getOctokitOptions(token, options) {
-    const opts = Object.assign({}, options || {}); // Shallow clone - don't mutate the object provided by the caller
-    // Auth
-    const auth = Utils.getAuthString(token, opts);
-    if (auth) {
-        opts.auth = auth;
-    }
-    return opts;
-}
-exports.getOctokitOptions = getOctokitOptions;
-//# sourceMappingURL=utils.js.map
 
 /***/ }),
 /* 522 */,
@@ -26097,6 +26044,9 @@ var changelog_parser_default = /*#__PURE__*/__webpack_require__.n(changelog_pars
 // EXTERNAL MODULE: ./node_modules/date-fns/index.js
 var date_fns = __webpack_require__(684);
 
+// EXTERNAL MODULE: (webpack)/ncc/@@notfound.js?node:crypto
+var _notfoundnode_crypto = __webpack_require__(521);
+
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(469);
 
@@ -26251,6 +26201,7 @@ const createPullRequest = async ({
 
 
 
+
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
         Object(core.error)(message);
@@ -26338,6 +26289,7 @@ const createVersionRaisePullRequest = async ({
     await updatePackageJson();
     await updateChangelog();
 
+    // to do: add labels
     await createPullRequest({
         owner,
         repo,
@@ -26415,6 +26367,14 @@ const createReleaseCandidatePullRequest = async ({
     // to do!
     // const body = `## Changelog\n\n${item.body}\n\n`;
     const pullRequestBody = `## Changelog\n\n${changelogEntries}\n\n`;
+
+    await /* Cannot get final name for export "createCommit" in "./src/github-api.js" (known exports: init getPayload createBranch getRawFile updateFile createPullRequest, known reexports: ) */ undefined({
+        owner,
+        repo,
+        branch: rcBranch,
+        path: `projects/${project}/.release-servcie`,
+        content: Object(_notfoundnode_crypto.randomBytes)(20).toString('hex'),
+    });
 
     createPullRequest({
         owner,
@@ -30866,7 +30826,66 @@ exports.parseURL = __webpack_require__(856).parseURL;
 /* 899 */,
 /* 900 */,
 /* 901 */,
-/* 902 */,
+/* 902 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getOctokitOptions = exports.GitHub = exports.context = void 0;
+const Context = __importStar(__webpack_require__(262));
+const Utils = __importStar(__webpack_require__(489));
+// octokit + plugins
+const core_1 = __webpack_require__(369);
+const plugin_rest_endpoint_methods_1 = __webpack_require__(842);
+const plugin_paginate_rest_1 = __webpack_require__(299);
+exports.context = new Context.Context();
+const baseUrl = Utils.getApiBaseUrl();
+const defaults = {
+    baseUrl,
+    request: {
+        agent: Utils.getProxyAgent(baseUrl)
+    }
+};
+exports.GitHub = core_1.Octokit.plugin(plugin_rest_endpoint_methods_1.restEndpointMethods, plugin_paginate_rest_1.paginateRest).defaults(defaults);
+/**
+ * Convience function to correctly format Octokit Options to pass into the constructor.
+ *
+ * @param     token    the repo PAT or GITHUB_TOKEN
+ * @param     options  other options to set
+ */
+function getOctokitOptions(token, options) {
+    const opts = Object.assign({}, options || {}); // Shallow clone - don't mutate the object provided by the caller
+    // Auth
+    const auth = Utils.getAuthString(token, opts);
+    if (auth) {
+        opts.auth = auth;
+    }
+    return opts;
+}
+exports.getOctokitOptions = getOctokitOptions;
+//# sourceMappingURL=utils.js.map
+
+/***/ }),
 /* 903 */
 /***/ (function(module) {
 
