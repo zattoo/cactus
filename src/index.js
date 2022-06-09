@@ -7,6 +7,7 @@ import {
     init,
     getPayload,
     getRawFile,
+    getLatestCommit,
     createBranch,
     createCommit,
     createPullRequest,
@@ -225,6 +226,10 @@ const createReleaseCandidatePullRequest = async ({
 
     init(token);
 
+    if (newVersion.split('.').length !== 3) {
+        exit('Invalid version format', 1);
+    }
+
     const payload = getPayload();
 
     const {
@@ -237,9 +242,16 @@ const createReleaseCandidatePullRequest = async ({
 
     const defaultBranch = repository.default_branch;
 
+    const {sha} = await getLatestCommit({
+        owner,
+        repo,
+        branch: defaultBranch,
+    });
+
     console.log({
         payload,
         after,
+        sha,
         repository,
         owner,
         defaultBranch,

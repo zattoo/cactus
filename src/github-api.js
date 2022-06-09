@@ -51,6 +51,20 @@ export const getRawFile = async ({
     return file;
 };
 
+export const getLatestCommit = async ({
+    owner,
+    repo,
+    branch,
+}) => {
+    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch({
+        owner,
+        repo,
+        branch,
+    }));
+
+    return latestCommit;
+};
+
 export const createCommit = async ({
     owner,
     repo,
@@ -58,11 +72,11 @@ export const createCommit = async ({
     path,
     content,
 }) => {
-    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch({
+    const latestCommit = await getLatestCommit({
         owner,
         repo,
         branch,
-    }));
+    });
 
     const {data: tree} = await octokit.rest.git.createTree({
         owner,

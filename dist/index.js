@@ -26104,6 +26104,20 @@ const getRawFile = async ({
     return file;
 };
 
+const getLatestCommit = async ({
+    owner,
+    repo,
+    branch,
+}) => {
+    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch({
+        owner,
+        repo,
+        branch,
+    }));
+
+    return latestCommit;
+};
+
 const createCommit = async ({
     owner,
     repo,
@@ -26111,11 +26125,11 @@ const createCommit = async ({
     path,
     content,
 }) => {
-    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch({
+    const latestCommit = await getLatestCommit({
         owner,
         repo,
         branch,
-    }));
+    });
 
     const {data: tree} = await octokit.rest.git.createTree({
         owner,
@@ -26397,6 +26411,10 @@ const createReleaseCandidatePullRequest = async ({
 
     init(token);
 
+    if (newVersion.split('.').length !== 3) {
+        exit('Invalid version format', 1);
+    }
+
     const payload = getPayload();
 
     const {
@@ -26409,9 +26427,16 @@ const createReleaseCandidatePullRequest = async ({
 
     const defaultBranch = repository.default_branch;
 
+    const {sha} = await getLatestCommit({
+        owner,
+        repo,
+        branch: defaultBranch,
+    });
+
     console.log({
         payload,
         after,
+        sha,
         repository,
         owner,
         defaultBranch,
