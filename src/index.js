@@ -12,6 +12,7 @@ import {
     createBranch,
     getRawFile,
     updateFile,
+    createPullRequest,
 } from './github-api';
 // todo: esm
 
@@ -108,7 +109,25 @@ const exit = (message, exitCode) => {
         const packageLockPath = 'package-lock.json';
 
         // Update version in package.json
-        // const updatePackageJson = async () =>  {
+        const updatePackageJson = async () =>  {
+            const packageJsonString = await getRawFile({
+                owner,
+                repo,
+                path: packageJsonPath,
+            });
+
+            const packageJson = JSON.parse(packageJsonString);
+
+            packageJson.version = newVersion;
+
+            await updateFile({
+                owner,
+                repo,
+                branch,
+                path: packageJsonPath,
+                content: JSON.stringify(packageJson, null, 4).concat('\n'),
+            });
+
         //     const {data: file} = await octokit.rest.repos.getContent({
         //         owner,
         //         repo,
@@ -134,7 +153,7 @@ const exit = (message, exitCode) => {
         //         sha,
         //         branch,
         //     });
-        // };
+        };
 
         // Update version in package-lock.json
         // need to manually create the commit because of file size limits of octokit api
@@ -154,10 +173,6 @@ const exit = (message, exitCode) => {
                 path: packageLockPath,
             });
 
-            console.log({
-                packageLockString
-            });
-
             const packageLockJson = JSON.parse(packageLockString);
 
             packageLockJson.packages[`projects/${project}`].version = newVersion;
@@ -168,7 +183,7 @@ const exit = (message, exitCode) => {
                 branch,
                 path: packageLockPath,
                 content: JSON.stringify(packageLockJson, null, 4).concat('\n'),
-            })
+            });
 
             // const latestCommit = (await octokit.rest.repos.getBranch({
             //     owner,
@@ -209,7 +224,42 @@ const exit = (message, exitCode) => {
             // });
         };
 
-        // const updateChangelog = async () => {
+        const updateChangelog = async () => {
+
+            const changelogString = await getRawFile({
+                owner,
+                repo,
+                path: changelogPath,
+            });
+
+            const changelog = await parseChangelog({text: changelogString})
+
+            const highestVersionEntry = changelog.versions[0];
+
+            const title = highestVersionEntry.title;
+
+            if (!title.endsWith('Unreleased')) {
+                console.log('Skip Changelog: No unreleased version.');
+                // todo: core info
+
+                return;
+            }
+
+            const date = format(new Date(), "dd.MM.yyyy")
+            const changelogStringCut = changelogString.replace('Unreleased', date);
+
+            const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
+
+            const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
+
+            await updateFile({
+                owner,
+                repo,
+                branch,
+                path: updatedChangelog,
+                content: updatedChangelog,
+            });
+
         //     const {data: file} = await octokit.rest.repos.getContent({
         //         owner,
         //         repo,
@@ -251,13 +301,21 @@ const exit = (message, exitCode) => {
         //         sha,
         //         branch,
         //     });
-        // };
+        };
 
         await updatePackageLock();
-        // await updatePackageJson();
-        // await updateChangelog();
+        await updatePackageJson();
+        await updateChangelog();
 
         // creates the pr!
+        await createPullRequest({
+            owner,
+            repo,
+            title: `Next ${project}`,
+            body: `Bump version`,
+            branch,
+            base: defaultBranch,
+        });
         // const {data: pr} = await octokit.rest.pulls.create({
         //     owner,
         //     repo,

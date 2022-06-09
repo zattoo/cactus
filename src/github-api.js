@@ -89,3 +89,22 @@ export const updateFile = async ({
         sha: createdCommit.data.sha,
     });
 };
+
+export const createPullRequest = async ({
+    owner,
+    repo,
+    title,
+    body,
+    branch,
+    base,
+}) => {
+    await octokit.rest.pulls.create({
+        owner,
+        repo,
+        title,
+        body,
+        head: branch,
+        base,
+        draft: true, // to do
+    });
+};
