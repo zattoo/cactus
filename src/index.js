@@ -80,8 +80,16 @@ const exit = (message, exitCode) => {
         repository,
     } = getPayload();
 
+    console.log({
+        repository,
+    });
+
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
+
+    console.log({
+        repo,
+    });
 
     const defaultBranch = repository.default_branch;
 

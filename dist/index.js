@@ -26114,6 +26114,12 @@ const getPayload = async () => {
     const {context} = github;
     const {payload} = context;
 
+    console.log({
+        github: github,
+        context,
+        payload,
+    });
+
     return payload;
 };
 
@@ -26269,8 +26275,16 @@ const exit = (message, exitCode) => {
         repository,
     } = getPayload();
 
+    console.log({
+        repository,
+    });
+
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
+
+    console.log({
+        repo,
+    });
 
     const defaultBranch = repository.default_branch;
 
