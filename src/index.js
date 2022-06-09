@@ -114,21 +114,6 @@ const createVersionRaisePullRequest = async ({
             rawChangelog: files.changelog,
             newVersion,
         });
-        // const changelog = await parseChangelog({text: files.changelog})
-
-        // const highestTitle = changelog.versions[0].title;
-
-        // if (!highestTitle.endsWith('Unreleased')) {
-        //     core.info('Skip Changelog: No unreleased version.');
-
-        //     return null;
-        // }
-
-        // const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
-        // const date = format(new Date(), "dd.MM.yyyy")
-
-        // const changelogDateCut = files.changelog.replace('Unreleased', date);
-        // const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
 
         await createCommit({
             owner,
@@ -198,24 +183,6 @@ const createReleaseCandidatePullRequest = async ({
         });
 
         changelogEntries = body;
-        // const changelog = await parseChangelog({text: files.changelog})
-
-        // const {
-        //     title,
-        //     body,
-        // } = changelog.versions[0];
-
-        // if (!title.endsWith('Unreleased')) {
-        //     core.info('Skip Changelog: No unreleased version.');
-
-        //     return null;
-        // }
-
-        // changelogEntries = body;
-
-        // const date = format(new Date(), "dd.MM.yyyy")
-
-        // const changelogDateCut = files.changelog.replace('Unreleased', date);
 
         await createCommit({
             owner,
@@ -235,7 +202,7 @@ const createReleaseCandidatePullRequest = async ({
         repo,
         branch: rcBranch,
         path: `projects/${project}/.release-servcie`,
-        content: randomBytes(20).toString('hex'),
+        content: randomBytes(20).toString('hex') + '\n',
     });
 
     createPullRequest({
