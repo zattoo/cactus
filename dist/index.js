@@ -26412,7 +26412,7 @@ const createReleaseCandidatePullRequest = async ({
     createPullRequest({
         owner,
         repo,
-        title: `Release ${version}-${project}`,
+        title: `Release ${releaseVersion}-${project}`,
         body: pullRequestBody,
         branch: rcBranch,
         base: releaseBranch,
