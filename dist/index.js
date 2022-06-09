@@ -26417,75 +26417,71 @@ const createReleaseCandidatePullRequest = async ({
 
     const payload = getPayload();
 
-    const {
-        after,
-        repository,
-    } = payload;
-
+    const repository = payload.repository;
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
 
     const defaultBranch = repository.default_branch;
 
-    const {sha} = await getLatestCommit({
+    const {sha: baseSha} = await getLatestCommit({
         owner,
         repo,
         branch: defaultBranch,
     });
 
-    console.log({
-        payload,
-        after,
-        sha,
-        repository,
-        owner,
-        defaultBranch,
-        rcLabels,
-        versionRaiseLabels,
-        project,
-        newVersion,
-    });
-
-    // const paths = {
-    //     packageJson: `projects/${project}/package.json`,
-    //     changelog: `projects/${project}/CHANGELOG.md`,
-    //     packageLock: 'package-lock.json',
-    // }
-
-    // const files = Object.fromEntries(await Promise.all(
-    //     Object.entries(paths).map(async ([key, path]) => {
-    //         return [
-    //             key,
-    //             await getRawFile({
-    //                 owner,
-    //                 repo,
-    //                 path,
-    //             })
-    //         ];
-    //     }),
-    // ));
-
-    // await createVersionRaisePullRequest({
+    // console.log({
+    //     payload,
+    //     after,
+    //     sha,
+    //     repository,
     //     owner,
-    //     repo,
-    //     baseSha: after,
+    //     defaultBranch,
+    //     rcLabels,
+    //     versionRaiseLabels,
     //     project,
     //     newVersion,
-    //     mergeIntoBranch: defaultBranch,
-    //     files,
-    //     paths,
-    //     labels: versionRaiseLabels,
     // });
 
-    // await createReleaseCandidatePullRequest({
-    //     owner,
-    //     repo,
-    //     baseSha: after,
-    //     project,
-    //     files,
-    //     paths,
-    //     labels: rcLabels,
-    // });
+    const paths = {
+        packageJson: `projects/${project}/package.json`,
+        changelog: `projects/${project}/CHANGELOG.md`,
+        packageLock: 'package-lock.json',
+    }
+
+    const files = Object.fromEntries(await Promise.all(
+        Object.entries(paths).map(async ([key, path]) => {
+            return [
+                key,
+                await getRawFile({
+                    owner,
+                    repo,
+                    path,
+                })
+            ];
+        }),
+    ));
+
+    await createVersionRaisePullRequest({
+        owner,
+        repo,
+        baseSha,
+        project,
+        newVersion,
+        mergeIntoBranch: defaultBranch,
+        files,
+        paths,
+        labels: versionRaiseLabels,
+    });
+
+    await createReleaseCandidatePullRequest({
+        owner,
+        repo,
+        baseSha,
+        project,
+        files,
+        paths,
+        labels: rcLabels,
+    });
 })()
     .catch((error) => {
         console.log(error);
