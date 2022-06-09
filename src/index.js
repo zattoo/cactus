@@ -25,6 +25,7 @@ const createVersionRaisePullRequest = async ({
     repo,
     baseSha,
     project,
+    newVersion,
     mergeIntoBranch,
 }) => {
     const branch = `next/${project}`;
@@ -132,6 +133,7 @@ const createVersionRaisePullRequest = async ({
         repo,
         baseSha: after,
         project,
+        newVersion,
         mergeIntoBranch: defaultBranch,
     });
 
