@@ -206,7 +206,7 @@ const createReleaseCandidatePullRequest = async ({
         const {
             title,
             body,
-        } = changelog.versions[0].title;
+        } = changelog.versions[0];
 
         if (!title.endsWith('Unreleased')) {
             core.info('Skip Changelog: No unreleased version.');
