@@ -26173,10 +26173,10 @@ const createCommit = async ({
         base_tree: latestCommit.sha,
         tree: [
             {
-              path,
-              mode: BLOB_MODE_FILE,
-              content,
-              type: 'blob',
+                path,
+                mode: BLOB_MODE_FILE,
+                content,
+                type: 'blob',
             },
         ],
     });
@@ -26333,15 +26333,10 @@ const createVersionRaisePullRequest = async ({
         return changelogNext;
     });
 
-    // sequencial or not?
-    await Promise.all([
-        updatePackageLock(),
-        updatePackageJson(),
-        updateChangelog(),
-    ]);
-    // await updatePackageLock();
-    // await updatePackageJson();
-    // await updateChangelog();
+    // sequencial: commit hashes need to be in order
+    await updatePackageLock();
+    await updatePackageJson();
+    await updateChangelog();
 
     await createPullRequest({
         owner,
@@ -26351,6 +26346,86 @@ const createVersionRaisePullRequest = async ({
         branch,
         base: mergeIntoBranch,
     });
+};
+
+const createReleaseCandidatePullRequest = async ({
+    owner,
+    repo,
+    baseSha,
+    project,
+    releaseVersion,
+}) => {
+    const release = releaseVersion.slice(0, -2);
+
+    const rcBranch = `rc/${project}/${releaseVersion}`;
+    const releaseBranch = `release/${project}/${release}`;
+
+    await Promise.all([
+        await createBranch({
+            owner,
+            repo,
+            branch: releaseBranch,
+            sha: baseSha,
+        }),
+        await createBranch({
+            owner,
+            repo,
+            branch: rcBranch,
+            sha: baseSha,
+        }),
+    ]);
+
+    const changelogPath = `projects/${project}/CHANGELOG.md`;
+
+    const updateChangelog = async () => updateFile({
+        owner,
+        repo,
+        branch: rcBranch,
+        path: changelogPath,
+    }, async (rawFile) => {
+        const changelog = await changelog_parser_default()({text: rawFile})
+
+        const highestTitle = changelog.versions[0].title;
+
+        if (!highestTitle.endsWith('Unreleased')) {
+            Object(core.info)('Skip Changelog: No unreleased version.');
+
+            return null;
+        }
+
+        const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
+        const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
+
+        const changelogDateCut = rawFile.replace('Unreleased', date);
+
+        return changelogDateCut;
+    });
+
+    await updateChangelog();
+    // to do:
+    // update changelog of rc branch
+    // put service files in rc branch
+
+    // to do!
+    // const body = `## Changelog\n\n${item.body}\n\n`;
+    const pullRequestBody = `## Changelog\n\nto do\n\n`;
+
+    createPullRequest({
+        owner,
+        repo,
+        title: `Release ${version}-${project}`,
+        body: pullRequestBody,
+        branch: rcBranch,
+        base: releaseBranch,
+    });
+
+    // ToDo
+    // await octokit.rest.issues.addLabels({
+    //     owner,
+    //     repo,
+    //     issue_number: pr.number,
+    //     labels,
+    // });
 };
 
 (async () => {
@@ -26369,19 +26444,35 @@ const createVersionRaisePullRequest = async ({
         repository,
     } = payload;
 
+    // to do!
+    // if (!first) {
+    //     exit(`This is not a first change to ${release} release`, 0);
+    // }
+
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
 
     const defaultBranch = repository.default_branch;
 
-    await createVersionRaisePullRequest({
+    // await createVersionRaisePullRequest({
+    //     owner,
+    //     repo,
+    //     baseSha: after,
+    //     project,
+    //     newVersion,
+    //     mergeIntoBranch: defaultBranch,
+    // });
+
+    await createReleaseCandidatePullRequest({
         owner,
         repo,
-        baseSha: after,
+        baseSha,
         project,
-        newVersion,
-        mergeIntoBranch: defaultBranch,
+        releaseVersion: '1.0.0', // to do
     });
+
+
+    // old code
 
     // const commit = await octokit.rest.repos.getCommit({
     //     owner,

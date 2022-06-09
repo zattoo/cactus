@@ -70,10 +70,10 @@ const createCommit = async ({
         base_tree: latestCommit.sha,
         tree: [
             {
-              path,
-              mode: BLOB_MODE_FILE,
-              content,
-              type: 'blob',
+                path,
+                mode: BLOB_MODE_FILE,
+                content,
+                type: 'blob',
             },
         ],
     });
