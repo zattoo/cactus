@@ -26505,7 +26505,7 @@ const createReleaseCandidatePullRequest = async ({
         packageLock: 'package-lock.json',
     }
 
-    const files = Object.fromEntries(
+    const files = Object.fromEntries(await Promise.all(
         Object.entries(paths).map(async ([key, path]) => {
             return [
                 key,
@@ -26516,7 +26516,7 @@ const createReleaseCandidatePullRequest = async ({
                 })
             ];
         }),
-    );
+    ));
 
     // const files = paths.map(async (path) => {
     //     return await getRawFile({
