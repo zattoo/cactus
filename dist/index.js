@@ -26219,6 +26219,10 @@ const editChangelog = async ({
         body,
     } = changelog.versions[0];
 
+    console.log({
+        versionzero: changelog.versions[0],
+    });
+
     if (!title.endsWith('Unreleased')) {
         Object(core.info)('Skip Changelog: No unreleased version.');
 
