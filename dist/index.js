@@ -26370,7 +26370,7 @@ const exit = (message, exitCode) => {
         //     });
         // };
 
-        const updateChangelog = async () => updateFile(packageLockPath, async (rawFile) => {
+        const updateChangelog = async () => updateFile(changelogPath, async (rawFile) => {
             const changelog = await changelog_parser_default()({text: rawFile})
 
             const highestVersionEntry = changelog.versions[0];
