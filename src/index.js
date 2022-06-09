@@ -34,10 +34,6 @@ const editChangelog = async ({
         body,
     } = changelog.versions[0];
 
-    console.log({
-        versionzero: changelog.versions[0],
-    });
-
     if (!title.endsWith('Unreleased')) {
         core.info('Skip Changelog: No unreleased version.');
 
@@ -182,16 +178,12 @@ const createReleaseCandidatePullRequest = async ({
     const updateChangelog = async () => {
         const {
             changelog,
-            body,
+            versionBody,
         } = await editChangelog({
             rawChangelog: files.changelog,
         });
 
-        console.log({
-            body,
-        });
-
-        changelogEntries = body;
+        changelogEntries = versionBody;
 
         await createCommit({
             owner,
@@ -205,10 +197,6 @@ const createReleaseCandidatePullRequest = async ({
     await updateChangelog();
 
     const pullRequestBody = `## Changelog\n\n${changelogEntries}\n\n`;
-
-    console.log({
-        pullRequestBody,
-    });
 
     await createCommit({
         owner,
@@ -298,6 +286,5 @@ const createReleaseCandidatePullRequest = async ({
     });
 })()
     .catch((error) => {
-        console.log(error);
         exit(error, 1);
     });
