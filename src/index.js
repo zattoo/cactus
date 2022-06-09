@@ -1,8 +1,11 @@
-const core = require('@actions/core');
+// const core = require('@actions/core');
+import * as core from '@actions/core';
 // const exec = require('@actions/exec');
-const github = require('@actions/github');
-const parseChangelog = require('changelog-parser');
-const {format} = require('date-fns');
+import * as github from '@actions/github';
+// const github = require('@actions/github');
+import parseChangelog from 'changelog-parser';
+import {format} from 'date-fns';
+// todo: esm
 
 // let foundSomething = false;
 
@@ -183,21 +186,9 @@ const exit = (message, exitCode) => {
 
             const content = file.content;
 
-            // console.log({
-            //     content,
-            // });
-
             const changelogString = Buffer.from(content, 'base64').toString();
 
-            // console.log({
-            //     changelogString,
-            // });
-
             const changelog = await parseChangelog({text: changelogString})
-
-            // console.log({
-            //     changelog,
-            // });
 
             const highestVersionEntry = changelog.versions[0];
 
@@ -205,6 +196,7 @@ const exit = (message, exitCode) => {
 
             if (!title.endsWith('Unreleased')) {
                 console.log('Skip Changelog: No unreleased version.');
+                // todo: core info
 
                 return;
             }
@@ -215,16 +207,6 @@ const exit = (message, exitCode) => {
             const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
 
             const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
-
-            // console.log({highestVersionEntry});
-
-            // const decodeJson = Buffer.from(file.content, 'base64');
-
-            // const packageJson = JSON.parse(decodeJson);
-
-            // packageJson.version = newVersion;
-
-            // const packageJsonString = JSON.stringify(packageJson, null, 4).concat('\n');
 
             await octokit.rest.repos.createOrUpdateFileContents({
                 owner,

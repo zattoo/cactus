@@ -42,6 +42,8 @@ module.exports =
 /******/ 		// Load entry module and return exports
 /******/ 		return __webpack_require__(676);
 /******/ 	};
+/******/ 	// initialize runtime
+/******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// run startup
 /******/ 	return startup();
@@ -20776,13 +20778,26 @@ module.exports = exports.default;
 /* 674 */,
 /* 675 */,
 /* 676 */
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
-const core = __webpack_require__(470);
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(470);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(469);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var changelog_parser__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(734);
+/* harmony import */ var changelog_parser__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(changelog_parser__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(684);
+/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(date_fns__WEBPACK_IMPORTED_MODULE_3__);
+// const core = require('@actions/core');
+
 // const exec = require('@actions/exec');
-const github = __webpack_require__(469);
-const parseChangelog = __webpack_require__(734);
-const {format} = __webpack_require__(684);
+
+// const github = require('@actions/github');
+
+
+// todo: esm
 
 // let foundSomething = false;
 
@@ -20797,9 +20812,9 @@ const {format} = __webpack_require__(684);
 
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
-        core.error(message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(message);
     } else {
-        core.info(message);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(message);
     }
 
     process.exit(exitCode);
@@ -20832,13 +20847,13 @@ const exit = (message, exitCode) => {
 // };
 
 (async () => {
-    const token = core.getInput('token', {required: true});
+    const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token', {required: true});
     // const labels = core.getMultilineInput('labels', {required: false});
-    const project = core.getInput('project', {required: true});
-    const newVersion = core.getInput('new-version', {required: true});
-    const octokit = github.getOctokit(token);
+    const project = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('project', {required: true});
+    const newVersion = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('new-version', {required: true});
+    const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit(token);
 
-    const {context} = github;
+    const {context} = _actions_github__WEBPACK_IMPORTED_MODULE_1__;
     const {payload} = context;
 
     const {
@@ -20963,21 +20978,9 @@ const exit = (message, exitCode) => {
 
             const content = file.content;
 
-            // console.log({
-            //     content,
-            // });
-
             const changelogString = Buffer.from(content, 'base64').toString();
 
-            // console.log({
-            //     changelogString,
-            // });
-
-            const changelog = await parseChangelog({text: changelogString})
-
-            // console.log({
-            //     changelog,
-            // });
+            const changelog = await changelog_parser__WEBPACK_IMPORTED_MODULE_2___default()({text: changelogString})
 
             const highestVersionEntry = changelog.versions[0];
 
@@ -20985,26 +20988,17 @@ const exit = (message, exitCode) => {
 
             if (!title.endsWith('Unreleased')) {
                 console.log('Skip Changelog: No unreleased version.');
+                // todo: core info
 
                 return;
             }
 
-            const date = format(new Date(), "dd.MM.yyyy")
+            const date = Object(date_fns__WEBPACK_IMPORTED_MODULE_3__.format)(new Date(), "dd.MM.yyyy")
             const changelogStringCut = changelogString.replace('Unreleased', date);
 
             const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
 
             const updatedChangelog = changelogStringCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
-
-            // console.log({highestVersionEntry});
-
-            // const decodeJson = Buffer.from(file.content, 'base64');
-
-            // const packageJson = JSON.parse(decodeJson);
-
-            // packageJson.version = newVersion;
-
-            // const packageJsonString = JSON.stringify(packageJson, null, 4).concat('\n');
 
             await octokit.rest.repos.createOrUpdateFileContents({
                 owner,
@@ -32669,4 +32663,43 @@ function differenceInCalendarYears(dirtyDateLeft, dirtyDateRight) {
 module.exports = exports.default;
 
 /***/ })
-/******/ ]);
+/******/ ],
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ 	"use strict";
+/******/ 
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	!function() {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = function(module) {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				function getDefault() { return module['default']; } :
+/******/ 				function getModuleExports() { return module; };
+/******/ 			__webpack_require__.d(getter, 'a', getter);
+/******/ 			return getter;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getter */
+/******/ 	!function() {
+/******/ 		// define getter function for harmony exports
+/******/ 		var hasOwnProperty = Object.prototype.hasOwnProperty;
+/******/ 		__webpack_require__.d = function(exports, name, getter) {
+/******/ 			if(!hasOwnProperty.call(exports, name)) {
+/******/ 				Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 			}
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ }
+);
