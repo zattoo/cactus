@@ -183,6 +183,10 @@ const createReleaseCandidatePullRequest = async ({
             rawChangelog: files.changelog,
         });
 
+        console.log({
+            body,
+        });
+
         changelogEntries = body;
 
         await createCommit({
@@ -198,6 +202,10 @@ const createReleaseCandidatePullRequest = async ({
 
     const pullRequestBody = `## Changelog\n\n${changelogEntries}\n\n`;
 
+    console.log({
+        pullRequestBody,
+    });
+
     await createCommit({
         owner,
         repo,
@@ -206,15 +214,15 @@ const createReleaseCandidatePullRequest = async ({
         content: randomBytes(20).toString('hex') + '\n',
     });
 
-    createPullRequest({
-        owner,
-        repo,
-        title: `Release ${releaseVersion}-${project}`,
-        body: pullRequestBody,
-        branch: rcBranch,
-        base: releaseBranch,
-        labels,
-    });
+    // createPullRequest({
+    //     owner,
+    //     repo,
+    //     title: `Release ${releaseVersion}-${project}`,
+    //     body: pullRequestBody,
+    //     branch: rcBranch,
+    //     base: releaseBranch,
+    //     labels,
+    // });
 };
 
 (async () => {
@@ -263,17 +271,17 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ));
 
-    await createVersionRaisePullRequest({
-        owner,
-        repo,
-        baseSha,
-        project,
-        newVersion,
-        mergeIntoBranch: defaultBranch,
-        files,
-        paths,
-        labels: versionRaiseLabels,
-    });
+    // await createVersionRaisePullRequest({
+    //     owner,
+    //     repo,
+    //     baseSha,
+    //     project,
+    //     newVersion,
+    //     mergeIntoBranch: defaultBranch,
+    //     files,
+    //     paths,
+    //     labels: versionRaiseLabels,
+    // });
 
     await createReleaseCandidatePullRequest({
         owner,
