@@ -26264,10 +26264,6 @@ const exit = (message, exitCode) => {
     // const {payload} = context;
     const payload = getPayload();
 
-    console.log({
-        payload,
-    });
-
     const {
         after,
         // before,
@@ -26289,7 +26285,7 @@ const exit = (message, exitCode) => {
         //     ref,
         //     sha: after,
         // });
-        createBranch({
+        await createBranch({
             owner,
             repo,
             ref,
@@ -26341,7 +26337,7 @@ const exit = (message, exitCode) => {
             //         format: 'raw'
             //     },
             // });
-            const packageLockString = getRawFile({
+            const packageLockString = await getRawFile({
                 owner,
                 repo,
                 path: packageLockPath,
@@ -26355,7 +26351,7 @@ const exit = (message, exitCode) => {
 
             packageLockJson.packages[`projects/${project}`].version = newVersion;
 
-            updateFile({
+            await updateFile({
                 owner,
                 repo,
                 branch,
