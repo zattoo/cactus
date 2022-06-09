@@ -26110,15 +26110,9 @@ const init = (token) => {
     octokit = Object(github.getOctokit)(token);
 };
 
-const getPayload = async () => {
+const getPayload = () => {
     const {context} = github;
     const {payload} = context;
-
-    console.log({
-        github: github,
-        context,
-        payload,
-    });
 
     return payload;
 };
@@ -26268,12 +26262,17 @@ const exit = (message, exitCode) => {
 
     // const {context} = github;
     // const {payload} = context;
+    const payload = getPayload();
+
+    console.log({
+        payload,
+    });
 
     const {
         after,
         // before,
         repository,
-    } = getPayload();
+    } = payload;
 
     console.log({
         repository,

@@ -73,12 +73,17 @@ const exit = (message, exitCode) => {
 
     // const {context} = github;
     // const {payload} = context;
+    const payload = getPayload();
+
+    console.log({
+        payload,
+    });
 
     const {
         after,
         // before,
         repository,
-    } = getPayload();
+    } = payload;
 
     console.log({
         repository,
