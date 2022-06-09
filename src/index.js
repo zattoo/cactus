@@ -237,46 +237,58 @@ const createReleaseCandidatePullRequest = async ({
 
     const defaultBranch = repository.default_branch;
 
-    const paths = {
-        packageJson: `projects/${project}/package.json`,
-        changelog: `projects/${project}/CHANGELOG.md`,
-        packageLock: 'package-lock.json',
-    }
-
-    const files = Object.fromEntries(await Promise.all(
-        Object.entries(paths).map(async ([key, path]) => {
-            return [
-                key,
-                await getRawFile({
-                    owner,
-                    repo,
-                    path,
-                })
-            ];
-        }),
-    ));
-
-    await createVersionRaisePullRequest({
+    console.log({
+        payload,
+        after,
+        repository,
         owner,
-        repo,
-        baseSha: after,
+        defaultBranch,
+        rcLabels,
+        versionRaiseLabels,
         project,
         newVersion,
-        mergeIntoBranch: defaultBranch,
-        files,
-        paths,
-        labels: versionRaiseLabels,
     });
 
-    await createReleaseCandidatePullRequest({
-        owner,
-        repo,
-        baseSha: after,
-        project,
-        files,
-        paths,
-        labels: rcLabels,
-    });
+    // const paths = {
+    //     packageJson: `projects/${project}/package.json`,
+    //     changelog: `projects/${project}/CHANGELOG.md`,
+    //     packageLock: 'package-lock.json',
+    // }
+
+    // const files = Object.fromEntries(await Promise.all(
+    //     Object.entries(paths).map(async ([key, path]) => {
+    //         return [
+    //             key,
+    //             await getRawFile({
+    //                 owner,
+    //                 repo,
+    //                 path,
+    //             })
+    //         ];
+    //     }),
+    // ));
+
+    // await createVersionRaisePullRequest({
+    //     owner,
+    //     repo,
+    //     baseSha: after,
+    //     project,
+    //     newVersion,
+    //     mergeIntoBranch: defaultBranch,
+    //     files,
+    //     paths,
+    //     labels: versionRaiseLabels,
+    // });
+
+    // await createReleaseCandidatePullRequest({
+    //     owner,
+    //     repo,
+    //     baseSha: after,
+    //     project,
+    //     files,
+    //     paths,
+    //     labels: rcLabels,
+    // });
 })()
     .catch((error) => {
         console.log(error);
