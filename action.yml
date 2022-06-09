@@ -4,8 +4,11 @@ inputs:
   token:
     description: 'User based token with write permission'
     required: true
-  labels:
+  rc-labels:
     description: 'List of labels to add to release candidate'
+    required: false
+  main-labels:
+    description: 'List of labels to add to version raise'
     required: false
   new-version:
     description: 'Version of the next release'

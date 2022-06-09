@@ -26182,8 +26182,9 @@ const createPullRequest = async ({
     body,
     branch,
     base,
+    labels,
 }) => {
-    await octokit.rest.pulls.create({
+    const {data: pr} = await octokit.rest.pulls.create({
         owner,
         repo,
         title,
@@ -26192,6 +26193,15 @@ const createPullRequest = async ({
         base,
         draft: true, // to do
     });
+
+    if (labels) {
+        await octokit.rest.issues.addLabels({
+            owner,
+            repo,
+            issue_number: pr.number,
+            labels,
+        });
+    }
 };
 
 // CONCATENATED MODULE: ./src/index.js
@@ -26221,6 +26231,7 @@ const createVersionRaisePullRequest = async ({
     mergeIntoBranch,
     files,
     paths,
+    labels,
 }) => {
     const branch = `next/${project}`;
 
@@ -26351,6 +26362,7 @@ const createVersionRaisePullRequest = async ({
         body: `Bump version`,
         branch,
         base: mergeIntoBranch,
+        labels,
     });
 };
 
@@ -26361,6 +26373,7 @@ const createReleaseCandidatePullRequest = async ({
     project,
     files,
     paths,
+    labels,
 }) => {
     const packageJson = JSON.parse(files.packageJson);
     const releaseVersion = packageJson.version;
@@ -26465,6 +26478,7 @@ const createReleaseCandidatePullRequest = async ({
         body: pullRequestBody,
         branch: rcBranch,
         base: releaseBranch,
+        labels,
     });
 
     // ToDo
@@ -26478,7 +26492,8 @@ const createReleaseCandidatePullRequest = async ({
 
 (async () => {
     const token = Object(core.getInput)('token', {required: true});
-    // const labels = core.getMultilineInput('labels', {required: false});
+    const rcLabels = Object(core.getMultilineInput)('rc-labels', {required: false});
+    const versionRaiseLabels = Object(core.getMultilineInput)('main-labels', {required: false});
     const project = Object(core.getInput)('project', {required: true});
     const newVersion = Object(core.getInput)('new-version', {required: true});
 
@@ -26542,6 +26557,7 @@ const createReleaseCandidatePullRequest = async ({
         mergeIntoBranch: defaultBranch,
         files,
         paths,
+        labels: versionRaiseLabels,
     });
 
     await createReleaseCandidatePullRequest({
@@ -26551,6 +26567,7 @@ const createReleaseCandidatePullRequest = async ({
         project,
         files,
         paths,
+        labels: rcLabels,
     });
 })()
     .catch((error) => {

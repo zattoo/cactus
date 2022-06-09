@@ -129,8 +129,9 @@ export const createPullRequest = async ({
     body,
     branch,
     base,
+    labels,
 }) => {
-    await octokit.rest.pulls.create({
+    const {data: pr} = await octokit.rest.pulls.create({
         owner,
         repo,
         title,
@@ -139,4 +140,13 @@ export const createPullRequest = async ({
         base,
         draft: true, // to do
     });
+
+    if (labels) {
+        await octokit.rest.issues.addLabels({
+            owner,
+            repo,
+            issue_number: pr.number,
+            labels,
+        });
+    }
 };

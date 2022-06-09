@@ -32,6 +32,7 @@ const createVersionRaisePullRequest = async ({
     mergeIntoBranch,
     files,
     paths,
+    labels,
 }) => {
     const branch = `next/${project}`;
 
@@ -162,6 +163,7 @@ const createVersionRaisePullRequest = async ({
         body: `Bump version`,
         branch,
         base: mergeIntoBranch,
+        labels,
     });
 };
 
@@ -172,6 +174,7 @@ const createReleaseCandidatePullRequest = async ({
     project,
     files,
     paths,
+    labels,
 }) => {
     const packageJson = JSON.parse(files.packageJson);
     const releaseVersion = packageJson.version;
@@ -276,6 +279,7 @@ const createReleaseCandidatePullRequest = async ({
         body: pullRequestBody,
         branch: rcBranch,
         base: releaseBranch,
+        labels,
     });
 
     // ToDo
@@ -289,7 +293,8 @@ const createReleaseCandidatePullRequest = async ({
 
 (async () => {
     const token = core.getInput('token', {required: true});
-    // const labels = core.getMultilineInput('labels', {required: false});
+    const rcLabels = core.getMultilineInput('rc-labels', {required: false});
+    const versionRaiseLabels = core.getMultilineInput('main-labels', {required: false});
     const project = core.getInput('project', {required: true});
     const newVersion = core.getInput('new-version', {required: true});
 
@@ -353,6 +358,7 @@ const createReleaseCandidatePullRequest = async ({
         mergeIntoBranch: defaultBranch,
         files,
         paths,
+        labels: versionRaiseLabels,
     });
 
     await createReleaseCandidatePullRequest({
@@ -362,6 +368,7 @@ const createReleaseCandidatePullRequest = async ({
         project,
         files,
         paths,
+        labels: rcLabels,
     });
 })()
     .catch((error) => {
