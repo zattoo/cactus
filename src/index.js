@@ -218,7 +218,7 @@ const createReleaseCandidatePullRequest = async ({
 
         const date = format(new Date(), "dd.MM.yyyy")
 
-        const changelogDateCut = rawFile.replace('Unreleased', date);
+        const changelogDateCut = files.changelog.replace('Unreleased', date);
 
         await createCommit({
             owner,
