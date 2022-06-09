@@ -26393,7 +26393,6 @@ const createReleaseCandidatePullRequest = async ({
             return null;
         }
 
-        const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
         const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
 
         const changelogDateCut = rawFile.replace('Unreleased', date);
@@ -26466,7 +26465,7 @@ const createReleaseCandidatePullRequest = async ({
     await createReleaseCandidatePullRequest({
         owner,
         repo,
-        baseSha,
+        baseSha: after,
         project,
         releaseVersion: '1.0.0', // to do
     });
