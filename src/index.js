@@ -256,7 +256,7 @@ const exit = (message, exitCode) => {
                 owner,
                 repo,
                 branch,
-                path: updatedChangelog,
+                path: changelogPath,
                 content: updatedChangelog,
             });
 
