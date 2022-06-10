@@ -1,6 +1,6 @@
 /**
  * We need to manually create the commit because of file size limits of the octokit api,
- * wich we hit with package.lock.json
+ * wich we hit with package-lock.json
  *
  * More explanation:
  * https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
