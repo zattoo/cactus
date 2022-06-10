@@ -157,13 +157,13 @@ const createReleaseCandidatePullRequest = async ({
     const releaseBranch = `release/${project}/${release}`;
 
     await Promise.all([
-        await createBranch({
+        createBranch({
             owner,
             repo,
             branch: releaseBranch,
             sha: baseSha,
         }),
-        await createBranch({
+        createBranch({
             owner,
             repo,
             branch: rcBranch,
