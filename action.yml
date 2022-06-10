@@ -4,18 +4,15 @@ inputs:
   token:
     description: 'User based token with write permission'
     required: true
-  rc-labels:
-    description: 'List of labels to add to release candidate'
-    required: false
-  main-labels:
-    description: 'List of labels to add to version raise'
-    required: false
-  new-version:
+  next_version:
     description: 'Version of the next release'
     required: true
   project:
     description: 'Project to cut'
     required: true
+  labels:
+    description: 'List of labels to add to release candidate'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'

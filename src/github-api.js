@@ -2,15 +2,17 @@
  * We need to manually create the commit because of file size limits of the octokit api,
  * wich we hit with package-lock.json
  *
- * More explanation:
- * https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
- * https://octokit.github.io/rest.js/v18
+ * @see https://docs.github.com/en/rest/repos/contents#size-limits
+ * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
 import * as github from '@actions/github';
 
+/**
+ * marks a git blob as a file
+ */
 const BLOB_MODE_FILE = '100644';
 
-let octokit = null;
+let octokit;
 
 export const init = (token) => {
     octokit = github.getOctokit(token);

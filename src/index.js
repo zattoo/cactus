@@ -69,7 +69,6 @@ const createVersionRaisePullRequest = async ({
     mergeIntoBranch,
     files,
     paths,
-    labels,
 }) => {
     const branch = `next/${project}`;
 
@@ -137,7 +136,6 @@ const createVersionRaisePullRequest = async ({
         body: `Bump version`,
         branch,
         base: mergeIntoBranch,
-        labels,
     });
 };
 
@@ -219,10 +217,9 @@ const createReleaseCandidatePullRequest = async ({
 
 (async () => {
     const token = core.getInput('token', {required: true});
-    const rcLabels = core.getMultilineInput('rc-labels', {required: false});
-    const versionRaiseLabels = core.getMultilineInput('main-labels', {required: false});
+    const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
-    const newVersion = core.getInput('new-version', {required: true});
+    const newVersion = core.getInput('next_version', {required: true});
 
     init(token);
 
@@ -272,7 +269,6 @@ const createReleaseCandidatePullRequest = async ({
         mergeIntoBranch: defaultBranch,
         files,
         paths,
-        labels: versionRaiseLabels,
     });
 
     await createReleaseCandidatePullRequest({
