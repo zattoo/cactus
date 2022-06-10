@@ -60,7 +60,7 @@ Required. Version of the next release after cut to add into the main development
 
 `project: string`
 
-Required. The action expected a project based structure, `projects/${project}/`. This is the project to be released.
+Required. The action expects a project based structure, `projects/${project}/`. This is the project to be released.
 
 ### Labels
 
