@@ -50,11 +50,11 @@ Required. Must be user based token with write permission,
 so release creation action can trigger others,
 like deploy.
 
-### New Version
+### Next Version
 
-`new_version: string`
+`next_version: string`
 
-Required. Version of the next release to add into the main development branch.
+Required. Version of the next release after cut to add into the main development branch.
 
 ### Project
 
