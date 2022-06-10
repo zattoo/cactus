@@ -26053,17 +26053,19 @@ var github = __webpack_require__(469);
 // CONCATENATED MODULE: ./src/github-api.js
 /**
  * We need to manually create the commit because of file size limits of the octokit api,
- * wich we hit with package.lock.json
+ * wich we hit with package-lock.json
  *
- * More explanation:
- * https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
- * https://octokit.github.io/rest.js/v18
+ * @see https://docs.github.com/en/rest/repos/contents#size-limits
+ * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
 
 
+/**
+ * marks a git blob as a file
+ */
 const BLOB_MODE_FILE = '100644';
 
-let octokit = null;
+let octokit;
 
 const init = (token) => {
     octokit = Object(github.getOctokit)(token);
@@ -26254,7 +26256,6 @@ const createVersionRaisePullRequest = async ({
     mergeIntoBranch,
     files,
     paths,
-    labels,
 }) => {
     const branch = `next/${project}`;
 
@@ -26322,7 +26323,6 @@ const createVersionRaisePullRequest = async ({
         body: `Bump version`,
         branch,
         base: mergeIntoBranch,
-        labels,
     });
 };
 
@@ -26404,10 +26404,9 @@ const createReleaseCandidatePullRequest = async ({
 
 (async () => {
     const token = Object(core.getInput)('token', {required: true});
-    const rcLabels = Object(core.getMultilineInput)('rc-labels', {required: false});
-    const versionRaiseLabels = Object(core.getMultilineInput)('main-labels', {required: false});
+    const rcLabels = Object(core.getMultilineInput)('labels', {required: false});
     const project = Object(core.getInput)('project', {required: true});
-    const newVersion = Object(core.getInput)('new-version', {required: true});
+    const newVersion = Object(core.getInput)('next_version', {required: true});
 
     init(token);
 
@@ -26457,7 +26456,6 @@ const createReleaseCandidatePullRequest = async ({
         mergeIntoBranch: defaultBranch,
         files,
         paths,
-        labels: versionRaiseLabels,
     });
 
     await createReleaseCandidatePullRequest({
