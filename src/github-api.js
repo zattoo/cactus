@@ -71,8 +71,8 @@ export const createCommit = async ({
     owner,
     repo,
     branch,
-    path,
-    content,
+    paths,
+    files,
 }) => {
     const latestCommit = await getLatestCommit({
         owner,
@@ -80,25 +80,27 @@ export const createCommit = async ({
         branch,
     });
 
+    const blobs = Object.keys(files).map((fileName) => {
+        return {
+            content: files[fileName],
+            mode: BLOB_MODE_FILE,
+            path: paths[fileName],
+            type: 'blob',
+        };
+    });
+
     const {data: tree} = await octokit.rest.git.createTree({
         owner,
         repo,
         base_tree: latestCommit.sha,
-        tree: [
-            {
-                path,
-                mode: BLOB_MODE_FILE,
-                content,
-                type: 'blob',
-            },
-        ],
+        tree: blobs,
     });
 
     const {data: createdCommit} = (await octokit.rest.git.createCommit({
         owner,
         repo,
         branch,
-        message: `Update ${path}`,
+        message: `Update ${Object.values(paths).join(', ')}`,
         tree: tree.sha,
         parents: [latestCommit.sha],
     }));

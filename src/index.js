@@ -3,15 +3,7 @@ import parseChangelog from 'changelog-parser';
 import {format} from 'date-fns';
 import {randomBytes} from 'node:crypto';
 
-import {
-    init,
-    getPayload,
-    getRawFile,
-    getLatestCommit,
-    createBranch,
-    createCommit,
-    createPullRequest,
-} from './github-api';
+import * as github from './github-api';
 
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
@@ -23,9 +15,33 @@ const exit = (message, exitCode) => {
     process.exit(exitCode);
 };
 
+export const validateVersion = (previousVersion, nextVersion) => {
+    if (previousVersion === nextVersion) {
+        exit('Version musst be different', 1);
+    }
+
+    const parsedPreviousVersion = previousVersion.split('.');
+    const parsedNextVersion = nextVersion.split('.');
+
+    if (parsedNextVersion.length !== 3) {
+        exit('Invalid version format', 1);
+    }
+
+    if (Number(parsedNextVersion[2]) !== 0) {
+        exit('Cannot cut patch', 1);
+    }
+
+    const previousVersionJoined = Number(parsedPreviousVersion.join(''));
+    const nextVersionJoined = Number(parsedNextVersion.join(''));
+
+    if (previousVersionJoined >= nextVersionJoined) {
+        exit('Version must be greater than previous', 1);
+    }
+};
+
 const editChangelog = async ({
     rawChangelog,
-    newVersion,
+    nextVersion,
 }) => {
     const changelog = await parseChangelog({text: rawChangelog})
 
@@ -44,15 +60,15 @@ const editChangelog = async ({
 
     const changelogDateCut = rawChangelog.replace('Unreleased', date);
 
-    if (!newVersion) {
+    if (!nextVersion) {
         return {
             changelog: changelogDateCut,
             versionBody: body,
         };
     }
 
-    const newVersionEntry = `## [${newVersion}] - Unreleased\n\n...\n\n`;
-    const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${newVersionEntry}$2`);
+    const nextVersionEntry = `## [${nextVersion}] - Unreleased\n\n...\n\n`;
+    const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${nextVersionEntry}$2`);
 
     return {
         changelog: changelogNext,
@@ -60,76 +76,73 @@ const editChangelog = async ({
     };
 };
 
+const editPackageJson = ({
+    rawPackageJson,
+    nextVersion,
+}) => {
+    const packageJson = JSON.parse(rawPackageJson);
+
+    packageJson.version = nextVersion;
+
+    return JSON.stringify(packageJson, null, 4).concat('\n');
+};
+
+const editPackageLock = ({
+    rawPackageLock,
+    nextVersion,
+    project,
+}) => {
+    const packageLock = JSON.parse(rawPackageLock);
+
+    packageLock.packages[`projects/${project}`].version = nextVersion;
+
+    return JSON.stringify(packageLock, null, 4).concat('\n');
+};
+
 const createVersionRaisePullRequest = async ({
     owner,
     repo,
     baseSha,
     project,
-    newVersion,
+    nextVersion,
     mergeIntoBranch,
     files,
     paths,
 }) => {
     const branch = `next/${project}`;
 
-    await createBranch({
+    await github.createBranch({
         owner,
         repo,
         branch,
         sha: baseSha,
     });
 
-    const updatePackageJson = async () => {
-        const packageJson = JSON.parse(files.packageJson);
-
-        packageJson.version = newVersion;
-
-        await createCommit({
-            owner,
-            repo,
-            branch,
-            path: paths.packageJson,
-            content:  JSON.stringify(packageJson, null, 4).concat('\n'),
-        });
-    };
-
-    const updatePackageLock = async () => {
-        const packageLock = JSON.parse(files.packageLock);
-
-        packageLock.packages[`projects/${project}`].version = newVersion;
-
-        await createCommit({
-            owner,
-            repo,
-            branch,
-            path: paths.packageLock,
-            content: JSON.stringify(packageLock, null, 4).concat('\n'),
-        });
-    };
-
-    const updateChangelog = async () => {
-        const {
-            changelog,
-        } = await editChangelog({
+    const updatedFiles = {
+        packageJson: editPackageJson({
+            nextVersion,
+            rawPackageJson: files.packageJson,
+        }),
+        packageLock: editPackageLock({
+            nextVersion,
+            project,
+            rawPackageLock: files.packageLock,
+        }),
+        changelog: (await editChangelog({
             rawChangelog: files.changelog,
-            newVersion,
-        });
+            nextVersion,
+        })).changelog,
+    }
 
-        await createCommit({
-            owner,
-            repo,
-            branch,
-            path: paths.changelog,
-            content: changelog,
-        });
-    };
+    await github.createCommit({
+        owner,
+        repo,
+        branch,
+        paths,
+        files: updatedFiles,
+    });
 
-    // sequencial: commit hashes need to be in order
-    await updatePackageLock();
-    await updatePackageJson();
-    await updateChangelog();
-
-    await createPullRequest({
+    await github.createPullRequest({
         owner,
         repo,
         title: `Next ${project}`,
@@ -157,13 +170,13 @@ const createReleaseCandidatePullRequest = async ({
     const releaseBranch = `release/${project}/${release}`;
 
     await Promise.all([
-        await createBranch({
+        github.createBranch({
             owner,
             repo,
             branch: releaseBranch,
             sha: baseSha,
         }),
-        await createBranch({
+        github.createBranch({
             owner,
             repo,
             branch: rcBranch,
@@ -171,44 +184,32 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ]);
 
-    let changelogEntries = '';
+    const {
+        changelog,
+        versionBody,
+    } = await editChangelog({
+        rawChangelog: files.changelog,
+    });
 
-    const updateChangelog = async () => {
-        const {
-            changelog,
-            versionBody,
-        } = await editChangelog({
-            rawChangelog: files.changelog,
-        });
-
-        changelogEntries = versionBody;
-
-        await createCommit({
-            owner,
-            repo,
-            branch: rcBranch,
-            path: paths.changelog,
-            content: changelog,
-        });
-    };
-
-    await updateChangelog();
-
-    const pullRequestBody = `## Changelog\n\n${changelogEntries}\n\n`;
-
-    await createCommit({
+    await github.createCommit({
         owner,
         repo,
         branch: rcBranch,
-        path: `projects/${project}/.release-servcie`,
-        content: randomBytes(20).toString('hex') + '\n',
+        paths: {
+            changelog: paths.changelog,
+            serviceFile: `projects/${project}/.release-servcie`,
+        },
+        files: {
+            changelog,
+            serviceFile: randomBytes(20).toString('hex') + '\n',
+        },
     });
 
-    createPullRequest({
+    await github.createPullRequest({
         owner,
         repo,
         title: `Release ${releaseVersion}-${project}`,
-        body: pullRequestBody,
+        body: `## Changelog\n\n${versionBody}\n\n`,
         branch: rcBranch,
         base: releaseBranch,
         labels,
@@ -219,27 +220,17 @@ const createReleaseCandidatePullRequest = async ({
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
-    const newVersion = core.getInput('next_version', {required: true});
+    const nextVersion = core.getInput('next_version', {required: true});
 
-    init(token);
+    github.init(token);
 
-    if (newVersion.split('.').length !== 3) {
-        exit('Invalid version format', 1);
-    }
-
-    const payload = getPayload();
+    const payload = github.getPayload();
 
     const repository = payload.repository;
     const repo = repository.name;
     const owner = repository.full_name.split('/')[0];
 
     const defaultBranch = repository.default_branch;
-
-    const {sha: baseSha} = await getLatestCommit({
-        owner,
-        repo,
-        branch: defaultBranch,
-    });
 
     const paths = {
         packageJson: `projects/${project}/package.json`,
@@ -251,7 +242,7 @@ const createReleaseCandidatePullRequest = async ({
         Object.entries(paths).map(async ([key, path]) => {
             return [
                 key,
-                await getRawFile({
+                await github.getRawFile({
                     owner,
                     repo,
                     path,
@@ -260,26 +251,38 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ));
 
-    await createVersionRaisePullRequest({
+    const packageJson = JSON.parse(files.packageJson);
+    const previousVersion = packageJson.version;
+
+    validateVersion(previousVersion, nextVersion);
+
+    const {sha: baseSha} = await github.getLatestCommit({
         owner,
         repo,
-        baseSha,
-        project,
-        newVersion,
-        mergeIntoBranch: defaultBranch,
-        files,
-        paths,
+        branch: defaultBranch,
     });
 
-    await createReleaseCandidatePullRequest({
-        owner,
-        repo,
-        baseSha,
-        project,
-        files,
-        paths,
-        labels: rcLabels,
-    });
+    await Promise.all([
+        createVersionRaisePullRequest({
+            owner,
+            repo,
+            baseSha,
+            project,
+            nextVersion,
+            mergeIntoBranch: defaultBranch,
+            files,
+            paths,
+        }),
+        createReleaseCandidatePullRequest({
+            owner,
+            repo,
+            baseSha,
+            project,
+            files,
+            paths,
+            labels: rcLabels,
+        }),
+    ]);
 })()
     .catch((error) => {
         exit(error, 1);
