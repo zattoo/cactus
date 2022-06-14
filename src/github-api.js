@@ -8,7 +8,7 @@
 import * as github from '@actions/github';
 
 /**
- * marks a git blob as a file
+ * Marks a git blob as a file
  */
 const BLOB_MODE_FILE = '100644';
 
