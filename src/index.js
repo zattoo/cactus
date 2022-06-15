@@ -146,7 +146,7 @@ const createVersionRaisePullRequest = async ({
         owner,
         repo,
         title: `Next ${project}`,
-        body: `Bump version`,
+        body: 'Bump version',
         branch,
         base: mergeIntoBranch,
     });
