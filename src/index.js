@@ -15,7 +15,7 @@ const exit = (message, exitCode) => {
     process.exit(exitCode);
 };
 
-export const validateVersion = (previousVersion, nextVersion) => {
+const validateVersion = (previousVersion, nextVersion) => {
     if (previousVersion === nextVersion) {
         exit('Version musst be different', 1);
     }
