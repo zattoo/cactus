@@ -10,6 +10,10 @@ inputs:
   project:
     description: 'Project to cut'
     required: true
+  project_path:
+    description: 'Directory of projects'
+    default: 'projects'
+    required: false
   labels:
     description: 'List of labels to add to release candidate'
     required: false

@@ -91,10 +91,11 @@ const editPackageLock = ({
     rawPackageLock,
     nextVersion,
     project,
+    projectPath,
 }) => {
     const packageLock = JSON.parse(rawPackageLock);
 
-    packageLock.packages[`projects/${project}`].version = nextVersion;
+    packageLock.packages[`${projectPath}/${project}`].version = nextVersion;
 
     return JSON.stringify(packageLock, null, 4).concat('\n');
 };
@@ -108,6 +109,7 @@ const createVersionRaisePullRequest = async ({
     mergeIntoBranch,
     files,
     paths,
+    projectPath,
 }) => {
     const branch = `next/${project}`;
 
@@ -127,6 +129,7 @@ const createVersionRaisePullRequest = async ({
             nextVersion,
             project,
             rawPackageLock: files.packageLock,
+            projectPath,
         }),
         changelog: (await editChangelog({
             rawChangelog: files.changelog,
@@ -160,6 +163,7 @@ const createReleaseCandidatePullRequest = async ({
     files,
     paths,
     labels,
+    projectPath,
 }) => {
     const packageJson = JSON.parse(files.packageJson);
     const releaseVersion = packageJson.version;
@@ -197,7 +201,7 @@ const createReleaseCandidatePullRequest = async ({
         branch: rcBranch,
         paths: {
             changelog: paths.changelog,
-            serviceFile: `projects/${project}/.release-service`,
+            serviceFile: `${projectPath}/${project}/.release-service`,
         },
         files: {
             changelog,
@@ -221,6 +225,9 @@ const createReleaseCandidatePullRequest = async ({
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
     const nextVersion = core.getInput('next_version', {required: true});
+    const projectPath = core.getInput('project_path', {required: false});
+
+    console.log({projectPath});
 
     github.init(token);
 
@@ -233,8 +240,8 @@ const createReleaseCandidatePullRequest = async ({
     const defaultBranch = repository.default_branch;
 
     const paths = {
-        packageJson: `projects/${project}/package.json`,
-        changelog: `projects/${project}/CHANGELOG.md`,
+        packageJson: `${projectPath}/${project}/package.json`,
+        changelog: `${projectPath}/${project}/CHANGELOG.md`,
         packageLock: 'package-lock.json',
     }
 
@@ -272,6 +279,7 @@ const createReleaseCandidatePullRequest = async ({
             mergeIntoBranch: defaultBranch,
             files,
             paths,
+            projectPath,
         }),
         createReleaseCandidatePullRequest({
             owner,
@@ -281,6 +289,7 @@ const createReleaseCandidatePullRequest = async ({
             files,
             paths,
             labels: rcLabels,
+            projectPath,
         }),
     ]);
 })()
