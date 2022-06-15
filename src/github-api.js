@@ -22,17 +22,15 @@ export const getPayload = () => {
     return github.context.payload;
 };
 
-export const createBranch = async ({
-    owner,
-    repo,
-    branch,
-    sha,
-}) => {
+export const createBranch = async (data) => {
+    const {
+        branch,
+        ...rest
+    } = data;
+    
     await octokit.rest.git.createRef({
-        owner,
-        repo,
+        ...rest,
         ref: `refs/heads/${branch}`,
-        sha,
     });
 };
 
