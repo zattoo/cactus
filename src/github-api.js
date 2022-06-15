@@ -27,22 +27,16 @@ export const createBranch = async (data) => {
         branch,
         ...rest
     } = data;
-    
+
     await octokit.rest.git.createRef({
         ...rest,
         ref: `refs/heads/${branch}`,
     });
 };
 
-export const getRawFile = async ({
-    owner,
-    repo,
-    path,
-}) => {
+export const getRawFile = async (data) => {
     const {data: file} = await octokit.rest.repos.getContent({
-        owner,
-        repo,
-        path,
+        ...data,
         mediaType: {
             format: 'raw'
         },
@@ -51,16 +45,8 @@ export const getRawFile = async ({
     return file;
 };
 
-export const getLatestCommit = async ({
-    owner,
-    repo,
-    branch,
-}) => {
-    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch({
-        owner,
-        repo,
-        branch,
-    }));
+export const getLatestCommit = async (data) => {
+    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch(data));
 
     return latestCommit;
 };
