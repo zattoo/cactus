@@ -60,7 +60,13 @@ Required. Version of the next release after cut to add into the main development
 
 `project: string`
 
-Required. The action expects a project based structure, `projects/${project}/`. This is the project to be released.
+Required. The action expects a project based structure, `projects/${project}/`. This is the project to be released. The projects path is configurable.
+
+### Project Path
+
+`project_path: string`.
+
+Not Required. Default: `projects`.
 
 ### Labels
 
