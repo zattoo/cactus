@@ -197,7 +197,7 @@ const createReleaseCandidatePullRequest = async ({
         branch: rcBranch,
         paths: {
             changelog: paths.changelog,
-            serviceFile: `projects/${project}/.release-servcie`,
+            serviceFile: `projects/${project}/.release-service`,
         },
         files: {
             changelog,
