@@ -17,7 +17,7 @@ const exit = (message, exitCode) => {
 
 const validateVersion = (previousVersion, nextVersion) => {
     if (previousVersion === nextVersion) {
-        exit('Version musst be different', 1);
+        exit('Version must be different', 1);
     }
 
     const parsedPreviousVersion = previousVersion.split('.');
@@ -146,7 +146,7 @@ const createVersionRaisePullRequest = async ({
         owner,
         repo,
         title: `Next ${project}`,
-        body: `Bump version`,
+        body: 'Bump version',
         branch,
         base: mergeIntoBranch,
     });
@@ -197,7 +197,7 @@ const createReleaseCandidatePullRequest = async ({
         branch: rcBranch,
         paths: {
             changelog: paths.changelog,
-            serviceFile: `projects/${project}/.release-servcie`,
+            serviceFile: `projects/${project}/.release-service`,
         },
         files: {
             changelog,
