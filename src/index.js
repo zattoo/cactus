@@ -227,8 +227,6 @@ const createReleaseCandidatePullRequest = async ({
     const nextVersion = core.getInput('next_version', {required: true});
     const projectPath = core.getInput('project_path', {required: false});
 
-    console.log({projectPath});
-
     github.init(token);
 
     const payload = github.getPayload();
