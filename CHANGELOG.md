@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0.0] - Unreleased
+## [4.0.0] - 16.06.2022
 
 - [breaking changes] Remove dependency on Changelog and bump next version
 
