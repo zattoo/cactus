@@ -26080,22 +26080,16 @@ const createBranch = async (data) => {
         branch,
         ...rest
     } = data;
-    
+
     await octokit.rest.git.createRef({
         ...rest,
         ref: `refs/heads/${branch}`,
     });
 };
 
-const getRawFile = async ({
-    owner,
-    repo,
-    path,
-}) => {
+const getRawFile = async (data) => {
     const {data: file} = await octokit.rest.repos.getContent({
-        owner,
-        repo,
-        path,
+        ...data,
         mediaType: {
             format: 'raw'
         },
@@ -26104,16 +26098,8 @@ const getRawFile = async ({
     return file;
 };
 
-const getLatestCommit = async ({
-    owner,
-    repo,
-    branch,
-}) => {
-    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch({
-        owner,
-        repo,
-        branch,
-    }));
+const getLatestCommit = async (data) => {
+    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch(data));
 
     return latestCommit;
 };
@@ -26308,12 +26294,16 @@ const createVersionRaisePullRequest = async ({
 }) => {
     const branch = `next/${project}`;
 
+    console.log('1');
+
     await createBranch({
         owner,
         repo,
         branch,
         sha: baseSha,
     });
+
+    console.log('2');
 
     const updatedFiles = {
         packageJson: editPackageJson({
@@ -26332,6 +26322,8 @@ const createVersionRaisePullRequest = async ({
         })).changelog,
     }
 
+    console.log('3');
+
     await createCommit({
         owner,
         repo,
@@ -26339,6 +26331,8 @@ const createVersionRaisePullRequest = async ({
         paths,
         files: updatedFiles,
     });
+
+    console.log('4');
 
     await createPullRequest({
         owner,
@@ -26348,6 +26342,8 @@ const createVersionRaisePullRequest = async ({
         branch,
         base: mergeIntoBranch,
     });
+
+    console.log('5');
 };
 
 const createReleaseCandidatePullRequest = async ({
@@ -26368,6 +26364,8 @@ const createReleaseCandidatePullRequest = async ({
     const rcBranch = `rc/${project}/${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
 
+    console.log('6');
+
     await Promise.all([
         createBranch({
             owner,
@@ -26383,12 +26381,16 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ]);
 
+    console.log('7');
+
     const {
         changelog,
         versionBody,
     } = await editChangelog({
         rawChangelog: files.changelog,
     });
+
+    console.log('8');
 
     await createCommit({
         owner,
@@ -26404,6 +26406,8 @@ const createReleaseCandidatePullRequest = async ({
         },
     });
 
+    console.log('9');
+
     await createPullRequest({
         owner,
         repo,
@@ -26413,6 +26417,8 @@ const createReleaseCandidatePullRequest = async ({
         base: releaseBranch,
         labels,
     });
+
+    console.log('10');
 };
 
 (async () => {
@@ -26421,8 +26427,6 @@ const createReleaseCandidatePullRequest = async ({
     const project = Object(core.getInput)('project', {required: true});
     const nextVersion = Object(core.getInput)('next_version', {required: true});
     const projectPath = Object(core.getInput)('project_path', {required: false});
-
-    console.log({projectPath});
 
     init(token);
 
@@ -26489,6 +26493,7 @@ const createReleaseCandidatePullRequest = async ({
     ]);
 })()
     .catch((error) => {
+        console.log(error);
         exit(error, 1);
     });
 
