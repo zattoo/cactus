@@ -26090,25 +26090,25 @@ const createBranch = async (data) => {
             ref: `heads/${branch}`,
         });
 
-        await octokit.rest.git.deleteRef({
-            owner: rest.owner,
-            repo: rest.repo,
-            ref,
-        });
+        // await octokit.rest.git.deleteRef({
+        //     owner: rest.owner,
+        //     repo: rest.repo,
+        //     ref,
+        // });
 
         console.log('delete ref', ref);
     } catch (error) {
         console.log('check ref error: ', ref, error);
     }
 
-    try {
-        await octokit.rest.git.createRef({
-            ...rest,
-            ref,
-        });
-    } catch (error) {
-        console.log('create ref failed: ', ref, error);
-    }
+    // try {
+    //     await octokit.rest.git.createRef({
+    //         ...rest,
+    //         ref,
+    //     });
+    // } catch (error) {
+    //     console.log('create ref failed: ', ref, error);
+    // }
 };
 
 const getRawFile = async (data) => {
