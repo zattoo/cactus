@@ -26258,7 +26258,7 @@ const editChangelog = async ({
 
     const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
 
-    const changelogDateCut = rawChangelog.replace('/##(\s\[.+\]\s\-)?(\sUnreleased)/', `## [${releaseVersion}] - Unreleased`);
+    const changelogDateCut = rawChangelog.replace(/##(\s\[.+\]\s\-)?(\sUnreleased)/, `## [${releaseVersion}] - Unreleased`);
 
     if (!nextVersion) {
         return {

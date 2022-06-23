@@ -59,7 +59,7 @@ const editChangelog = async ({
 
     const date = format(new Date(), "dd.MM.yyyy")
 
-    const changelogDateCut = rawChangelog.replace('/##(\s\[.+\]\s\-)?(\sUnreleased)/', `## [${releaseVersion}] - Unreleased`);
+    const changelogDateCut = rawChangelog.replace(/##(\s\[.+\]\s\-)?(\sUnreleased)/, `## [${releaseVersion}] - Unreleased`);
 
     if (!nextVersion) {
         return {
