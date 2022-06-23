@@ -30,33 +30,33 @@ export const createBranch = async (data) => {
         sha,
     } = data;
 
-    octokit.rest.git.updateRef({
-        force: true,
-        owner,
-        ref: `refs/heads/${branch}`,
-        repo,
-        sha,
-    });
-    // // try {
-    // //     await octokit.rest.git.getRef({
-    // //         owner,
-    // //         repo,
-    // //         ref: `heads/${branch}`,
-    // //     });
+    try {
+        // await octokit.rest.git.getRef({
+        //     owner,
+        //     repo,
+        //     ref: `heads/${branch}`,
+        // });
 
-    // //     await octokit.rest.git.deleteRef({
-    // //         owner,
-    // //         repo,
-    // //         ref: `heads/${branch}`,
-    // //     });
-    // // } catch {}
-
-    // await octokit.rest.git.createRef({
-    //     owner,
-    //     repo,
-    //     sha,
-    //     ref: `refs/heads/${branch}`,
-    // });
+        // await octokit.rest.git.deleteRef({
+        //     owner,
+        //     repo,
+        //     ref: `heads/${branch}`,
+        // });
+        octokit.rest.git.updateRef({
+            force: true,
+            owner,
+            ref: `refs/heads/${branch}`,
+            repo,
+            sha,
+        });
+    } catch {
+        await octokit.rest.git.createRef({
+            owner,
+            repo,
+            sha,
+            ref: `refs/heads/${branch}`,
+        });
+    }
 };
 
 export const getRawFile = async (data) => {
