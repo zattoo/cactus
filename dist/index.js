@@ -26084,13 +26084,19 @@ const createBranch = async (data) => {
     const ref = `refs/heads/${branch}`;
 
     try {
-        const refExists = await octokit.rest.git.getRef({
+        await octokit.rest.git.getRef({
             owner: rest.owner,
             repo: rest.repo,
             ref,
         });
 
-        console.log({refExists});
+        await octokit.rest.git.deleteRef({
+            owner: rest.owner,
+            repo: rest.repo,
+            ref,
+        });
+
+        console.log('delete ref');
     } catch (error) {
         console.log('check ref error: ', error);
     }
