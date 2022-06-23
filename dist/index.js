@@ -26241,6 +26241,7 @@ const validateVersion = (previousVersion, nextVersion) => {
 const editChangelog = async ({
     rawChangelog,
     nextVersion,
+    releaseVersion,
 }) => {
     const changelog = await changelog_parser_default()({text: rawChangelog})
 
@@ -26257,7 +26258,7 @@ const editChangelog = async ({
 
     const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
 
-    const changelogDateCut = rawChangelog.replace('Unreleased', date);
+    const changelogDateCut = rawChangelog.replace('/##(\s\[.+\]\s\-)?(\sUnreleased)/', `## [${releaseVersion}] - Unreleased`);
 
     if (!nextVersion) {
         return {
@@ -26312,16 +26313,12 @@ const createVersionRaisePullRequest = async ({
 }) => {
     const branch = `next/${project}`;
 
-    console.log('1');
-
     await createBranch({
         owner,
         repo,
         branch,
         sha: baseSha,
     });
-
-    console.log('2');
 
     const updatedFiles = {
         packageJson: editPackageJson({
@@ -26340,8 +26337,6 @@ const createVersionRaisePullRequest = async ({
         })).changelog,
     }
 
-    console.log('3');
-
     await createCommit({
         owner,
         repo,
@@ -26349,8 +26344,6 @@ const createVersionRaisePullRequest = async ({
         paths,
         files: updatedFiles,
     });
-
-    console.log('4');
 
     await createPullRequest({
         owner,
@@ -26360,8 +26353,6 @@ const createVersionRaisePullRequest = async ({
         branch,
         base: mergeIntoBranch,
     });
-
-    console.log('5');
 };
 
 const createReleaseCandidatePullRequest = async ({
@@ -26382,8 +26373,6 @@ const createReleaseCandidatePullRequest = async ({
     const rcBranch = `rc/${project}/${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
 
-    console.log('6');
-
     await Promise.all([
         createBranch({
             owner,
@@ -26399,16 +26388,13 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ]);
 
-    console.log('7');
-
     const {
         changelog,
         versionBody,
     } = await editChangelog({
         rawChangelog: files.changelog,
+        releaseVersion,
     });
-
-    console.log('8');
 
     await createCommit({
         owner,
@@ -26424,8 +26410,6 @@ const createReleaseCandidatePullRequest = async ({
         },
     });
 
-    console.log('9');
-
     await createPullRequest({
         owner,
         repo,
@@ -26435,8 +26419,6 @@ const createReleaseCandidatePullRequest = async ({
         base: releaseBranch,
         labels,
     });
-
-    console.log('10');
 };
 
 (async () => {
