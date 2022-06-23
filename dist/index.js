@@ -26096,15 +26096,19 @@ const createBranch = async (data) => {
             ref,
         });
 
-        console.log('delete ref');
+        console.log('delete ref', ref);
     } catch (error) {
-        console.log('check ref error: ', error);
+        console.log('check ref error: ', ref, error);
     }
 
-    await octokit.rest.git.createRef({
-        ...rest,
-        ref,
-    });
+    try {
+        await octokit.rest.git.createRef({
+            ...rest,
+            ref,
+        });
+    } catch (error) {
+        console.log('create ref failed: ', ref, error);
+    }
 };
 
 const getRawFile = async (data) => {
