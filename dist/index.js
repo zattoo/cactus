@@ -26098,7 +26098,7 @@ const createBranch = async (data) => {
         await octokit.rest.git.updateRef({
             force: true,
             owner,
-            ref: `refs/heads/${branch}`,
+            ref: `heads/${branch}`,
             repo,
             sha,
         });
