@@ -26077,22 +26077,22 @@ const getPayload = () => {
 
 const createBranch = async (data) => {
     const {
+        owner,
+        repo,
         branch,
-        ...rest
+        sha,
     } = data;
-
-    const ref = `refs/heads/${branch}`;
 
     try {
         await octokit.rest.git.getRef({
-            owner: rest.owner,
-            repo: rest.repo,
+            owner,
+            repo,
             ref: `heads/${branch}`,
         });
 
         await octokit.rest.git.deleteRef({
-            owner: rest.owner,
-            repo: rest.repo,
+            owner,
+            repo,
             ref: `heads/${branch}`,
         });
 
@@ -26101,14 +26101,12 @@ const createBranch = async (data) => {
         console.log('check ref error: ', ref, error);
     }
 
-    // try {
-    //     await octokit.rest.git.createRef({
-    //         ...rest,
-    //         ref,
-    //     });
-    // } catch (error) {
-    //     console.log('create ref failed: ', ref, error);
-    // }
+    await octokit.rest.git.createRef({
+        owner,
+        repo,
+        sha,
+        ref: `refs/heads/${branch}`,
+    });
 };
 
 const getRawFile = async (data) => {
