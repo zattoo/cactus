@@ -26091,8 +26091,8 @@ const createBranch = async (data) => {
         });
 
         console.log({refExists});
-    } catch {
-        console.log('doesnt exist: ', ref);
+    } catch (error) {
+        console.log('check ref error: ', error);
     }
 
     await octokit.rest.git.createRef({
