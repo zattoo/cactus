@@ -124,45 +124,45 @@ const createVersionRaisePullRequest = async ({
 
     console.log('2');
 
-    // const updatedFiles = {
-    //     packageJson: editPackageJson({
-    //         nextVersion,
-    //         rawPackageJson: files.packageJson,
-    //     }),
-    //     packageLock: editPackageLock({
-    //         nextVersion,
-    //         project,
-    //         rawPackageLock: files.packageLock,
-    //         projectPath,
-    //     }),
-    //     changelog: (await editChangelog({
-    //         rawChangelog: files.changelog,
-    //         nextVersion,
-    //     })).changelog,
-    // }
+    const updatedFiles = {
+        packageJson: editPackageJson({
+            nextVersion,
+            rawPackageJson: files.packageJson,
+        }),
+        packageLock: editPackageLock({
+            nextVersion,
+            project,
+            rawPackageLock: files.packageLock,
+            projectPath,
+        }),
+        changelog: (await editChangelog({
+            rawChangelog: files.changelog,
+            nextVersion,
+        })).changelog,
+    }
 
-    // console.log('3');
+    console.log('3');
 
-    // await github.createCommit({
-    //     owner,
-    //     repo,
-    //     branch,
-    //     paths,
-    //     files: updatedFiles,
-    // });
+    await github.createCommit({
+        owner,
+        repo,
+        branch,
+        paths,
+        files: updatedFiles,
+    });
 
-    // console.log('4');
+    console.log('4');
 
-    // await github.createPullRequest({
-    //     owner,
-    //     repo,
-    //     title: `Next ${project}`,
-    //     body: 'Bump version',
-    //     branch,
-    //     base: mergeIntoBranch,
-    // });
+    await github.createPullRequest({
+        owner,
+        repo,
+        title: `Next ${project}`,
+        body: 'Bump version',
+        branch,
+        base: mergeIntoBranch,
+    });
 
-    // console.log('5');
+    console.log('5');
 };
 
 const createReleaseCandidatePullRequest = async ({
@@ -202,42 +202,42 @@ const createReleaseCandidatePullRequest = async ({
 
     console.log('7');
 
-    // const {
-    //     changelog,
-    //     versionBody,
-    // } = await editChangelog({
-    //     rawChangelog: files.changelog,
-    // });
+    const {
+        changelog,
+        versionBody,
+    } = await editChangelog({
+        rawChangelog: files.changelog,
+    });
 
-    // console.log('8');
+    console.log('8');
 
-    // await github.createCommit({
-    //     owner,
-    //     repo,
-    //     branch: rcBranch,
-    //     paths: {
-    //         changelog: paths.changelog,
-    //         serviceFile: `${projectPath}/${project}/.release-service`,
-    //     },
-    //     files: {
-    //         changelog,
-    //         serviceFile: randomBytes(20).toString('hex') + '\n',
-    //     },
-    // });
+    await github.createCommit({
+        owner,
+        repo,
+        branch: rcBranch,
+        paths: {
+            changelog: paths.changelog,
+            serviceFile: `${projectPath}/${project}/.release-service`,
+        },
+        files: {
+            changelog,
+            serviceFile: randomBytes(20).toString('hex') + '\n',
+        },
+    });
 
-    // console.log('9');
+    console.log('9');
 
-    // await github.createPullRequest({
-    //     owner,
-    //     repo,
-    //     title: `Release ${releaseVersion}-${project}`,
-    //     body: `## Changelog\n\n${versionBody}\n\n`,
-    //     branch: rcBranch,
-    //     base: releaseBranch,
-    //     labels,
-    // });
+    await github.createPullRequest({
+        owner,
+        repo,
+        title: `Release ${releaseVersion}-${project}`,
+        body: `## Changelog\n\n${versionBody}\n\n`,
+        branch: rcBranch,
+        base: releaseBranch,
+        labels,
+    });
 
-    // console.log('10');
+    console.log('10');
 };
 
 (async () => {

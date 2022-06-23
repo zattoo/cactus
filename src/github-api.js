@@ -42,11 +42,7 @@ export const createBranch = async (data) => {
             repo,
             ref: `heads/${branch}`,
         });
-
-        console.log('delete ref', `heads/${branch}`);
-    } catch (error) {
-        console.log('check ref error: ', `heads/${branch}`, error);
-    }
+    } catch {}
 
     await octokit.rest.git.createRef({
         owner,
