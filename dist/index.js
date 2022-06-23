@@ -26258,7 +26258,7 @@ const editChangelog = async ({
 
     const date = Object(date_fns.format)(new Date(), "dd.MM.yyyy")
 
-    const changelogDateCut = rawChangelog.replace(/##(\s\[.+\]\s\-)?(\sUnreleased)/, `## [${releaseVersion}] - Unreleased`);
+    const changelogDateCut = rawChangelog.replace(/##(\s\[.+\]\s\-)?(\sUnreleased)/, `## [${releaseVersion}] - ${date}`);
 
     if (!nextVersion) {
         return {
@@ -26306,6 +26306,7 @@ const createVersionRaisePullRequest = async ({
     baseSha,
     project,
     nextVersion,
+    releaseVersion,
     mergeIntoBranch,
     files,
     paths,
@@ -26334,6 +26335,7 @@ const createVersionRaisePullRequest = async ({
         changelog: (await editChangelog({
             rawChangelog: files.changelog,
             nextVersion,
+            releaseVersion,
         })).changelog,
     }
 
@@ -26360,14 +26362,12 @@ const createReleaseCandidatePullRequest = async ({
     repo,
     baseSha,
     project,
+    releaseVersion,
     files,
     paths,
     labels,
     projectPath,
 }) => {
-    const packageJson = JSON.parse(files.packageJson);
-    const releaseVersion = packageJson.version;
-
     const release = releaseVersion.slice(0, -2);
 
     const rcBranch = `rc/${project}/${releaseVersion}`;
@@ -26458,9 +26458,9 @@ const createReleaseCandidatePullRequest = async ({
     ));
 
     const packageJson = JSON.parse(files.packageJson);
-    const previousVersion = packageJson.version;
+    const releaseVersion = packageJson.version;
 
-    validateVersion(previousVersion, nextVersion);
+    validateVersion(releaseVersion, nextVersion);
 
     const {sha: baseSha} = await getLatestCommit({
         owner,
@@ -26475,6 +26475,7 @@ const createReleaseCandidatePullRequest = async ({
             baseSha,
             project,
             nextVersion,
+            releaseVersion,
             mergeIntoBranch: defaultBranch,
             files,
             paths,
@@ -26485,6 +26486,7 @@ const createReleaseCandidatePullRequest = async ({
             repo,
             baseSha,
             project,
+            releaseVersion,
             files,
             paths,
             labels: rcLabels,
