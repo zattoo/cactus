@@ -26083,10 +26083,17 @@ const createBranch = async (data) => {
 
     const ref = `refs/heads/${branch}`;
 
-    const refExists = await octokit.rest.git.getRef({
-        ...rest,
-        ref,
-    });
+    try {
+        const refExists = await octokit.rest.git.getRef({
+            owner: rest.owner,
+            repo: rest.repo,
+            ref,
+        });
+
+        console.log({refExists});
+    } catch {
+        console.log('doesnt exist');
+    }
 
     console.log({refExists});
 
