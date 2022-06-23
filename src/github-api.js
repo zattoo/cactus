@@ -34,7 +34,7 @@ export const createBranch = async (data) => {
         await octokit.rest.git.getRef({
             owner: rest.owner,
             repo: rest.repo,
-            ref,
+            ref: `heads/${branch}`,
         });
 
         await octokit.rest.git.deleteRef({
