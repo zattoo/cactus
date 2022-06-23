@@ -42,7 +42,7 @@ export const createBranch = async (data) => {
         //     repo,
         //     ref: `heads/${branch}`,
         // });
-        octokit.rest.git.updateRef({
+        await octokit.rest.git.updateRef({
             force: true,
             owner,
             ref: `refs/heads/${branch}`,
