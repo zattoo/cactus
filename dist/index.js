@@ -26083,19 +26083,19 @@ const createBranch = async (data) => {
         sha,
     } = data;
 
-    try {
-        await octokit.rest.git.getRef({
-            owner,
-            repo,
-            ref: `heads/${branch}`,
-        });
+    // try {
+    //     await octokit.rest.git.getRef({
+    //         owner,
+    //         repo,
+    //         ref: `heads/${branch}`,
+    //     });
 
-        await octokit.rest.git.deleteRef({
-            owner,
-            repo,
-            ref: `heads/${branch}`,
-        });
-    } catch {}
+    //     await octokit.rest.git.deleteRef({
+    //         owner,
+    //         repo,
+    //         ref: `heads/${branch}`,
+    //     });
+    // } catch {}
 
     await octokit.rest.git.createRef({
         owner,
