@@ -113,12 +113,16 @@ const createVersionRaisePullRequest = async ({
 }) => {
     const branch = `next/${project}`;
 
+    console.log('1');
+
     await github.createBranch({
         owner,
         repo,
         branch,
         sha: baseSha,
     });
+
+    console.log('2');
 
     const updatedFiles = {
         packageJson: editPackageJson({
@@ -137,6 +141,8 @@ const createVersionRaisePullRequest = async ({
         })).changelog,
     }
 
+    console.log('3');
+
     await github.createCommit({
         owner,
         repo,
@@ -144,6 +150,8 @@ const createVersionRaisePullRequest = async ({
         paths,
         files: updatedFiles,
     });
+
+    console.log('4');
 
     await github.createPullRequest({
         owner,
@@ -153,6 +161,8 @@ const createVersionRaisePullRequest = async ({
         branch,
         base: mergeIntoBranch,
     });
+
+    console.log('5');
 };
 
 const createReleaseCandidatePullRequest = async ({
@@ -173,6 +183,8 @@ const createReleaseCandidatePullRequest = async ({
     const rcBranch = `rc/${project}/${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
 
+    console.log('6');
+
     await Promise.all([
         github.createBranch({
             owner,
@@ -188,12 +200,16 @@ const createReleaseCandidatePullRequest = async ({
         }),
     ]);
 
+    console.log('7');
+
     const {
         changelog,
         versionBody,
     } = await editChangelog({
         rawChangelog: files.changelog,
     });
+
+    console.log('8');
 
     await github.createCommit({
         owner,
@@ -209,6 +225,8 @@ const createReleaseCandidatePullRequest = async ({
         },
     });
 
+    console.log('9');
+
     await github.createPullRequest({
         owner,
         repo,
@@ -218,6 +236,8 @@ const createReleaseCandidatePullRequest = async ({
         base: releaseBranch,
         labels,
     });
+
+    console.log('10');
 };
 
 (async () => {
