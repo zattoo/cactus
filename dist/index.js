@@ -26495,7 +26495,6 @@ const createReleaseCandidatePullRequest = async ({
     ]);
 })()
     .catch((error) => {
-        console.log(error);
         exit(error, 1);
     });
 
