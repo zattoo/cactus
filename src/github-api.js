@@ -28,9 +28,18 @@ export const createBranch = async (data) => {
         ...rest
     } = data;
 
+    const ref = `refs/heads/${branch}`;
+
+    const refExists = await octokit.rest.git.getRef({
+        ...rest,
+        ref,
+    });
+
+    console.log({refExists});
+
     await octokit.rest.git.createRef({
         ...rest,
-        ref: `refs/heads/${branch}`,
+        ref,
     });
 };
 
