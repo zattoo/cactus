@@ -26108,7 +26108,9 @@ const createBranch = async (data) => {
     } catch (error) {
         Object(core.error)(`${branch} update failed`);
 
-        throw new Error(error.message);
+        console.log({error});
+
+        throw new Error(error);
     }
 };
 
@@ -26125,7 +26127,9 @@ const getRawFile = async (data) => {
     } catch (error) {
         Object(core.error)(`Failed to get file ${data.path}`);
 
-        throw new Error(error.message);
+        console.log({error});
+
+        throw new Error(error);
     }
 };
 
@@ -26137,7 +26141,9 @@ const getLatestCommit = async (data) => {
     } catch (error) {
         Object(core.error)(`Failed to get latest commit from ${data.branch}`);
 
-        throw new Error(error.message);
+        console.log({error});
+
+        throw new Error(error);
     }
 };
 
@@ -26189,7 +26195,9 @@ const createCommit = async ({
     } catch (error) {
         Object(core.error)(`Failed to create commit on ${branch}`);
 
-        throw new Error(error.message);
+        console.log({error});
+
+        throw new Error(error);
     }
 };
 
@@ -26223,7 +26231,9 @@ const createPullRequest = async ({
     } catch (error) {
         Object(core.error)(`Failed to create pull request from ${branch}`);
 
-        throw new Error(error.message);
+        console.log({error});
+
+        throw new Error(error);
     }
 };
 
