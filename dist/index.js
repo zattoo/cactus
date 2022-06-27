@@ -26236,7 +26236,7 @@ const createPullRequest = async ({
 
 
 const exit = (error, exitCode) => {
-    Object(core.info)(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    Object(core.debug)(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
     if (exitCode === 1) {
         Object(core.error)(error);
