@@ -26035,7 +26035,7 @@ exports.createTokenAuth = createTokenAuth;
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __webpack_require__(470);
+var lib_core = __webpack_require__(470);
 
 // EXTERNAL MODULE: ./node_modules/changelog-parser/index.js
 var changelog_parser = __webpack_require__(734);
@@ -26084,38 +26084,60 @@ const createBranch = async (data) => {
     } = data;
 
     try {
-        await octokit.rest.git.updateRef({
-            force: true,
-            owner,
-            ref: `heads/${branch}`,
-            repo,
-            sha,
-        });
-    } catch {
         await octokit.rest.git.createRef({
             owner,
             repo,
             sha,
             ref: `refs/heads/${branch}`,
         });
+
+        return;
+    } catch (error) {
+        core.info(`${branch} creation failed, try update existing`);
+    }
+
+    try {
+        octokit.rest.git.updateRef({
+            force: true,
+            owner,
+            ref: `heads/${branch}`,
+            repo,
+            sha,
+        })
+    } catch (error) {
+        core.error(`${branch} update failed`);
+
+        throw(error);
     }
 };
 
 const getRawFile = async (data) => {
-    const {data: file} = await octokit.rest.repos.getContent({
-        ...data,
-        mediaType: {
-            format: 'raw'
-        },
-    });
+    try {
+        const {data: file} = await octokit.rest.repos.getContent({
+            ...data,
+            mediaType: {
+                format: 'raw'
+            },
+        });
 
-    return file;
+        return file;
+    } catch (error) {
+        core.error(`Failed to get file ${data.path}`);
+
+        throw(error);
+    }
 };
 
 const getLatestCommit = async (data) => {
-    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch(data));
+    try {
+        const {data: {commit: latestCommit}} = await octokit.rest.repos.getBranch(data);
 
-    return latestCommit;
+        return latestCommit;
+    } catch (error) {
+        core.error(`Failed to get latest commit from ${data.branch}`);
+
+        throw(error);
+    }
 };
 
 const createCommit = async ({
@@ -26140,28 +26162,34 @@ const createCommit = async ({
         };
     });
 
-    const {data: tree} = await octokit.rest.git.createTree({
-        owner,
-        repo,
-        base_tree: latestCommit.sha,
-        tree: blobs,
-    });
+    try {
+        const {data: tree} = await octokit.rest.git.createTree({
+            owner,
+            repo,
+            base_tree: latestCommit.sha,
+            tree: blobs,
+        });
 
-    const {data: createdCommit} = (await octokit.rest.git.createCommit({
-        owner,
-        repo,
-        branch,
-        message: `Update ${Object.values(paths).join(', ')}`,
-        tree: tree.sha,
-        parents: [latestCommit.sha],
-    }));
+        const {data: createdCommit} = (await octokit.rest.git.createCommit({
+            owner,
+            repo,
+            branch,
+            message: `Update ${Object.values(paths).join(', ')}`,
+            tree: tree.sha,
+            parents: [latestCommit.sha],
+        }));
 
-    await octokit.rest.git.updateRef({
-        owner,
-        repo,
-        ref: `heads/${branch}`,
-        sha: createdCommit.sha,
-    });
+        await octokit.rest.git.updateRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+            sha: createdCommit.sha,
+        });
+    } catch (error) {
+        core.error(`Failed to create commit on ${branch}`);
+
+        throw(error);
+    }
 };
 
 const createPullRequest = async ({
@@ -26173,22 +26201,28 @@ const createPullRequest = async ({
     base,
     labels,
 }) => {
-    const {data: pr} = await octokit.rest.pulls.create({
-        owner,
-        repo,
-        title,
-        body,
-        head: branch,
-        base,
-    });
-
-    if (labels) {
-        await octokit.rest.issues.addLabels({
+    try {
+        const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
-            issue_number: pr.number,
-            labels,
+            title,
+            body,
+            head: branch,
+            base,
         });
+
+        if (labels) {
+            await octokit.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: pr.number,
+                labels,
+            });
+        }
+    } catch (error) {
+        core.error(`Failed to create pull request from ${branch}`);
+
+        throw(error);
     }
 };
 
@@ -26202,9 +26236,9 @@ const createPullRequest = async ({
 
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
-        Object(core.error)(message);
+        Object(lib_core.error)(message);
     } else {
-        Object(core.info)(message);
+        Object(lib_core.info)(message);
     }
 
     process.exit(exitCode);
@@ -26247,7 +26281,7 @@ const editChangelog = async ({
     } = changelog.versions[0];
 
     if (!title.endsWith('Unreleased')) {
-        Object(core.info)('Skip Changelog: No unreleased version.');
+        Object(lib_core.info)('Skip Changelog: No unreleased version.');
 
         return null;
     }
@@ -26418,11 +26452,11 @@ const createReleaseCandidatePullRequest = async ({
 };
 
 (async () => {
-    const token = Object(core.getInput)('token', {required: true});
-    const rcLabels = Object(core.getMultilineInput)('labels', {required: false});
-    const project = Object(core.getInput)('project', {required: true});
-    const nextVersion = Object(core.getInput)('next_version', {required: true});
-    const projectPath = Object(core.getInput)('project_path', {required: false});
+    const token = Object(lib_core.getInput)('token', {required: true});
+    const rcLabels = Object(lib_core.getMultilineInput)('labels', {required: false});
+    const project = Object(lib_core.getInput)('project', {required: true});
+    const nextVersion = Object(lib_core.getInput)('next_version', {required: true});
+    const projectPath = Object(lib_core.getInput)('project_path', {required: false});
 
     init(token);
 

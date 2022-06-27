@@ -31,38 +31,60 @@ export const createBranch = async (data) => {
     } = data;
 
     try {
-        await octokit.rest.git.updateRef({
-            force: true,
-            owner,
-            ref: `heads/${branch}`,
-            repo,
-            sha,
-        });
-    } catch {
         await octokit.rest.git.createRef({
             owner,
             repo,
             sha,
             ref: `refs/heads/${branch}`,
         });
+
+        return;
+    } catch (error) {
+        core.info(`${branch} creation failed, try update existing`);
+    }
+
+    try {
+        octokit.rest.git.updateRef({
+            force: true,
+            owner,
+            ref: `heads/${branch}`,
+            repo,
+            sha,
+        })
+    } catch (error) {
+        core.error(`${branch} update failed`);
+
+        throw(error);
     }
 };
 
 export const getRawFile = async (data) => {
-    const {data: file} = await octokit.rest.repos.getContent({
-        ...data,
-        mediaType: {
-            format: 'raw'
-        },
-    });
+    try {
+        const {data: file} = await octokit.rest.repos.getContent({
+            ...data,
+            mediaType: {
+                format: 'raw'
+            },
+        });
 
-    return file;
+        return file;
+    } catch (error) {
+        core.error(`Failed to get file ${data.path}`);
+
+        throw(error);
+    }
 };
 
 export const getLatestCommit = async (data) => {
-    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch(data));
+    try {
+        const {data: {commit: latestCommit}} = await octokit.rest.repos.getBranch(data);
 
-    return latestCommit;
+        return latestCommit;
+    } catch (error) {
+        core.error(`Failed to get latest commit from ${data.branch}`);
+
+        throw(error);
+    }
 };
 
 export const createCommit = async ({
@@ -87,28 +109,34 @@ export const createCommit = async ({
         };
     });
 
-    const {data: tree} = await octokit.rest.git.createTree({
-        owner,
-        repo,
-        base_tree: latestCommit.sha,
-        tree: blobs,
-    });
+    try {
+        const {data: tree} = await octokit.rest.git.createTree({
+            owner,
+            repo,
+            base_tree: latestCommit.sha,
+            tree: blobs,
+        });
 
-    const {data: createdCommit} = (await octokit.rest.git.createCommit({
-        owner,
-        repo,
-        branch,
-        message: `Update ${Object.values(paths).join(', ')}`,
-        tree: tree.sha,
-        parents: [latestCommit.sha],
-    }));
+        const {data: createdCommit} = (await octokit.rest.git.createCommit({
+            owner,
+            repo,
+            branch,
+            message: `Update ${Object.values(paths).join(', ')}`,
+            tree: tree.sha,
+            parents: [latestCommit.sha],
+        }));
 
-    await octokit.rest.git.updateRef({
-        owner,
-        repo,
-        ref: `heads/${branch}`,
-        sha: createdCommit.sha,
-    });
+        await octokit.rest.git.updateRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+            sha: createdCommit.sha,
+        });
+    } catch (error) {
+        core.error(`Failed to create commit on ${branch}`);
+
+        throw(error);
+    }
 };
 
 export const createPullRequest = async ({
@@ -120,21 +148,27 @@ export const createPullRequest = async ({
     base,
     labels,
 }) => {
-    const {data: pr} = await octokit.rest.pulls.create({
-        owner,
-        repo,
-        title,
-        body,
-        head: branch,
-        base,
-    });
-
-    if (labels) {
-        await octokit.rest.issues.addLabels({
+    try {
+        const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
-            issue_number: pr.number,
-            labels,
+            title,
+            body,
+            head: branch,
+            base,
         });
+
+        if (labels) {
+            await octokit.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: pr.number,
+                labels,
+            });
+        }
+    } catch (error) {
+        core.error(`Failed to create pull request from ${branch}`);
+
+        throw(error);
     }
 };
