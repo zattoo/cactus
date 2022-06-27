@@ -5,6 +5,7 @@
  * @see https://docs.github.com/en/rest/repos/contents#size-limits
  * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
+import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 /**
