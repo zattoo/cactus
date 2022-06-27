@@ -5,11 +5,13 @@ import {randomBytes} from 'node:crypto';
 
 import * as github from './github-api';
 
-const exit = (message, exitCode) => {
+const exit = (error, exitCode) => {
+    core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
     if (exitCode === 1) {
-        core.error(message);
+        core.error(error);
     } else {
-        core.info(message);
+        core.info(error);
     }
 
     process.exit(exitCode);
