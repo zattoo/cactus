@@ -53,9 +53,7 @@ export const createBranch = async (data) => {
             sha,
         })
     } catch (error) {
-        core.error(`${branch} update failed`);
-
-        core.error(`${error.message}`);
+        core.error(`${branch} update failed: ${error.message}`);
 
         throw new Error(error);
     }
@@ -72,9 +70,7 @@ export const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        core.error(`Failed to get file ${data.path}`);
-
-        core.error(`${error.message}`);
+        core.error(`Failed to get file ${data.path}: ${error.message}`);
 
         throw new Error(error);
     }
@@ -86,9 +82,7 @@ export const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        core.error(`Failed to get latest commit from ${data.branch}`);
-
-        core.error(`${error.message}`);
+        core.error(`Failed to get latest commit from ${data.branch}: ${error.message}`);
 
         throw new Error(error);
     }
@@ -140,9 +134,7 @@ export const createCommit = async ({
             sha: createdCommit.sha,
         });
     } catch (error) {
-        core.error(`Failed to create commit on ${branch}`);
-
-        core.error(`${error.message}`);
+        core.error(`Failed to create commit on ${branch}: ${error.message}`);
 
         throw new Error(error);
     }
@@ -176,9 +168,7 @@ export const createPullRequest = async ({
             });
         }
     } catch (error) {
-        core.error(`Failed to create pull request from ${branch}`);
-
-        core.error(`${error.message}`);
+        core.error(`Failed to create pull request from ${branch}: ${error.message}`);
 
         throw new Error(error);
     }
