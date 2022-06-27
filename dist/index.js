@@ -26035,7 +26035,7 @@ exports.createTokenAuth = createTokenAuth;
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var lib_core = __webpack_require__(470);
+var core = __webpack_require__(470);
 
 // EXTERNAL MODULE: ./node_modules/changelog-parser/index.js
 var changelog_parser = __webpack_require__(734);
@@ -26058,6 +26058,7 @@ var github = __webpack_require__(469);
  * @see https://docs.github.com/en/rest/repos/contents#size-limits
  * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
+
 
 
 /**
@@ -26093,7 +26094,7 @@ const createBranch = async (data) => {
 
         return;
     } catch (error) {
-        core.info(`${branch} creation failed, try update existing`);
+        Object(core.info)(`${branch} creation failed, try update existing`);
     }
 
     try {
@@ -26105,7 +26106,7 @@ const createBranch = async (data) => {
             sha,
         })
     } catch (error) {
-        core.error(`${branch} update failed`);
+        Object(core.error)(`${branch} update failed`);
 
         throw(error);
     }
@@ -26122,7 +26123,7 @@ const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        core.error(`Failed to get file ${data.path}`);
+        Object(core.error)(`Failed to get file ${data.path}`);
 
         throw(error);
     }
@@ -26134,7 +26135,7 @@ const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        core.error(`Failed to get latest commit from ${data.branch}`);
+        Object(core.error)(`Failed to get latest commit from ${data.branch}`);
 
         throw(error);
     }
@@ -26186,7 +26187,7 @@ const createCommit = async ({
             sha: createdCommit.sha,
         });
     } catch (error) {
-        core.error(`Failed to create commit on ${branch}`);
+        Object(core.error)(`Failed to create commit on ${branch}`);
 
         throw(error);
     }
@@ -26220,7 +26221,7 @@ const createPullRequest = async ({
             });
         }
     } catch (error) {
-        core.error(`Failed to create pull request from ${branch}`);
+        Object(core.error)(`Failed to create pull request from ${branch}`);
 
         throw(error);
     }
@@ -26236,9 +26237,9 @@ const createPullRequest = async ({
 
 const exit = (message, exitCode) => {
     if (exitCode === 1) {
-        Object(lib_core.error)(message);
+        Object(core.error)(message);
     } else {
-        Object(lib_core.info)(message);
+        Object(core.info)(message);
     }
 
     process.exit(exitCode);
@@ -26281,7 +26282,7 @@ const editChangelog = async ({
     } = changelog.versions[0];
 
     if (!title.endsWith('Unreleased')) {
-        Object(lib_core.info)('Skip Changelog: No unreleased version.');
+        Object(core.info)('Skip Changelog: No unreleased version.');
 
         return null;
     }
@@ -26452,11 +26453,11 @@ const createReleaseCandidatePullRequest = async ({
 };
 
 (async () => {
-    const token = Object(lib_core.getInput)('token', {required: true});
-    const rcLabels = Object(lib_core.getMultilineInput)('labels', {required: false});
-    const project = Object(lib_core.getInput)('project', {required: true});
-    const nextVersion = Object(lib_core.getInput)('next_version', {required: true});
-    const projectPath = Object(lib_core.getInput)('project_path', {required: false});
+    const token = Object(core.getInput)('token', {required: true});
+    const rcLabels = Object(core.getMultilineInput)('labels', {required: false});
+    const project = Object(core.getInput)('project', {required: true});
+    const nextVersion = Object(core.getInput)('next_version', {required: true});
+    const projectPath = Object(core.getInput)('project_path', {required: false});
 
     init(token);
 
