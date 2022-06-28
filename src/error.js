@@ -1,4 +1,5 @@
 const cleanMessage = (message) => {
+    // api error responses sometimes contain information as json with a string prefix
     const json = message.match(/(.*)\:\s({.*?})/);
 
     if (json && json.length === 3) {

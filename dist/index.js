@@ -31984,6 +31984,7 @@ const external_node_crypto_namespaceObject = require("node:crypto");
 var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/error.js
 const cleanMessage = (message) => {
+    // api error responses sometimes contain information as json with a string prefix
     const json = message.match(/(.*)\:\s({.*?})/);
 
     if (json && json.length === 3) {
@@ -32014,7 +32015,6 @@ class GithubError extends Error {
  * @see https://docs.github.com/en/rest/repos/contents#size-limits
  * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
-
 
 
 
@@ -32188,7 +32188,7 @@ const createPullRequest = async ({
 
 
 const exit = (error, exitCode) => {
-    core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    core.debug(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
     if (exitCode === 1) {
         core.error(error);

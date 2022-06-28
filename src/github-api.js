@@ -6,7 +6,6 @@
  * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
 import * as github from '@actions/github';
-import * as core from '@actions/core';
 
 import {GithubError} from './error';
 
