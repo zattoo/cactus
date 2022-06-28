@@ -5,14 +5,10 @@ import {randomBytes} from 'node:crypto';
 
 import * as github from './github-api';
 
-const exit = (error, exitCode) => {
+const exit = (error) => {
     core.debug(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
-    if (exitCode === 1) {
-        core.error(error);
-    } else {
-        core.info(error);
-    }
+    core.error(error);
 
     process.exit(exitCode);
 };
@@ -25,8 +21,12 @@ const validateVersion = (previousVersion, nextVersion) => {
     const parsedPreviousVersion = previousVersion.split('.');
     const parsedNextVersion = nextVersion.split('.');
 
-    if (parsedNextVersion.length !== 3 || parsedPreviousVersion.length !== 3) {
-        throw new Error('Invalid version format');
+    if (parsedPreviousVersion.length !== 3) {
+        throw new Error(`Invalid version format ${previousVersion}`);
+    }
+
+    if (parsedNextVersion.length !== 3) {
+        throw new Error(`Invalid version format ${nextVersion}`);
     }
 
     if (Number(parsedNextVersion[2]) !== 0) {
@@ -56,7 +56,10 @@ const editChangelog = async ({
     if (!title.endsWith('Unreleased')) {
         core.info('Skip Changelog: No unreleased version.');
 
-        return null;
+        return {
+            changelog: rawChangelog,
+            versionBody: body,
+        };
     }
 
     const date = format(new Date(), "dd.MM.yyyy")
@@ -299,5 +302,5 @@ const createReleaseCandidatePullRequest = async ({
     ]);
 })()
     .catch((error) => {
-        exit(error, 1);
+        exit(error);
     });
