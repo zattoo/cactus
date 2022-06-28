@@ -31986,10 +31986,11 @@ var github = __nccwpck_require__(5438);
 // import * as core from '@actions/core';
 
 class GithubError extends Error {
-    constructor(message, data) {
-        super(`${message}: ${data.cause.message}`, data);
+    constructor(message, error) {
+        super(`${message}: ${error.message}`, {
+            cause: error,
+        });
         this.name = 'GithubError';
-        // this.cause = data.cause;
     }
 }
 
@@ -32046,10 +32047,10 @@ const createBranch = async (data) => {
         const branchAlreadyExists = error.message === 'Reference already exists';
 
         if (!branchAlreadyExists || true) { // to do
-            // throw new Error(`branch ${branch} creation failed`, {
-            throw new GithubError(`branch ${branch} creation failed`, {
-                cause: error
-            });
+            // throw new GithubError(`branch ${branch} creation failed`, {
+            //     cause: error
+            // });
+            throw new GithubError(`branch ${branch} creation failed`, error);
         }
     }
 
