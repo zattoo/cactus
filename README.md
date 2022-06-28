@@ -6,10 +6,19 @@ GitHub Action to create releases. It will create two pull requests.
 
 The first one goes into the default main development branch updating the versions in `/package-lock.json`, `/projects/{$project}/package.json` and `/projects/{$project}/CHANGELOG.md`.
 
-In this example the release version would be `3.2289.0` and the new version `3.2290.0`. The topmost changelog's entry needs to be in a format like this:
+In this example the release version would be `3.2289.0` and the new version `3.2290.0`, and the date of cut `29.06.2020`. The topmost changelog's entry needs to be in a format like this:
 
 ```markdown
 ## [3.2289.0] - Unreleased
+
+- Some changes here
+- Other changes
+```
+
+or:
+
+```markdown
+## Unreleased
 
 - Some changes here
 - Other changes
@@ -22,7 +31,7 @@ The action will create:
 
 ...
 
-## [3.2289.0] - ${Date of Dispatch}
+## [3.2289.0] - 29.06.2020
 
 - Some changes here
 - Other changes
@@ -50,6 +59,12 @@ Required. Must be user based token with write permission,
 so release creation action can trigger others,
 like deploy.
 
+### Release Version
+
+`release_version: string`
+
+Optional. Version of the release. Defaults to the version sepcified in `/projects/{$project}/package.json`.
+
 ### Next Version
 
 `next_version: string`
@@ -66,7 +81,7 @@ Required. The action expects a project based structure, `projects/${project}/`. 
 
 `project_path: string`.
 
-Not Required. Default: `projects`.
+Optional. Default: `projects`.
 
 ### Labels
 
@@ -77,7 +92,7 @@ Optional. List of labels to add to release candidate upon creation.
 ## Usage Example
 
 ```yaml
-name: Cactus
+name: Cut
 
 on:
   workflow_dispatch:
@@ -98,7 +113,7 @@ on:
 
 jobs:
   release:
-    name: Cactus
+    name: Cut
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:

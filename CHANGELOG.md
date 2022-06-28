@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [4.0.1] - 23.06.2022
 
-- Overwrite already existing branches
+- Delete already existing branches and close pull requests
+- Allow input for release version
 - Extend changelog `Unreleased` line compatibility
 
 ## [4.0.0] - 16.06.2022
