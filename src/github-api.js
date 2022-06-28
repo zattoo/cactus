@@ -14,6 +14,7 @@ import {GithubError} from './error';
  * Marks a git blob as a file
  */
 const BLOB_MODE_FILE = '100644';
+const HTTP_OK = 200;
 
 let octokit;
 
@@ -25,6 +26,24 @@ export const getPayload = () => {
     return github.context.payload;
 };
 
+const deleteBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
+    } = data;
+
+    try {
+        await octokit.rest.git.deleteRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+        });
+    } catch (error) {
+        throw new GithubError(`Could not delete branch ${branch}`, error);
+    }
+}
+
 export const createBranch = async (data) => {
     const {
         owner,
@@ -34,19 +53,21 @@ export const createBranch = async (data) => {
     } = data;
 
     try {
-        const result = await octokit.rest.git.getRef({
+        await octokit.rest.git.getRef({
             owner,
             repo,
-            ref: `heads/${branch}-nope`,
+            ref: `heads/${branch}`,
         });
-
-        core.info(JSON.stringify(result));
-
-        if (result.status !== 200) {
-            throw new Error(result.status);
-        }
     } catch (error) {
-        throw new GithubError(`branch ${branch} does not exist`, error);
+        if (error.message !== 'Not Found') {
+            throw new GithubError(`Could not get information about branch ${branch}`, error);
+        }
+
+        await deleteBranch({
+            owner,
+            repo,
+            branch,
+        });
     }
 
     try {
@@ -56,26 +77,8 @@ export const createBranch = async (data) => {
             sha,
             ref: `refs/heads/${branch}`,
         });
-
-        return;
     } catch (error) {
-        const branchAlreadyExists = error.message === 'Reference already exists';
-
-        if (!branchAlreadyExists) {
-            throw new GithubError(`branch ${branch} creation failed`, error);
-        }
-    }
-
-    try {
-        octokit.rest.git.updateRef({
-            force: true,
-            owner,
-            ref: `heads/${branch}`,
-            repo,
-            sha,
-        })
-    } catch (error) {
-        throw new GithubError(`branch ${branch} update failed`, error);
+        throw new GithubError(`Could not create branch ${branch}`, error);
     }
 };
 
