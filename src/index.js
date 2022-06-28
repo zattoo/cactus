@@ -228,7 +228,7 @@ const createReleaseCandidatePullRequest = async ({
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
-    const releaseVersionInput = core.getInput('release_version', {required: true});
+    const releaseVersionInput = core.getInput('release_version', {required: false});
     const nextVersion = core.getInput('next_version', {required: true});
     const projectPath = core.getInput('project_path', {required: false});
 

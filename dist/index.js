@@ -9769,7 +9769,7 @@ const createReleaseCandidatePullRequest = async ({
     const token = lib_core.getInput('token', {required: true});
     const rcLabels = lib_core.getMultilineInput('labels', {required: false});
     const project = lib_core.getInput('project', {required: true});
-    const releaseVersionInput = lib_core.getInput('release_version', {required: true});
+    const releaseVersionInput = lib_core.getInput('release_version', {required: false});
     const nextVersion = lib_core.getInput('next_version', {required: true});
     const projectPath = lib_core.getInput('project_path', {required: false});
 
