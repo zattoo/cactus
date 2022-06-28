@@ -9392,11 +9392,11 @@ const BLOB_MODE_FILE = '100644';
 let octokit;
 
 const init = (token) => {
-    octokit = github.getOctokit(token);
+    octokit = lib_github.getOctokit(token);
 };
 
 const getPayload = () => {
-    return github.context.payload;
+    return lib_github.context.payload;
 };
 
 const createBranch = async (data) => {
@@ -9442,7 +9442,7 @@ const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        throw new GithubError(`Failed to get file ${data.path}`, error);
+        throw new error_GithubError(`Failed to get file ${data.path}`, error);
     }
 };
 
@@ -9769,43 +9769,43 @@ const createReleaseCandidatePullRequest = async ({
     const token = lib_core.getInput('token', {required: true});
     const rcLabels = lib_core.getMultilineInput('labels', {required: false});
     const project = lib_core.getInput('project', {required: true});
-    const releaseVersion = lib_core.getInput('release_version', {required: true});
+    const releaseVersionInput = lib_core.getInput('release_version', {required: true});
     const nextVersion = lib_core.getInput('next_version', {required: true});
     const projectPath = lib_core.getInput('project_path', {required: false});
 
-    lib_core.info(JSON.stringify(releaseVersion));
+    init(token);
 
-    // github.init(token);
+    const payload = getPayload();
 
-    // const payload = github.getPayload();
+    const repository = payload.repository;
+    const repo = repository.name;
+    const owner = repository.full_name.split('/')[0];
 
-    // const repository = payload.repository;
-    // const repo = repository.name;
-    // const owner = repository.full_name.split('/')[0];
+    const defaultBranch = repository.default_branch;
 
-    // const defaultBranch = repository.default_branch;
+    const paths = {
+        packageJson: `${projectPath}/${project}/package.json`,
+        changelog: `${projectPath}/${project}/CHANGELOG.md`,
+        packageLock: 'package-lock.json',
+    }
 
-    // const paths = {
-    //     packageJson: `${projectPath}/${project}/package.json`,
-    //     changelog: `${projectPath}/${project}/CHANGELOG.md`,
-    //     packageLock: 'package-lock.json',
-    // }
+    const files = Object.fromEntries(await Promise.all(
+        Object.entries(paths).map(async ([key, path]) => {
+            return [
+                key,
+                await getRawFile({
+                    owner,
+                    repo,
+                    path,
+                })
+            ];
+        }),
+    ));
 
-    // const files = Object.fromEntries(await Promise.all(
-    //     Object.entries(paths).map(async ([key, path]) => {
-    //         return [
-    //             key,
-    //             await github.getRawFile({
-    //                 owner,
-    //                 repo,
-    //                 path,
-    //             })
-    //         ];
-    //     }),
-    // ));
+    const packageJson = JSON.parse(files.packageJson);
+    const releaseVersion = releaseVersionInput || packageJson.version;
 
-    // const packageJson = JSON.parse(files.packageJson);
-    // const releaseVersion = packageJson.version;
+    lib_core.info(`releaseVersion: ${releaseVersion}`);
 
     // validateVersion(releaseVersion, nextVersion);
 

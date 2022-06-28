@@ -228,43 +228,43 @@ const createReleaseCandidatePullRequest = async ({
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
-    const releaseVersion = core.getInput('release_version', {required: true});
+    const releaseVersionInput = core.getInput('release_version', {required: true});
     const nextVersion = core.getInput('next_version', {required: true});
     const projectPath = core.getInput('project_path', {required: false});
 
-    core.info(JSON.stringify(releaseVersion));
+    github.init(token);
 
-    // github.init(token);
+    const payload = github.getPayload();
 
-    // const payload = github.getPayload();
+    const repository = payload.repository;
+    const repo = repository.name;
+    const owner = repository.full_name.split('/')[0];
 
-    // const repository = payload.repository;
-    // const repo = repository.name;
-    // const owner = repository.full_name.split('/')[0];
+    const defaultBranch = repository.default_branch;
 
-    // const defaultBranch = repository.default_branch;
+    const paths = {
+        packageJson: `${projectPath}/${project}/package.json`,
+        changelog: `${projectPath}/${project}/CHANGELOG.md`,
+        packageLock: 'package-lock.json',
+    }
 
-    // const paths = {
-    //     packageJson: `${projectPath}/${project}/package.json`,
-    //     changelog: `${projectPath}/${project}/CHANGELOG.md`,
-    //     packageLock: 'package-lock.json',
-    // }
+    const files = Object.fromEntries(await Promise.all(
+        Object.entries(paths).map(async ([key, path]) => {
+            return [
+                key,
+                await github.getRawFile({
+                    owner,
+                    repo,
+                    path,
+                })
+            ];
+        }),
+    ));
 
-    // const files = Object.fromEntries(await Promise.all(
-    //     Object.entries(paths).map(async ([key, path]) => {
-    //         return [
-    //             key,
-    //             await github.getRawFile({
-    //                 owner,
-    //                 repo,
-    //                 path,
-    //             })
-    //         ];
-    //     }),
-    // ));
+    const packageJson = JSON.parse(files.packageJson);
+    const releaseVersion = releaseVersionInput || packageJson.version;
 
-    // const packageJson = JSON.parse(files.packageJson);
-    // const releaseVersion = packageJson.version;
+    core.info(`releaseVersion: ${releaseVersion}`);
 
     // validateVersion(releaseVersion, nextVersion);
 
