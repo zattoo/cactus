@@ -9,6 +9,7 @@ export class GithubError extends Error {
         //     apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
         //     message: apiError.message,
         // }));
+        console.log(apiError);
 
         // core.info('test2');
 
@@ -18,8 +19,6 @@ export class GithubError extends Error {
 
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
-
-        this.apiError = 'something';
     }
 }
 
