@@ -29830,7 +29830,7 @@ class GithubError extends Error {
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
 
-        // this.apiMessage = apiError.message;
+        this.apiMessage = apiError.message;
     }
 }
 
