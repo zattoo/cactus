@@ -4,7 +4,7 @@
   "description": "Cactus Release Manager",
   "main": "action.yml",
   "scripts": {
-    "pack": "ncc build src/index.js -o dist"
+    "pack": "ncc build src/index.js -o dist --source-map"
   },
   "repository": {
     "type": "git",
