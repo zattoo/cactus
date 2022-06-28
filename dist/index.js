@@ -29830,7 +29830,7 @@ class GithubError extends Error {
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
 
-        this.apiMessage = apiError.message;
+        // this.apiMessage = apiError.message;
     }
 }
 
@@ -29874,8 +29874,6 @@ const createBranch = async (data) => {
         sha,
     } = data;
 
-    Object(core.info)('test0');
-
     try {
         await octokit.rest.git.createRef({
             owner,
@@ -29904,8 +29902,6 @@ const createBranch = async (data) => {
     } catch (error) {
         throw new GithubError(`${branch} update failed`, error);
     }
-
-    Object(core.info)('test3');
 };
 
 const getRawFile = async (data) => {
@@ -30024,7 +30020,7 @@ const createPullRequest = async ({
 
 
 const exit = (error, exitCode) => {
-    Object(core.info)(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    // core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
     if (exitCode === 1) {
         Object(core.error)(error);

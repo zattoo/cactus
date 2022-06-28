@@ -33,8 +33,6 @@ export const createBranch = async (data) => {
         sha,
     } = data;
 
-    core.info('test0');
-
     try {
         await octokit.rest.git.createRef({
             owner,
@@ -63,8 +61,6 @@ export const createBranch = async (data) => {
     } catch (error) {
         throw new GithubError(`${branch} update failed`, error);
     }
-
-    core.info('test3');
 };
 
 export const getRawFile = async (data) => {
