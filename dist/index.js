@@ -31986,7 +31986,7 @@ var github = __nccwpck_require__(5438);
 // import * as core from '@actions/core';
 
 class GithubError extends Error {
-    constructor(message, apiError) {
+    constructor(message, data) {
 
         // core.info('test1');
 
@@ -31994,16 +31994,16 @@ class GithubError extends Error {
         //     apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
         //     message: apiError.message,
         // }));
-        console.log(apiError);
 
         // core.info('test2');
 
         // const {message: apiMessage} = JSON.parse(apiError.message);
 
-        super(`${message}`);
+        super(`${message}`, data);
 
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
+        this.cause = data.cause;
     }
 }
 
@@ -32180,7 +32180,9 @@ const createPullRequest = async ({
             });
         }
     } catch (error) {
-        throw new GithubError(`Failed to create pull request from ${branch}`, error);
+        throw new GithubError(`Failed to create pull request from ${branch}`, {
+            cause: error,
+        });
     }
 };
 

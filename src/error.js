@@ -1,7 +1,7 @@
 // import * as core from '@actions/core';
 
 export class GithubError extends Error {
-    constructor(message, apiError) {
+    constructor(message, data) {
 
         // core.info('test1');
 
@@ -9,16 +9,16 @@ export class GithubError extends Error {
         //     apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
         //     message: apiError.message,
         // }));
-        console.log(apiError);
 
         // core.info('test2');
 
         // const {message: apiMessage} = JSON.parse(apiError.message);
 
-        super(`${message}`);
+        super(`${message}`, data);
 
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
+        this.cause = data.cause;
     }
 }
 

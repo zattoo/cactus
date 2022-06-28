@@ -166,6 +166,8 @@ export const createPullRequest = async ({
             });
         }
     } catch (error) {
-        throw new GithubError(`Failed to create pull request from ${branch}`, error);
+        throw new GithubError(`Failed to create pull request from ${branch}`, {
+            cause: error,
+        });
     }
 };
