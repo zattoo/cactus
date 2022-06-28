@@ -31983,8 +31983,6 @@ const external_node_crypto_namespaceObject = require("node:crypto");
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/error.js
-// import * as core from '@actions/core';
-
 class GithubError extends Error {
     constructor(message, error) {
         super(`${message}: ${error.message}`, {
@@ -31992,10 +31990,6 @@ class GithubError extends Error {
         });
         this.name = 'GithubError';
     }
-}
-
-const isGithubError = (error) => {
-    return error instanceof GithubError;
 }
 
 ;// CONCATENATED MODULE: ./src/github-api.js
@@ -32046,10 +32040,7 @@ const createBranch = async (data) => {
     } catch (error) {
         const branchAlreadyExists = error.message === 'Reference already exists';
 
-        if (!branchAlreadyExists || true) { // to do
-            // throw new GithubError(`branch ${branch} creation failed`, {
-            //     cause: error
-            // });
+        if (!branchAlreadyExists) {
             throw new GithubError(`branch ${branch} creation failed`, error);
         }
     }
@@ -32170,9 +32161,7 @@ const createPullRequest = async ({
             });
         }
     } catch (error) {
-        throw new GithubError(`Failed to create pull request from ${branch}`, {
-            cause: error,
-        });
+        throw new GithubError(`Failed to create pull request from ${branch}`, error);
     }
 };
 
