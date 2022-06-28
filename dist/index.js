@@ -32047,10 +32047,14 @@ const createBranch = async (data) => {
         const result = await octokit.rest.git.getRef({
             owner,
             repo,
-            ref: `heads/${branch}`,
+            ref: `heads/${branch}-nope`,
         });
 
         core.info(JSON.stringify(result));
+
+        if (result.status !== 200) {
+            throw new Error(result.status);
+        }
     } catch (error) {
         throw new GithubError(`branch ${branch} does not exist`, error);
     }
