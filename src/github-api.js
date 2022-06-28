@@ -33,6 +33,16 @@ export const createBranch = async (data) => {
     } = data;
 
     try {
+        await octokit.rest.git.getRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+        });
+    } catch (error) {
+        throw new GithubError(`branch ${branch} does not exist`, error);
+    }
+
+    try {
         await octokit.rest.git.createRef({
             owner,
             repo,
