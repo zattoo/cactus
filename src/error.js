@@ -11,13 +11,10 @@ const cleanMessage = (message) => {
 
 export class GithubError extends Error {
     constructor(message, error) {
-        if (error && error.message) {
-            super(`${message}: ${cleanMessage(error.message)}`, {
-                cause: error,
-            });
-        } else {
-            super(message);
-        }
+        super(`${message}: ${cleanMessage(error.message)}`, {
+            cause: error,
+        });
+
         this.name = 'GithubError';
     }
 }
