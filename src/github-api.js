@@ -43,12 +43,11 @@ export const createBranch = async (data) => {
 
         return;
     } catch (error) {
-        // core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
         const branchAlreadyExists = error.message === 'Reference already exists';
 
-        core.info(branchAlreadyExists ? 'it already exists' : 'it does not exist');
-
-        core.info(`${branch} creation failed, try update existing`);
+        if (!branchAlreadyExists) {
+            throw new GithubError(`${branch} creation failed`, error);
+        }
     }
 
     try {

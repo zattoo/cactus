@@ -29811,6 +29811,12 @@ var github = __webpack_require__(469);
 // CONCATENATED MODULE: ./src/error.js
 class GithubError extends Error {
     constructor(message, apiError) {
+
+        console.log({
+            apiError,
+            message: apiError.message,
+        });
+
         const {message: apiMessage} = JSON.parse(apiError.message);
 
         super(`${message}: ${apiMessage}`);
@@ -29868,12 +29874,11 @@ const createBranch = async (data) => {
 
         return;
     } catch (error) {
-        // core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
         const branchAlreadyExists = error.message === 'Reference already exists';
 
-        Object(core.info)(branchAlreadyExists ? 'it already exists' : 'it does not exist');
-
-        Object(core.info)(`${branch} creation failed, try update existing`);
+        if (!branchAlreadyExists) {
+            throw new GithubError(`${branch} creation failed`, error);
+        }
     }
 
     try {
