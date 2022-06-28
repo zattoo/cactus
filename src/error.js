@@ -16,7 +16,7 @@ export class GithubError extends Error {
 
         super(`${message}`, data);
 
-        // super(`${message}: ${apiMessage}`);
+        super(`${message}: ${data.cause.message}`);
         this.name = 'GithubError';
         this.cause = data.cause;
     }

@@ -47,7 +47,7 @@ export const createBranch = async (data) => {
 
         if (!branchAlreadyExists || true) { // to do
             // throw new GithubError(`${branch} creation failed`, {
-            throw new Error(`${branch} creation failed`, {
+            throw new Error(`branch ${branch} creation failed`, {
                 cause: error
             });
         }
