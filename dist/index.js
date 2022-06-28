@@ -29809,11 +29809,13 @@ var _notfoundnode_crypto = __webpack_require__(521);
 var github = __webpack_require__(469);
 
 // CONCATENATED MODULE: ./src/error.js
-class GithubError extends Error {
+
+
+class error_GithubError extends Error {
     constructor(message, apiError) {
 
-        console.log({
-            apiError,
+        Object(core.info)({
+            apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
             message: apiError.message,
         });
 
@@ -29825,7 +29827,7 @@ class GithubError extends Error {
 }
 
 const isGithubError = (error) => {
-    return error instanceof GithubError;
+    return error instanceof error_GithubError;
 }
 
 // CONCATENATED MODULE: ./src/github-api.js
@@ -29877,7 +29879,7 @@ const createBranch = async (data) => {
         const branchAlreadyExists = error.message === 'Reference already exists';
 
         if (!branchAlreadyExists) {
-            throw new GithubError(`${branch} creation failed`, error);
+            throw new error_GithubError(`${branch} creation failed`, error);
         }
     }
 
@@ -29890,7 +29892,7 @@ const createBranch = async (data) => {
             sha,
         })
     } catch (error) {
-        throw new GithubError(`${branch} update failed`, error);
+        throw new error_GithubError(`${branch} update failed`, error);
     }
 };
 
@@ -29905,7 +29907,7 @@ const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        throw new GithubError(`Failed to get file ${data.path}`, error);
+        throw new error_GithubError(`Failed to get file ${data.path}`, error);
     }
 };
 
@@ -29915,7 +29917,7 @@ const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        throw new GithubError(`Failed to get latest commit from ${data.branch}`, error);
+        throw new error_GithubError(`Failed to get latest commit from ${data.branch}`, error);
     }
 };
 
@@ -29965,7 +29967,7 @@ const createCommit = async ({
             sha: createdCommit.sha,
         });
     } catch (error) {
-        throw new GithubError(`Failed to create commit on ${branch}`, error);
+        throw new error_GithubError(`Failed to create commit on ${branch}`, error);
     }
 };
 
@@ -29997,7 +29999,7 @@ const createPullRequest = async ({
             });
         }
     } catch (error) {
-        throw new GithubError(`Failed to create pull request from ${branch}`, error);
+        throw new error_GithubError(`Failed to create pull request from ${branch}`, error);
     }
 };
 
