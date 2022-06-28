@@ -26,24 +26,6 @@ export const getPayload = () => {
     return github.context.payload;
 };
 
-const deleteBranch = async (data) => {
-    const {
-        owner,
-        repo,
-        branch,
-    } = data;
-
-    try {
-        await octokit.rest.git.deleteRef({
-            owner,
-            repo,
-            ref: `heads/${branch}`,
-        });
-    } catch (error) {
-        throw new GithubError(`Could not delete branch ${branch}`, error);
-    }
-}
-
 export const createBranch = async (data) => {
     const {
         owner,
@@ -53,21 +35,15 @@ export const createBranch = async (data) => {
     } = data;
 
     try {
-        await octokit.rest.git.getRef({
+        await octokit.rest.git.deleteRef({
             owner,
             repo,
             ref: `heads/${branch}`,
         });
     } catch (error) {
-        if (error.message !== 'Not Found') {
-            throw new GithubError(`Could not get information about branch ${branch}`, error);
-        }
-
-        await deleteBranch({
-            owner,
-            repo,
-            branch,
-        });
+        // if (error.message !== 'Not Found') {
+        throw new GithubError(`Could not delete branch ${branch}`, error);
+        // }
     }
 
     try {
