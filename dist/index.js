@@ -32044,7 +32044,7 @@ const createBranch = async (data) => {
     } catch (error) {
         const branchAlreadyExists = error.message === 'Reference already exists';
 
-        if (!branchAlreadyExists || true) {
+        if (!branchAlreadyExists) {
             throw new GithubError(`branch ${branch} creation failed`, error);
         }
     }
