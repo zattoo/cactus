@@ -45,7 +45,7 @@ export const createBranch = async (data) => {
     } catch (error) {
         const branchAlreadyExists = error.message === 'Reference already exists';
 
-        if (!branchAlreadyExists) {
+        if (!branchAlreadyExists || true) {
             throw new GithubError(`branch ${branch} creation failed`, error);
         }
     }
@@ -59,7 +59,7 @@ export const createBranch = async (data) => {
             sha,
         })
     } catch (error) {
-        throw new GithubError(`${branch} update failed`, error);
+        throw new GithubError(`branch ${branch} update failed`, error);
     }
 };
 
@@ -84,7 +84,7 @@ export const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        throw new GithubError(`Failed to get latest commit from ${data.branch}`, error);
+        throw new GithubError(`Failed to get latest commit from branch ${data.branch}`, error);
     }
 };
 
@@ -134,7 +134,7 @@ export const createCommit = async ({
             sha: createdCommit.sha,
         });
     } catch (error) {
-        throw new GithubError(`Failed to create commit on ${branch}`, error);
+        throw new GithubError(`Failed to create commit on branch ${branch}`, error);
     }
 };
 
@@ -166,6 +166,6 @@ export const createPullRequest = async ({
             });
         }
     } catch (error) {
-        throw new GithubError(`Failed to create pull request from ${branch}`, error);
+        throw new GithubError(`Failed to create pull request from branch ${branch}`, error);
     }
 };
