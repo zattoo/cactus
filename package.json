@@ -2,9 +2,9 @@
   "name": "cactus",
   "version": "4.0.1",
   "description": "Cactus Release Manager",
-  "main": "dist/index.js",
+  "main": "action.yml",
   "scripts": {
-    "pack": "ncc build src/index.js -o dist --source-map"
+    "pack": "ncc build src/index.js -o dist"
   },
   "repository": {
     "type": "git",
