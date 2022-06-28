@@ -19,7 +19,7 @@ export class GithubError extends Error {
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
 
-        // this.apiError = 'something something';
+        this.apiError = apiError;
     }
 }
 
