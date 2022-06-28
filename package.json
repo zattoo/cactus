@@ -28,6 +28,6 @@
     "date-fns": "2.28.0"
   },
   "devDependencies": {
-    "@zeit/ncc": "0.22.3"
+    "@vercel/ncc": "0.31.1"
   }
 }
