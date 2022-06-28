@@ -2,23 +2,9 @@
 
 export class GithubError extends Error {
     constructor(message, data) {
-
-        // core.info('test1');
-
-        // core.info(JSON.stringify({
-        //     apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
-        //     message: apiError.message,
-        // }));
-
-        // core.info('test2');
-
-        // const {message: apiMessage} = JSON.parse(apiError.message);
-
-        // super(`${message}`, data);
-
-        super(`${message}: ${data.cause.message}`);
+        super(`${message}: ${data.cause.message}`, data);
         this.name = 'GithubError';
-        this.cause = data.cause;
+        // this.cause = data.cause;
     }
 }
 
