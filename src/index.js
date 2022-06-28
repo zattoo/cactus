@@ -19,25 +19,25 @@ const exit = (error, exitCode) => {
 
 const validateVersion = (previousVersion, nextVersion) => {
     if (previousVersion === nextVersion) {
-        exit('Version must be different', 1);
+        throw new Error('Version must be different');
     }
 
     const parsedPreviousVersion = previousVersion.split('.');
     const parsedNextVersion = nextVersion.split('.');
 
-    if (parsedNextVersion.length !== 3) {
-        exit('Invalid version format', 1);
+    if (parsedNextVersion.length !== 3 || parsedPreviousVersion.length !== 3) {
+        throw new Error('Invalid version format');
     }
 
     if (Number(parsedNextVersion[2]) !== 0) {
-        exit('Cannot cut patch', 1);
+        throw new Error('Cannot cut patch');
     }
 
     const previousVersionJoined = Number(parsedPreviousVersion.join(''));
     const nextVersionJoined = Number(parsedNextVersion.join(''));
 
     if (previousVersionJoined >= nextVersionJoined) {
-        exit('Version must be greater than previous', 1);
+        throw new Error('Version must be greater than previous');
     }
 };
 
@@ -264,41 +264,39 @@ const createReleaseCandidatePullRequest = async ({
     const packageJson = JSON.parse(files.packageJson);
     const releaseVersion = releaseVersionInput || packageJson.version;
 
-    core.info(`releaseVersion: ${releaseVersion}`);
+    validateVersion(releaseVersion, nextVersion);
 
-    // validateVersion(releaseVersion, nextVersion);
+    const {sha: baseSha} = await github.getLatestCommit({
+        owner,
+        repo,
+        branch: defaultBranch,
+    });
 
-    // const {sha: baseSha} = await github.getLatestCommit({
-    //     owner,
-    //     repo,
-    //     branch: defaultBranch,
-    // });
-
-    // await Promise.all([
-    //     createVersionRaisePullRequest({
-    //         owner,
-    //         repo,
-    //         baseSha,
-    //         project,
-    //         nextVersion,
-    //         releaseVersion,
-    //         mergeIntoBranch: defaultBranch,
-    //         files,
-    //         paths,
-    //         projectPath,
-    //     }),
-    //     createReleaseCandidatePullRequest({
-    //         owner,
-    //         repo,
-    //         baseSha,
-    //         project,
-    //         releaseVersion,
-    //         files,
-    //         paths,
-    //         labels: rcLabels,
-    //         projectPath,
-    //     }),
-    // ]);
+    await Promise.all([
+        createVersionRaisePullRequest({
+            owner,
+            repo,
+            baseSha,
+            project,
+            nextVersion,
+            releaseVersion,
+            mergeIntoBranch: defaultBranch,
+            files,
+            paths,
+            projectPath,
+        }),
+        createReleaseCandidatePullRequest({
+            owner,
+            repo,
+            baseSha,
+            project,
+            releaseVersion,
+            files,
+            paths,
+            labels: rcLabels,
+            projectPath,
+        }),
+    ]);
 })()
     .catch((error) => {
         exit(error, 1);
