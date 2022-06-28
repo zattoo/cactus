@@ -31983,6 +31983,16 @@ const external_node_crypto_namespaceObject = require("node:crypto");
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/error.js
+const cleanMessage = (message) => {
+    const json = message.match(/(.*)\:\s({.*?})/);
+
+    if (json && json.length === 3) {
+        return `${json[1]} - ${JSON.parse(json[2]).message}`;
+    }
+
+    return message;
+};
+
 class GithubError extends Error {
     constructor(message, error) {
         if (error && error.message) {
