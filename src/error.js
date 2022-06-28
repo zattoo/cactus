@@ -14,7 +14,7 @@ export class GithubError extends Error {
 
         // const {message: apiMessage} = JSON.parse(apiError.message);
 
-        super(`${message}`, data);
+        // super(`${message}`, data);
 
         super(`${message}: ${data.cause.message}`);
         this.name = 'GithubError';
