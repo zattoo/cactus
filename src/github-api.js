@@ -6,7 +6,6 @@
  * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
 import * as github from '@actions/github';
-import * as core from '@actions/core';
 
 import {GithubError} from './error';
 
@@ -14,7 +13,6 @@ import {GithubError} from './error';
  * Marks a git blob as a file
  */
 const BLOB_MODE_FILE = '100644';
-const HTTP_OK = 200;
 
 let octokit;
 

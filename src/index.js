@@ -228,74 +228,77 @@ const createReleaseCandidatePullRequest = async ({
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
+    const releaseVersion = core.getInput('release_version', {required: true});
     const nextVersion = core.getInput('next_version', {required: true});
     const projectPath = core.getInput('project_path', {required: false});
 
-    github.init(token);
+    core.info(JSON.stringify(releaseVersion));
 
-    const payload = github.getPayload();
+    // github.init(token);
 
-    const repository = payload.repository;
-    const repo = repository.name;
-    const owner = repository.full_name.split('/')[0];
+    // const payload = github.getPayload();
 
-    const defaultBranch = repository.default_branch;
+    // const repository = payload.repository;
+    // const repo = repository.name;
+    // const owner = repository.full_name.split('/')[0];
 
-    const paths = {
-        packageJson: `${projectPath}/${project}/package.json`,
-        changelog: `${projectPath}/${project}/CHANGELOG.md`,
-        packageLock: 'package-lock.json',
-    }
+    // const defaultBranch = repository.default_branch;
 
-    const files = Object.fromEntries(await Promise.all(
-        Object.entries(paths).map(async ([key, path]) => {
-            return [
-                key,
-                await github.getRawFile({
-                    owner,
-                    repo,
-                    path,
-                })
-            ];
-        }),
-    ));
+    // const paths = {
+    //     packageJson: `${projectPath}/${project}/package.json`,
+    //     changelog: `${projectPath}/${project}/CHANGELOG.md`,
+    //     packageLock: 'package-lock.json',
+    // }
 
-    const packageJson = JSON.parse(files.packageJson);
-    const releaseVersion = packageJson.version;
+    // const files = Object.fromEntries(await Promise.all(
+    //     Object.entries(paths).map(async ([key, path]) => {
+    //         return [
+    //             key,
+    //             await github.getRawFile({
+    //                 owner,
+    //                 repo,
+    //                 path,
+    //             })
+    //         ];
+    //     }),
+    // ));
 
-    validateVersion(releaseVersion, nextVersion);
+    // const packageJson = JSON.parse(files.packageJson);
+    // const releaseVersion = packageJson.version;
 
-    const {sha: baseSha} = await github.getLatestCommit({
-        owner,
-        repo,
-        branch: defaultBranch,
-    });
+    // validateVersion(releaseVersion, nextVersion);
 
-    await Promise.all([
-        createVersionRaisePullRequest({
-            owner,
-            repo,
-            baseSha,
-            project,
-            nextVersion,
-            releaseVersion,
-            mergeIntoBranch: defaultBranch,
-            files,
-            paths,
-            projectPath,
-        }),
-        createReleaseCandidatePullRequest({
-            owner,
-            repo,
-            baseSha,
-            project,
-            releaseVersion,
-            files,
-            paths,
-            labels: rcLabels,
-            projectPath,
-        }),
-    ]);
+    // const {sha: baseSha} = await github.getLatestCommit({
+    //     owner,
+    //     repo,
+    //     branch: defaultBranch,
+    // });
+
+    // await Promise.all([
+    //     createVersionRaisePullRequest({
+    //         owner,
+    //         repo,
+    //         baseSha,
+    //         project,
+    //         nextVersion,
+    //         releaseVersion,
+    //         mergeIntoBranch: defaultBranch,
+    //         files,
+    //         paths,
+    //         projectPath,
+    //     }),
+    //     createReleaseCandidatePullRequest({
+    //         owner,
+    //         repo,
+    //         baseSha,
+    //         project,
+    //         releaseVersion,
+    //         files,
+    //         paths,
+    //         labels: rcLabels,
+    //         projectPath,
+    //     }),
+    // ]);
 })()
     .catch((error) => {
         exit(error, 1);

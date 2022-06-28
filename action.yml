@@ -4,6 +4,9 @@ inputs:
   token:
     description: 'User based token with write permission'
     required: true
+  release_version:
+    description: 'Version to release'
+    required: false
   next_version:
     description: 'Version of the next release'
     required: true
