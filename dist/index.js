@@ -29825,7 +29825,8 @@ class GithubError extends Error {
 
         // const {message: apiMessage} = JSON.parse(apiError.message);
 
-        // super(`${message}`);
+        super(`${message}`);
+
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
 
