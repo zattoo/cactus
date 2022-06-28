@@ -29814,10 +29814,10 @@ var github = __webpack_require__(469);
 class error_GithubError extends Error {
     constructor(message, apiError) {
 
-        Object(core.info)({
+        Object(core.info)(JSON.stringify({
             apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
             message: apiError.message,
-        });
+        }));
 
         // const {message: apiMessage} = JSON.parse(apiError.message);
 
