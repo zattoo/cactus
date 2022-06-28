@@ -32186,7 +32186,7 @@ const exit = (error) => {
 
     core.error(error);
 
-    process.exit(exitCode);
+    process.exit(1);
 };
 
 const validateVersion = (previousVersion, nextVersion) => {
