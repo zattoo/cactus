@@ -8,6 +8,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
+import {GithubError} from './error';
+
 /**
  * Marks a git blob as a file
  */
@@ -41,6 +43,8 @@ export const createBranch = async (data) => {
 
         return;
     } catch (error) {
+        core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
         core.info(`${branch} creation failed, try update existing`);
     }
 
@@ -53,9 +57,7 @@ export const createBranch = async (data) => {
             sha,
         })
     } catch (error) {
-        core.error(`${branch} update failed: ${error.message}`);
-
-        throw new Error(error);
+        throw new GithubError(`${branch} update failed`, error);
     }
 };
 
@@ -70,9 +72,7 @@ export const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        core.error(`Failed to get file ${data.path}: ${error.message}`);
-
-        throw new Error(error);
+        throw new GithubError(`Failed to get file ${data.path}`, error);
     }
 };
 
@@ -82,9 +82,7 @@ export const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        core.error(`Failed to get latest commit from ${data.branch}: ${error.message}`);
-
-        throw new Error(error);
+        throw new GithubError(`Failed to get latest commit from ${data.branch}`, error);
     }
 };
 
@@ -134,9 +132,7 @@ export const createCommit = async ({
             sha: createdCommit.sha,
         });
     } catch (error) {
-        core.error(`Failed to create commit on ${branch}: ${error.message}`);
-
-        throw new Error(error);
+        throw new GithubError(`Failed to create commit on ${branch}`, error);
     }
 };
 
@@ -168,8 +164,6 @@ export const createPullRequest = async ({
             });
         }
     } catch (error) {
-        core.error(`Failed to create pull request from ${branch}: ${error.message}`);
-
-        throw new Error(error);
+        throw new GithubError(`Failed to create pull request from ${branch}`, error);
     }
 };
