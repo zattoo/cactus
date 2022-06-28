@@ -29809,30 +29809,32 @@ var _notfoundnode_crypto = __webpack_require__(521);
 var github = __webpack_require__(469);
 
 // CONCATENATED MODULE: ./src/error.js
+// import * as core from '@actions/core';
 
-
-class error_GithubError extends Error {
+class GithubError extends Error {
     constructor(message, apiError) {
 
-        Object(core.info)('test1');
+        // core.info('test1');
 
-        Object(core.info)(JSON.stringify({
-            apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
-            message: apiError.message,
-        }));
+        // core.info(JSON.stringify({
+        //     apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
+        //     message: apiError.message,
+        // }));
 
-        Object(core.info)('test2');
+        // core.info('test2');
 
         // const {message: apiMessage} = JSON.parse(apiError.message);
 
-        super(`${message}`);
+        // super(`${message}`);
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
+
+        this.apiMessage = apiError.message;
     }
 }
 
 const isGithubError = (error) => {
-    return error instanceof error_GithubError;
+    return error instanceof GithubError;
 }
 
 // CONCATENATED MODULE: ./src/github-api.js
@@ -29886,7 +29888,7 @@ const createBranch = async (data) => {
         const branchAlreadyExists = error.message === 'Reference already exists';
 
         if (!branchAlreadyExists) {
-            throw new error_GithubError(`${branch} creation failed`, error);
+            throw new GithubError(`${branch} creation failed`, error);
         }
     }
 
@@ -29899,7 +29901,7 @@ const createBranch = async (data) => {
             sha,
         })
     } catch (error) {
-        throw new error_GithubError(`${branch} update failed`, error);
+        throw new GithubError(`${branch} update failed`, error);
     }
 
     Object(core.info)('test3');
@@ -29916,7 +29918,7 @@ const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        throw new error_GithubError(`Failed to get file ${data.path}`, error);
+        throw new GithubError(`Failed to get file ${data.path}`, error);
     }
 };
 
@@ -29926,7 +29928,7 @@ const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        throw new error_GithubError(`Failed to get latest commit from ${data.branch}`, error);
+        throw new GithubError(`Failed to get latest commit from ${data.branch}`, error);
     }
 };
 
@@ -29976,7 +29978,7 @@ const createCommit = async ({
             sha: createdCommit.sha,
         });
     } catch (error) {
-        throw new error_GithubError(`Failed to create commit on ${branch}`, error);
+        throw new GithubError(`Failed to create commit on ${branch}`, error);
     }
 };
 
@@ -30008,7 +30010,7 @@ const createPullRequest = async ({
             });
         }
     } catch (error) {
-        throw new error_GithubError(`Failed to create pull request from ${branch}`, error);
+        throw new GithubError(`Failed to create pull request from ${branch}`, error);
     }
 };
 
@@ -30021,7 +30023,7 @@ const createPullRequest = async ({
 
 
 const exit = (error, exitCode) => {
-    Object(core.debug)(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    Object(core.info)(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
     if (exitCode === 1) {
         Object(core.error)(error);

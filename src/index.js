@@ -6,7 +6,7 @@ import {randomBytes} from 'node:crypto';
 import * as github from './github-api';
 
 const exit = (error, exitCode) => {
-    core.debug(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
     if (exitCode === 1) {
         core.error(error);
