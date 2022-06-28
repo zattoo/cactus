@@ -32019,6 +32019,7 @@ class GithubError extends Error {
 
 
 
+
 /**
  * Marks a git blob as a file
  */
@@ -32043,11 +32044,13 @@ const createBranch = async (data) => {
     } = data;
 
     try {
-        await octokit.rest.git.getRef({
+        const result = await octokit.rest.git.getRef({
             owner,
             repo,
             ref: `heads/${branch}`,
         });
+
+        core.info(JSON.stringify(result));
     } catch (error) {
         throw new GithubError(`branch ${branch} does not exist`, error);
     }

@@ -6,6 +6,7 @@
  * @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
  */
 import * as github from '@actions/github';
+import * as core from '@actions/core';
 
 import {GithubError} from './error';
 
@@ -33,11 +34,13 @@ export const createBranch = async (data) => {
     } = data;
 
     try {
-        await octokit.rest.git.getRef({
+        const result = await octokit.rest.git.getRef({
             owner,
             repo,
             ref: `heads/${branch}`,
         });
+
+        core.info(JSON.stringify(result));
     } catch (error) {
         throw new GithubError(`branch ${branch} does not exist`, error);
     }
