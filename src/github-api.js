@@ -39,7 +39,7 @@ export const createBranch = async (data) => {
             ref: `heads/${branch}`,
         });
     } catch (error) {
-        if (error.message !== 'Reference does not exist') {
+        if (error.message !== 'Reference does not exist' || true) {
             throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
