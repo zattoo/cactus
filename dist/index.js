@@ -29868,7 +29868,10 @@ const createBranch = async (data) => {
 
         return;
     } catch (error) {
-        Object(core.info)(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        // core.info(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        const branchAlreadyExists = error.message === 'Reference already exists';
+
+        Object(core.info)(branchAlreadyExists ? 'it already exists' : 'it does not exist');
 
         Object(core.info)(`${branch} creation failed, try update existing`);
     }
