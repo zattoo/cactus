@@ -29814,10 +29814,14 @@ var github = __webpack_require__(469);
 class error_GithubError extends Error {
     constructor(message, apiError) {
 
+        Object(core.info)('test1');
+
         Object(core.info)(JSON.stringify({
             apiError: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError)),
             message: apiError.message,
         }));
+
+        Object(core.info)('test2');
 
         // const {message: apiMessage} = JSON.parse(apiError.message);
 
@@ -29867,6 +29871,8 @@ const createBranch = async (data) => {
         sha,
     } = data;
 
+    Object(core.info)('test0');
+
     try {
         await octokit.rest.git.createRef({
             owner,
@@ -29895,6 +29901,8 @@ const createBranch = async (data) => {
     } catch (error) {
         throw new error_GithubError(`${branch} update failed`, error);
     }
+
+    Object(core.info)('test3');
 };
 
 const getRawFile = async (data) => {
