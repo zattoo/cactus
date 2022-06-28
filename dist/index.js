@@ -32004,7 +32004,7 @@ class GithubError extends Error {
         // super(`${message}: ${apiMessage}`);
         this.name = 'GithubError';
 
-        this.apiError = new Error('foobar');
+        this.apiError = 'something something';
     }
 }
 
