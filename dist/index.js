@@ -32225,6 +32225,7 @@ const editChangelog = async ({
     rawChangelog,
     nextVersion,
     releaseVersion,
+    prepareNextEntry,
 }) => {
     const changelog = await changelog_parser_default()({text: rawChangelog})
 
@@ -32246,14 +32247,18 @@ const editChangelog = async ({
 
     const changelogDateCut = rawChangelog.replace(/##(\s\[.+\]\s\-)?(\sUnreleased)/, `## [${releaseVersion}] - ${date}`);
 
-    if (!nextVersion) {
+    // if (!nextVersion) {
+    if (!prepareNextEntry) {
         return {
             changelog: changelogDateCut,
             versionBody: body,
         };
     }
 
-    const nextVersionEntry = `## [${nextVersion}] - Unreleased\n\n...\n\n`;
+    const nextVersionEntry = nextVersion
+        ? `## [${nextVersion}] - Unreleased\n\n...\n\n`
+        : `## Unreleased\n\n...\n\n`;
+
     const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${nextVersionEntry}$2`);
 
     return {
@@ -32322,6 +32327,7 @@ const createVersionRaisePullRequest = async ({
             rawChangelog: files.changelog,
             nextVersion,
             releaseVersion,
+            prepareNextEntry: true,
         })).changelog,
     }
 
