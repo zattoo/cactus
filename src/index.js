@@ -13,8 +13,6 @@ const exit = (error) => {
     process.exit(1);
 };
 
-// support projects that define the next version to release already during development
-// and projects that only update the release version on cut
 const validateVersion = (releaseVersion, nextVersion) => {
     if (releaseVersion === nextVersion) {
         throw new Error('Version must be different');
@@ -74,7 +72,6 @@ const editChangelog = async ({
 
     const changelogDateCut = rawChangelog.replace(/##(\s\[.+\]\s\-)?(\sUnreleased)/, `## [${releaseVersion}] - ${date}`);
 
-    // if (!nextVersion) {
     if (!prepareNextEntry) {
         return {
             changelog: changelogDateCut,
@@ -96,24 +93,24 @@ const editChangelog = async ({
 
 const editPackageJson = ({
     rawPackageJson,
-    nextVersion,
+    version,
 }) => {
     const packageJson = JSON.parse(rawPackageJson);
 
-    packageJson.version = nextVersion;
+    packageJson.version = version;
 
     return JSON.stringify(packageJson, null, 4).concat('\n');
 };
 
 const editPackageLock = ({
     rawPackageLock,
-    nextVersion,
+    version,
     project,
     projectPath,
 }) => {
     const packageLock = JSON.parse(rawPackageLock);
 
-    packageLock.packages[`${projectPath}/${project}`].version = nextVersion;
+    packageLock.packages[`${projectPath}/${project}`].version = version;
 
     return JSON.stringify(packageLock, null, 4).concat('\n');
 };
@@ -141,11 +138,11 @@ const createVersionRaisePullRequest = async ({
 
     const updatedFiles = {
         packageJson: editPackageJson({
-            nextVersion: nextVersion || releaseVersion, // rename to version
+            version: nextVersion || releaseVersion,
             rawPackageJson: files.packageJson,
         }),
         packageLock: editPackageLock({
-            nextVersion: nextVersion || releaseVersion, // rename to version
+            version: nextVersion || releaseVersion,
             project,
             rawPackageLock: files.packageLock,
             projectPath,
@@ -217,11 +214,11 @@ const createReleaseCandidatePullRequest = async ({
 
     const updatedFiles = {
         packageJson: editPackageJson({
-            nextVersion: releaseVersion, // rename to version
+            version: releaseVersion,
             rawPackageJson: files.packageJson,
         }),
         packageLock: editPackageLock({
-            nextVersion: releaseVersion, // rename to version
+            version: releaseVersion,
             project,
             rawPackageLock: files.packageLock,
             projectPath,
@@ -238,15 +235,7 @@ const createReleaseCandidatePullRequest = async ({
             ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
         },
-        // paths: {
-        //     changelog: paths.changelog,
-        //     serviceFile: `${projectPath}/${project}/.release-service`,
-        // },
         files: updatedFiles,
-        // files: {
-        //     changelog,
-        //     serviceFile: randomBytes(20).toString('hex') + '\n',
-        // },
     });
 
     await github.createPullRequest({

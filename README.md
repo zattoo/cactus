@@ -2,6 +2,14 @@
 
 GitHub Action to create releases. It will create two pull requests.
 
+## Release Strategies
+
+This action supports two release strategies.
+
+In the first one, all development already happens under the version that will be released. So, for example, if we wanted to release a version `3.2289.0` in two weeks time, then `package.json`, `package-lock.json` and `CHANGELOG.md` will already have `3.2289.0` specified.
+
+In the second one, all development happens under the version that was released last. The current version to release is added when cutting.
+
 ## Pull Request into main
 
 The first one goes into the default main development branch updating the versions in `/package-lock.json`, `/projects/{$project}/package.json` and `/projects/{$project}/CHANGELOG.md`.
@@ -28,6 +36,19 @@ The action will create:
 
 ```markdown
 ## [3.2290.0] - Unreleased
+
+...
+
+## [3.2289.0] - 29.06.2020
+
+- Some changes here
+- Other changes
+```
+
+or, if no new version is specified:
+
+```markdown
+## Unreleased
 
 ...
 
@@ -69,7 +90,7 @@ Optional. Version of the release. Defaults to the version sepcified in `/project
 
 `next_version: string`
 
-Required. Version of the next release after cut to add into the main development branch.
+Optional. Version of the next release after cut to add into the main development branch.
 
 ### Project
 
