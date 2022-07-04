@@ -3,11 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0.1] - 23.06.2022
+## [4.1.0] - 23.06.2022
 
 - Delete already existing branches and close pull requests
-- Allow input for release version
-- Extend changelog `Unreleased` line compatibility
+- Support two release strategies
+- Improve logging and error handling
 
 ## [4.0.0] - 16.06.2022
 
