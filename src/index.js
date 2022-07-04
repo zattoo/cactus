@@ -128,6 +128,7 @@ const createVersionRaisePullRequest = async ({
     projectPath,
 }) => {
     const branch = `next/${project}`;
+    const version = nextVersion || releaseVersion;
 
     await github.createBranch({
         owner,
@@ -138,20 +139,20 @@ const createVersionRaisePullRequest = async ({
 
     const updatedFiles = {
         packageJson: editPackageJson({
-            version: nextVersion || releaseVersion,
             rawPackageJson: files.packageJson,
+            version,
         }),
         packageLock: editPackageLock({
-            version: nextVersion || releaseVersion,
-            project,
             rawPackageLock: files.packageLock,
+            project,
             projectPath,
+            version,
         }),
         changelog: (await editChangelog({
+            prepareNextEntry: true,
             rawChangelog: files.changelog,
             nextVersion,
             releaseVersion,
-            prepareNextEntry: true,
         })).changelog,
     }
 
