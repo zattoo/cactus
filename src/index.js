@@ -5,43 +5,52 @@ import {randomBytes} from 'node:crypto';
 
 import * as github from './github-api';
 
-const exit = (message, exitCode) => {
-    if (exitCode === 1) {
-        core.error(message);
-    } else {
-        core.info(message);
-    }
+const exit = (error) => {
+    core.debug(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
-    process.exit(exitCode);
+    core.error(error);
+
+    process.exit(1);
 };
 
-const validateVersion = (previousVersion, nextVersion) => {
-    if (previousVersion === nextVersion) {
-        exit('Version must be different', 1);
+const validateVersion = (releaseVersion, nextVersion) => {
+    if (releaseVersion === nextVersion) {
+        throw new Error('Version must be different');
     }
 
-    const parsedPreviousVersion = previousVersion.split('.');
+    const parsedReleaseVersion = releaseVersion.split('.');
+
+    if (parsedReleaseVersion.length !== 3) {
+        throw new Error(`Invalid version format ${releaseVersion}`);
+    }
+
+    if (!nextVersion) {
+        return;
+    }
+
     const parsedNextVersion = nextVersion.split('.');
 
+    const releaseVersionJoined = Number(parsedReleaseVersion.join(''));
+    const nextVersionJoined = Number(parsedNextVersion.join(''));
+
     if (parsedNextVersion.length !== 3) {
-        exit('Invalid version format', 1);
+        throw new Error(`Invalid version format ${nextVersion}`);
     }
 
     if (Number(parsedNextVersion[2]) !== 0) {
-        exit('Cannot cut patch', 1);
+        throw new Error('Cannot cut patch');
     }
 
-    const previousVersionJoined = Number(parsedPreviousVersion.join(''));
-    const nextVersionJoined = Number(parsedNextVersion.join(''));
-
-    if (previousVersionJoined >= nextVersionJoined) {
-        exit('Version must be greater than previous', 1);
+    if (releaseVersionJoined >= nextVersionJoined) {
+        throw new Error('Version must be greater than previous');
     }
 };
 
 const editChangelog = async ({
     rawChangelog,
     nextVersion,
+    releaseVersion,
+    prepareNextEntry,
 }) => {
     const changelog = await parseChangelog({text: rawChangelog})
 
@@ -53,21 +62,27 @@ const editChangelog = async ({
     if (!title.endsWith('Unreleased')) {
         core.info('Skip Changelog: No unreleased version.');
 
-        return null;
+        return {
+            changelog: rawChangelog,
+            versionBody: body,
+        };
     }
 
     const date = format(new Date(), "dd.MM.yyyy")
 
-    const changelogDateCut = rawChangelog.replace('Unreleased', date);
+    const changelogDateCut = rawChangelog.replace(/##(\s\[.+\]\s\-)?(\sUnreleased)/, `## [${releaseVersion}] - ${date}`);
 
-    if (!nextVersion) {
+    if (!prepareNextEntry) {
         return {
             changelog: changelogDateCut,
             versionBody: body,
         };
     }
 
-    const nextVersionEntry = `## [${nextVersion}] - Unreleased\n\n...\n\n`;
+    const nextVersionEntry = nextVersion
+        ? `## [${nextVersion}] - Unreleased\n\n...\n\n`
+        : `## Unreleased\n\n...\n\n`;
+
     const changelogNext = changelogDateCut.replace(/(.+?)(##.+)/s, `$1${nextVersionEntry}$2`);
 
     return {
@@ -78,24 +93,24 @@ const editChangelog = async ({
 
 const editPackageJson = ({
     rawPackageJson,
-    nextVersion,
+    version,
 }) => {
     const packageJson = JSON.parse(rawPackageJson);
 
-    packageJson.version = nextVersion;
+    packageJson.version = version;
 
     return JSON.stringify(packageJson, null, 4).concat('\n');
 };
 
 const editPackageLock = ({
     rawPackageLock,
-    nextVersion,
+    version,
     project,
     projectPath,
 }) => {
     const packageLock = JSON.parse(rawPackageLock);
 
-    packageLock.packages[`${projectPath}/${project}`].version = nextVersion;
+    packageLock.packages[`${projectPath}/${project}`].version = version;
 
     return JSON.stringify(packageLock, null, 4).concat('\n');
 };
@@ -106,12 +121,14 @@ const createVersionRaisePullRequest = async ({
     baseSha,
     project,
     nextVersion,
+    releaseVersion,
     mergeIntoBranch,
     files,
     paths,
     projectPath,
 }) => {
     const branch = `next/${project}`;
+    const version = nextVersion || releaseVersion;
 
     await github.createBranch({
         owner,
@@ -122,18 +139,20 @@ const createVersionRaisePullRequest = async ({
 
     const updatedFiles = {
         packageJson: editPackageJson({
-            nextVersion,
             rawPackageJson: files.packageJson,
+            version,
         }),
         packageLock: editPackageLock({
-            nextVersion,
-            project,
             rawPackageLock: files.packageLock,
+            project,
             projectPath,
+            version,
         }),
         changelog: (await editChangelog({
+            prepareNextEntry: true,
             rawChangelog: files.changelog,
             nextVersion,
+            releaseVersion,
         })).changelog,
     }
 
@@ -160,14 +179,12 @@ const createReleaseCandidatePullRequest = async ({
     repo,
     baseSha,
     project,
+    releaseVersion,
     files,
     paths,
     labels,
     projectPath,
 }) => {
-    const packageJson = JSON.parse(files.packageJson);
-    const releaseVersion = packageJson.version;
-
     const release = releaseVersion.slice(0, -2);
 
     const rcBranch = `rc/${project}/${releaseVersion}`;
@@ -193,20 +210,33 @@ const createReleaseCandidatePullRequest = async ({
         versionBody,
     } = await editChangelog({
         rawChangelog: files.changelog,
+        releaseVersion,
     });
+
+    const updatedFiles = {
+        packageJson: editPackageJson({
+            version: releaseVersion,
+            rawPackageJson: files.packageJson,
+        }),
+        packageLock: editPackageLock({
+            version: releaseVersion,
+            project,
+            rawPackageLock: files.packageLock,
+            projectPath,
+        }),
+        serviceFile: randomBytes(20).toString('hex') + '\n',
+        changelog,
+    }
 
     await github.createCommit({
         owner,
         repo,
         branch: rcBranch,
         paths: {
-            changelog: paths.changelog,
+            ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
         },
-        files: {
-            changelog,
-            serviceFile: randomBytes(20).toString('hex') + '\n',
-        },
+        files: updatedFiles,
     });
 
     await github.createPullRequest({
@@ -224,7 +254,8 @@ const createReleaseCandidatePullRequest = async ({
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
-    const nextVersion = core.getInput('next_version', {required: true});
+    const releaseVersionInput = core.getInput('release_version', {required: false});
+    const nextVersion = core.getInput('next_version', {required: false});
     const projectPath = core.getInput('project_path', {required: false});
 
     github.init(token);
@@ -257,9 +288,9 @@ const createReleaseCandidatePullRequest = async ({
     ));
 
     const packageJson = JSON.parse(files.packageJson);
-    const previousVersion = packageJson.version;
+    const releaseVersion = releaseVersionInput || packageJson.version;
 
-    validateVersion(previousVersion, nextVersion);
+    validateVersion(releaseVersion, nextVersion);
 
     const {sha: baseSha} = await github.getLatestCommit({
         owner,
@@ -274,6 +305,7 @@ const createReleaseCandidatePullRequest = async ({
             baseSha,
             project,
             nextVersion,
+            releaseVersion,
             mergeIntoBranch: defaultBranch,
             files,
             paths,
@@ -284,6 +316,7 @@ const createReleaseCandidatePullRequest = async ({
             repo,
             baseSha,
             project,
+            releaseVersion,
             files,
             paths,
             labels: rcLabels,
@@ -292,5 +325,5 @@ const createReleaseCandidatePullRequest = async ({
     ]);
 })()
     .catch((error) => {
-        exit(error, 1);
+        exit(error);
     });

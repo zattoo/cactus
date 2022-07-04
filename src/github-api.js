@@ -7,6 +7,8 @@
  */
 import * as github from '@actions/github';
 
+import {GithubError} from './error';
+
 /**
  * Marks a git blob as a file
  */
@@ -24,31 +26,59 @@ export const getPayload = () => {
 
 export const createBranch = async (data) => {
     const {
+        owner,
+        repo,
         branch,
-        ...rest
+        sha,
     } = data;
 
-    await octokit.rest.git.createRef({
-        ...rest,
-        ref: `refs/heads/${branch}`,
-    });
+    try {
+        await octokit.rest.git.deleteRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+        });
+    } catch (error) {
+        if (error.message !== 'Reference does not exist') {
+            throw new GithubError(`Could not delete branch ${branch}`, error);
+        }
+    }
+
+    try {
+        await octokit.rest.git.createRef({
+            owner,
+            repo,
+            sha,
+            ref: `refs/heads/${branch}`,
+        });
+    } catch (error) {
+        throw new GithubError(`Could not create branch ${branch}`, error);
+    }
 };
 
 export const getRawFile = async (data) => {
-    const {data: file} = await octokit.rest.repos.getContent({
-        ...data,
-        mediaType: {
-            format: 'raw'
-        },
-    });
+    try {
+        const {data: file} = await octokit.rest.repos.getContent({
+            ...data,
+            mediaType: {
+                format: 'raw'
+            },
+        });
 
-    return file;
+        return file;
+    } catch (error) {
+        throw new GithubError(`Failed to get file ${data.path}`, error);
+    }
 };
 
 export const getLatestCommit = async (data) => {
-    const {data: {commit: latestCommit}} = (await octokit.rest.repos.getBranch(data));
+    try {
+        const {data: {commit: latestCommit}} = await octokit.rest.repos.getBranch(data);
 
-    return latestCommit;
+        return latestCommit;
+    } catch (error) {
+        throw new GithubError(`Failed to get latest commit from branch ${data.branch}`, error);
+    }
 };
 
 export const createCommit = async ({
@@ -73,28 +103,32 @@ export const createCommit = async ({
         };
     });
 
-    const {data: tree} = await octokit.rest.git.createTree({
-        owner,
-        repo,
-        base_tree: latestCommit.sha,
-        tree: blobs,
-    });
+    try {
+        const {data: tree} = await octokit.rest.git.createTree({
+            owner,
+            repo,
+            base_tree: latestCommit.sha,
+            tree: blobs,
+        });
 
-    const {data: createdCommit} = (await octokit.rest.git.createCommit({
-        owner,
-        repo,
-        branch,
-        message: `Update ${Object.values(paths).join(', ')}`,
-        tree: tree.sha,
-        parents: [latestCommit.sha],
-    }));
+        const {data: createdCommit} = (await octokit.rest.git.createCommit({
+            owner,
+            repo,
+            branch,
+            message: `Update ${Object.values(paths).join(', ')}`,
+            tree: tree.sha,
+            parents: [latestCommit.sha],
+        }));
 
-    await octokit.rest.git.updateRef({
-        owner,
-        repo,
-        ref: `heads/${branch}`,
-        sha: createdCommit.sha,
-    });
+        await octokit.rest.git.updateRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+            sha: createdCommit.sha,
+        });
+    } catch (error) {
+        throw new GithubError(`Failed to create commit on branch ${branch}`, error);
+    }
 };
 
 export const createPullRequest = async ({
@@ -106,21 +140,25 @@ export const createPullRequest = async ({
     base,
     labels,
 }) => {
-    const {data: pr} = await octokit.rest.pulls.create({
-        owner,
-        repo,
-        title,
-        body,
-        head: branch,
-        base,
-    });
-
-    if (labels) {
-        await octokit.rest.issues.addLabels({
+    try {
+        const {data: pr} = await octokit.rest.pulls.create({
             owner,
             repo,
-            issue_number: pr.number,
-            labels,
+            title,
+            body,
+            head: branch,
+            base,
         });
+
+        if (labels) {
+            await octokit.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: pr.number,
+                labels,
+            });
+        }
+    } catch (error) {
+        throw new GithubError(`Failed to create pull request from branch ${branch}`, error);
     }
 };
