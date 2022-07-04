@@ -32399,7 +32399,7 @@ const createReleaseCandidatePullRequest = async ({
             rawPackageLock: files.packageLock,
             projectPath,
         }),
-        serviceFile: `${projectPath}/${project}/.release-service`,
+        serviceFile: (0,external_node_crypto_namespaceObject.randomBytes)(20).toString('hex') + '\n',
         changelog,
     }
 
