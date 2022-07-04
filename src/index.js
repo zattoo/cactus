@@ -215,6 +215,21 @@ const createReleaseCandidatePullRequest = async ({
         releaseVersion,
     });
 
+    const updatedFiles = {
+        packageJson: editPackageJson({
+            nextVersion: releaseVersion, // rename to version
+            rawPackageJson: files.packageJson,
+        }),
+        packageLock: editPackageLock({
+            nextVersion: releaseVersion, // rename to version
+            project,
+            rawPackageLock: files.packageLock,
+            projectPath,
+        }),
+        serviceFile: `${projectPath}/${project}/.release-service`,
+        changelog,
+    }
+
     await github.createCommit({
         owner,
         repo,
@@ -223,10 +238,11 @@ const createReleaseCandidatePullRequest = async ({
             changelog: paths.changelog,
             serviceFile: `${projectPath}/${project}/.release-service`,
         },
-        files: {
-            changelog,
-            serviceFile: randomBytes(20).toString('hex') + '\n',
-        },
+        files: updatedFiles,
+        // files: {
+        //     changelog,
+        //     serviceFile: randomBytes(20).toString('hex') + '\n',
+        // },
     });
 
     await github.createPullRequest({
