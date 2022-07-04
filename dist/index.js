@@ -32186,17 +32186,27 @@ const exit = (error) => {
     process.exit(1);
 };
 
-const validateVersion = (previousVersion, nextVersion) => {
-    if (previousVersion === nextVersion) {
+// support projects that define the next version to release already during development
+// and projects that only update the release version on cut
+const validateVersion = (releaseVersion, nextVersion) => {
+    if (releaseVersion === nextVersion) {
         throw new Error('Version must be different');
     }
 
-    const parsedPreviousVersion = previousVersion.split('.');
+    const parsedReleaseVersion = releaseVersion.split('.');
+
+    if (parsedReleaseVersion.length !== 3) {
+        throw new Error(`Invalid version format ${releaseVersion}`);
+    }
+
+    if (!nextVersion) {
+        return;
+    }
+
     const parsedNextVersion = nextVersion.split('.');
 
-    if (parsedPreviousVersion.length !== 3) {
-        throw new Error(`Invalid version format ${previousVersion}`);
-    }
+    const releaseVersionJoined = Number(parsedReleaseVersion.join(''));
+    const nextVersionJoined = Number(parsedNextVersion.join(''));
 
     if (parsedNextVersion.length !== 3) {
         throw new Error(`Invalid version format ${nextVersion}`);
@@ -32206,10 +32216,7 @@ const validateVersion = (previousVersion, nextVersion) => {
         throw new Error('Cannot cut patch');
     }
 
-    const previousVersionJoined = Number(parsedPreviousVersion.join(''));
-    const nextVersionJoined = Number(parsedNextVersion.join(''));
-
-    if (previousVersionJoined >= nextVersionJoined) {
+    if (releaseVersionJoined >= nextVersionJoined) {
         throw new Error('Version must be greater than previous');
     }
 };
@@ -32302,11 +32309,11 @@ const createVersionRaisePullRequest = async ({
 
     const updatedFiles = {
         packageJson: editPackageJson({
-            nextVersion,
+            nextVersion: nextVersion || releaseVersion, // rename to version
             rawPackageJson: files.packageJson,
         }),
         packageLock: editPackageLock({
-            nextVersion,
+            nextVersion: nextVersion || releaseVersion, // rename to version
             project,
             rawPackageLock: files.packageLock,
             projectPath,
@@ -32405,7 +32412,7 @@ const createReleaseCandidatePullRequest = async ({
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
     const releaseVersionInput = core.getInput('release_version', {required: false});
-    const nextVersion = core.getInput('next_version', {required: true});
+    const nextVersion = core.getInput('next_version', {required: false});
     const projectPath = core.getInput('project_path', {required: false});
 
     init(token);
