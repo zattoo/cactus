@@ -40,6 +40,10 @@ export const hasBranch = async (data) => {
 
         return true;
     } catch (error) {
+        if (error.message === 'Not Found') {
+            return false;
+        }
+
         throw new GithubError(`test has branch ${branch}`, error);
     }
 };
