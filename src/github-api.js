@@ -120,12 +120,14 @@ export const createCommit = async ({
             parents: [latestCommit.sha],
         }));
 
-        return await octokit.rest.git.updateRef({
+        await octokit.rest.git.updateRef({
             owner,
             repo,
             ref: `heads/${branch}`,
             sha: createdCommit.sha,
         });
+
+        return createdCommit;
     } catch (error) {
         throw new GithubError(`Failed to create commit on branch ${branch}`, error);
     }
