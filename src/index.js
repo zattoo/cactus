@@ -202,7 +202,6 @@ const createReleaseCandidatePullRequest = async ({
             owner,
             repo,
             branch: rcTempBranch,
-            // branch: rcBranch,
             sha: baseSha,
         }),
     ]);
@@ -234,7 +233,6 @@ const createReleaseCandidatePullRequest = async ({
         owner,
         repo,
         branch: rcTempBranch,
-        // branch: rcBranch,
         paths: {
             ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
@@ -242,17 +240,11 @@ const createReleaseCandidatePullRequest = async ({
         files: updatedFiles,
     });
 
-    // console.log({
-    //     test,
-    // });
-
     await github.createBranch({
         owner,
         repo,
-        // branch: rcTempBranch,
         branch: rcBranch,
         sha: rcTempSha,
-        // sha: baseSha,
     });
 
     await github.deleteBranch({
@@ -321,18 +313,18 @@ const createReleaseCandidatePullRequest = async ({
     });
 
     await Promise.all([
-        // createVersionRaisePullRequest({
-        //     owner,
-        //     repo,
-        //     baseSha,
-        //     project,
-        //     nextVersion,
-        //     releaseVersion,
-        //     mergeIntoBranch: defaultBranch,
-        //     files,
-        //     paths,
-        //     projectPath,
-        // }),
+        createVersionRaisePullRequest({
+            owner,
+            repo,
+            baseSha,
+            project,
+            nextVersion,
+            releaseVersion,
+            mergeIntoBranch: defaultBranch,
+            files,
+            paths,
+            projectPath,
+        }),
         createReleaseCandidatePullRequest({
             owner,
             repo,

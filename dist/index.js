@@ -31981,7 +31981,7 @@ var date_fns = __nccwpck_require__(3314);
 ;// CONCATENATED MODULE: external "node:crypto"
 const external_node_crypto_namespaceObject = require("node:crypto");
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var lib_github = __nccwpck_require__(5438);
+var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/error.js
 const cleanMessage = (message) => {
     // api error responses sometimes contain information as json with a string prefix
@@ -32024,11 +32024,11 @@ const BLOB_MODE_FILE = '100644';
 let octokit;
 
 const init = (token) => {
-    octokit = lib_github.getOctokit(token);
+    octokit = github.getOctokit(token);
 };
 
 const getPayload = () => {
-    return lib_github.context.payload;
+    return github.context.payload;
 };
 
 const deleteBranch = async (data) => {
@@ -32064,17 +32064,6 @@ const createBranch = async (data) => {
         repo,
         branch,
     });
-    // try {
-    //     await octokit.rest.git.deleteRef({
-    //         owner,
-    //         repo,
-    //         ref: `heads/${branch}`,
-    //     });
-    // } catch (error) {
-    //     if (error.message !== 'Reference does not exist') {
-    //         throw new GithubError(`Could not delete branch ${branch}`, error);
-    //     }
-    // }
 
     try {
         await octokit.rest.git.createRef({
@@ -32330,7 +32319,7 @@ const createVersionRaisePullRequest = async ({
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
 
-    await github.createBranch({
+    await createBranch({
         owner,
         repo,
         branch,
@@ -32356,7 +32345,7 @@ const createVersionRaisePullRequest = async ({
         })).changelog,
     }
 
-    await github.createCommit({
+    await createCommit({
         owner,
         repo,
         branch,
@@ -32364,7 +32353,7 @@ const createVersionRaisePullRequest = async ({
         files: updatedFiles,
     });
 
-    await github.createPullRequest({
+    await createPullRequest({
         owner,
         repo,
         title: `Next ${project}`,
@@ -32402,7 +32391,6 @@ const createReleaseCandidatePullRequest = async ({
             owner,
             repo,
             branch: rcTempBranch,
-            // branch: rcBranch,
             sha: baseSha,
         }),
     ]);
@@ -32434,7 +32422,6 @@ const createReleaseCandidatePullRequest = async ({
         owner,
         repo,
         branch: rcTempBranch,
-        // branch: rcBranch,
         paths: {
             ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
@@ -32442,17 +32429,11 @@ const createReleaseCandidatePullRequest = async ({
         files: updatedFiles,
     });
 
-    // console.log({
-    //     test,
-    // });
-
     await createBranch({
         owner,
         repo,
-        // branch: rcTempBranch,
         branch: rcBranch,
         sha: rcTempSha,
-        // sha: baseSha,
     });
 
     await deleteBranch({
@@ -32521,18 +32502,18 @@ const createReleaseCandidatePullRequest = async ({
     });
 
     await Promise.all([
-        // createVersionRaisePullRequest({
-        //     owner,
-        //     repo,
-        //     baseSha,
-        //     project,
-        //     nextVersion,
-        //     releaseVersion,
-        //     mergeIntoBranch: defaultBranch,
-        //     files,
-        //     paths,
-        //     projectPath,
-        // }),
+        createVersionRaisePullRequest({
+            owner,
+            repo,
+            baseSha,
+            project,
+            nextVersion,
+            releaseVersion,
+            mergeIntoBranch: defaultBranch,
+            files,
+            paths,
+            projectPath,
+        }),
         createReleaseCandidatePullRequest({
             owner,
             repo,

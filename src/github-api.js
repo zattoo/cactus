@@ -57,17 +57,6 @@ export const createBranch = async (data) => {
         repo,
         branch,
     });
-    // try {
-    //     await octokit.rest.git.deleteRef({
-    //         owner,
-    //         repo,
-    //         ref: `heads/${branch}`,
-    //     });
-    // } catch (error) {
-    //     if (error.message !== 'Reference does not exist') {
-    //         throw new GithubError(`Could not delete branch ${branch}`, error);
-    //     }
-    // }
 
     try {
         await octokit.rest.git.createRef({
