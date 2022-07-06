@@ -31994,7 +31994,7 @@ const cleanMessage = (message) => {
     return message;
 };
 
-class error_GithubError extends Error {
+class GithubError extends Error {
     constructor(message, error) {
         super(`${message}: ${cleanMessage(error.message)}`, {
             cause: error,
@@ -32031,12 +32031,11 @@ const getPayload = () => {
     return lib_github.context.payload;
 };
 
-const createBranch = async (data) => {
+const github_api_deleteBranch = async (data) => {
     const {
         owner,
         repo,
         branch,
-        sha,
     } = data;
 
     try {
@@ -32047,9 +32046,35 @@ const createBranch = async (data) => {
         });
     } catch (error) {
         if (error.message !== 'Reference does not exist') {
-            throw new error_GithubError(`Could not delete branch ${branch}`, error);
+            throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
+};
+
+const createBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
+        sha,
+    } = data;
+
+    await github_api_deleteBranch({
+        owner,
+        repo,
+        branch,
+    });
+    // try {
+    //     await octokit.rest.git.deleteRef({
+    //         owner,
+    //         repo,
+    //         ref: `heads/${branch}`,
+    //     });
+    // } catch (error) {
+    //     if (error.message !== 'Reference does not exist') {
+    //         throw new GithubError(`Could not delete branch ${branch}`, error);
+    //     }
+    // }
 
     try {
         await octokit.rest.git.createRef({
@@ -32059,7 +32084,7 @@ const createBranch = async (data) => {
             ref: `refs/heads/${branch}`,
         });
     } catch (error) {
-        throw new error_GithubError(`Could not create branch ${branch}`, error);
+        throw new GithubError(`Could not create branch ${branch}`, error);
     }
 };
 
@@ -32074,7 +32099,7 @@ const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        throw new error_GithubError(`Failed to get file ${data.path}`, error);
+        throw new GithubError(`Failed to get file ${data.path}`, error);
     }
 };
 
@@ -32084,7 +32109,7 @@ const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        throw new error_GithubError(`Failed to get latest commit from branch ${data.branch}`, error);
+        throw new GithubError(`Failed to get latest commit from branch ${data.branch}`, error);
     }
 };
 
@@ -32136,7 +32161,7 @@ const createCommit = async ({
 
         return createdCommit;
     } catch (error) {
-        throw new error_GithubError(`Failed to create commit on branch ${branch}`, error);
+        throw new GithubError(`Failed to create commit on branch ${branch}`, error);
     }
 };
 
@@ -32405,7 +32430,7 @@ const createReleaseCandidatePullRequest = async ({
         changelog,
     }
 
-    const test = await createCommit({
+    const {sha: rcTempSha} = await createCommit({
         owner,
         repo,
         branch: rcTempBranch,
@@ -32421,23 +32446,30 @@ const createReleaseCandidatePullRequest = async ({
         test,
     });
 
-    // await github.createBranch({
-    //     owner,
-    //     repo,
-    //     branch: rcTempBranch,
-    //     // branch: rcBranch,
-    //     sha: baseSha,
-    // });
+    await createBranch({
+        owner,
+        repo,
+        // branch: rcTempBranch,
+        branch: rcBranch,
+        sha: rcTempSha,
+        // sha: baseSha,
+    });
 
-    // await github.createPullRequest({
-    //     owner,
-    //     repo,
-    //     title: `Release ${releaseVersion}-${project}`,
-    //     body: `## Changelog\n\n${versionBody}\n\n`,
-    //     branch: rcBranch,
-    //     base: releaseBranch,
-    //     labels,
-    // });
+    await deleteBranch({
+        owner,
+        repo,
+        branch: rcTempSha,
+    });
+
+    await createPullRequest({
+        owner,
+        repo,
+        title: `Release ${releaseVersion}-${project}`,
+        body: `## Changelog\n\n${versionBody}\n\n`,
+        branch: rcBranch,
+        base: releaseBranch,
+        labels,
+    });
 };
 
 (async () => {

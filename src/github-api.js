@@ -24,12 +24,11 @@ export const getPayload = () => {
     return github.context.payload;
 };
 
-export const createBranch = async (data) => {
+export const deleteBranch = async (data) => {
     const {
         owner,
         repo,
         branch,
-        sha,
     } = data;
 
     try {
@@ -43,6 +42,32 @@ export const createBranch = async (data) => {
             throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
+};
+
+export const createBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
+        sha,
+    } = data;
+
+    await deleteBranch({
+        owner,
+        repo,
+        branch,
+    });
+    // try {
+    //     await octokit.rest.git.deleteRef({
+    //         owner,
+    //         repo,
+    //         ref: `heads/${branch}`,
+    //     });
+    // } catch (error) {
+    //     if (error.message !== 'Reference does not exist') {
+    //         throw new GithubError(`Could not delete branch ${branch}`, error);
+    //     }
+    // }
 
     try {
         await octokit.rest.git.createRef({

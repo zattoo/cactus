@@ -230,7 +230,7 @@ const createReleaseCandidatePullRequest = async ({
         changelog,
     }
 
-    const test = await github.createCommit({
+    const {sha: rcTempSha} = await github.createCommit({
         owner,
         repo,
         branch: rcTempBranch,
@@ -246,23 +246,30 @@ const createReleaseCandidatePullRequest = async ({
         test,
     });
 
-    // await github.createBranch({
-    //     owner,
-    //     repo,
-    //     branch: rcTempBranch,
-    //     // branch: rcBranch,
-    //     sha: baseSha,
-    // });
+    await github.createBranch({
+        owner,
+        repo,
+        // branch: rcTempBranch,
+        branch: rcBranch,
+        sha: rcTempSha,
+        // sha: baseSha,
+    });
 
-    // await github.createPullRequest({
-    //     owner,
-    //     repo,
-    //     title: `Release ${releaseVersion}-${project}`,
-    //     body: `## Changelog\n\n${versionBody}\n\n`,
-    //     branch: rcBranch,
-    //     base: releaseBranch,
-    //     labels,
-    // });
+    await deleteBranch({
+        owner,
+        repo,
+        branch: rcTempSha,
+    });
+
+    await github.createPullRequest({
+        owner,
+        repo,
+        title: `Release ${releaseVersion}-${project}`,
+        body: `## Changelog\n\n${versionBody}\n\n`,
+        branch: rcBranch,
+        base: releaseBranch,
+        labels,
+    });
 };
 
 (async () => {
