@@ -32347,6 +32347,16 @@ const createVersionRaisePullRequest = async ({
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
 
+    const hasNextBranch = await hasBranch({
+        owner,
+        repo,
+        branch,
+    });
+
+    if (hasNextBranch) {
+        throw new Error(`${branch} already exists. You are probably trying to cut a version that was already cut`);
+    }
+
     await createBranch({
         owner,
         repo,

@@ -130,6 +130,16 @@ const createVersionRaisePullRequest = async ({
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
 
+    const hasNextBranch = await github.hasBranch({
+        owner,
+        repo,
+        branch,
+    });
+
+    if (hasNextBranch) {
+        throw new Error(`${branch} already exists. You are probably trying to cut a version that was already cut`);
+    }
+
     await github.createBranch({
         owner,
         repo,
