@@ -44,7 +44,7 @@ export const hasBranch = async (data) => {
             return false;
         }
 
-        throw new GithubError(`test has branch ${branch}`, error);
+        throw new GithubError(`Could not fetch information for branch ${branch}`, error);
     }
 };
 

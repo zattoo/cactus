@@ -32051,7 +32051,7 @@ const hasBranch = async (data) => {
             return false;
         }
 
-        throw new GithubError(`test has branch ${branch}`, error);
+        throw new GithubError(`Could not fetch information for branch ${branch}`, error);
     }
 };
 
@@ -32408,22 +32408,25 @@ const createReleaseCandidatePullRequest = async ({
     const rcTempBranch = `temp/rc_${project}_${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
 
-    const hasRcBranch = await hasBranch({
-        owner,
-        repo,
-        branch: rcBranch,
-    });
-
-    const hasReleaseBranch = await hasBranch({
-        owner,
-        repo,
-        branch: releaseBranch,
-    });
-
-    console.log({
+    const [
         hasRcBranch,
-        hasReleaseBranch,
-    });
+        hasReleaseBranch
+    ] = await Promise.all([
+        hasBranch({
+            owner,
+            repo,
+            branch: rcBranch,
+        }),
+        hasBranch({
+            owner,
+            repo,
+            branch: releaseBranch,
+        }),
+    ]);
+
+    if (hasRcBranch || hasReleaseBranch) {
+        throw new Error(`${rcBranch} and ${releaseBranch} already exist. You are probably trying to cut a version that was already cut`);
+    }
 
     await Promise.all([
         createBranch({
