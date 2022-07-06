@@ -32031,7 +32031,7 @@ const getPayload = () => {
     return lib_github.context.payload;
 };
 
-const github_api_deleteBranch = async (data) => {
+const deleteBranch = async (data) => {
     const {
         owner,
         repo,
@@ -32059,7 +32059,7 @@ const createBranch = async (data) => {
         sha,
     } = data;
 
-    await github_api_deleteBranch({
+    await deleteBranch({
         owner,
         repo,
         branch,

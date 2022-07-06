@@ -255,7 +255,7 @@ const createReleaseCandidatePullRequest = async ({
         // sha: baseSha,
     });
 
-    await deleteBranch({
+    await github.deleteBranch({
         owner,
         repo,
         branch: rcTempSha,
