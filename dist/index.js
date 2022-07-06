@@ -32069,10 +32069,6 @@ const deleteBranch = async (data) => {
             ref: `heads/${branch}`,
         });
     } catch (error) {
-        if (error.message === 'Cannot delete this protected branch') {
-            throw new GithubError(`Could not delete branch ${branch}. You are probably trying to cut a version that was already cut`, error);
-        }
-
         if (error.message !== 'Reference does not exist') {
             throw new GithubError(`Could not delete branch ${branch}`, error);
         }
