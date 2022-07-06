@@ -250,7 +250,7 @@ const createReleaseCandidatePullRequest = async ({
     await github.deleteBranch({
         owner,
         repo,
-        branch: rcTempSha,
+        branch: rcTempBranch,
     });
 
     await github.createPullRequest({

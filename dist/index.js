@@ -32439,7 +32439,7 @@ const createReleaseCandidatePullRequest = async ({
     await deleteBranch({
         owner,
         repo,
-        branch: rcTempSha,
+        branch: rcTempBranch,
     });
 
     await createPullRequest({
