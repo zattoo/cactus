@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.1] - 06.07.2022
+
+- Fix branch protextion issues for `rc/**` branches
+
 ## [4.1.0] - 04.07.2022
 
 - Delete already existing branches and close pull requests

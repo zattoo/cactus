@@ -24,12 +24,35 @@ export const getPayload = () => {
     return github.context.payload;
 };
 
-export const createBranch = async (data) => {
+export const hasBranch = async (data) => {
     const {
         owner,
         repo,
         branch,
-        sha,
+    } = data;
+
+    try {
+        await octokit.rest.git.getRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+        });
+
+        return true;
+    } catch (error) {
+        if (error.message === 'Not Found') {
+            return false;
+        }
+
+        throw new GithubError(`Could not fetch information for branch ${branch}`, error);
+    }
+};
+
+export const deleteBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
     } = data;
 
     try {
@@ -43,6 +66,21 @@ export const createBranch = async (data) => {
             throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
+};
+
+export const createBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
+        sha,
+    } = data;
+
+    await deleteBranch({
+        owner,
+        repo,
+        branch,
+    });
 
     try {
         await octokit.rest.git.createRef({
@@ -126,6 +164,8 @@ export const createCommit = async ({
             ref: `heads/${branch}`,
             sha: createdCommit.sha,
         });
+
+        return createdCommit;
     } catch (error) {
         throw new GithubError(`Failed to create commit on branch ${branch}`, error);
     }
