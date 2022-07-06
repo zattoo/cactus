@@ -24,6 +24,26 @@ export const getPayload = () => {
     return github.context.payload;
 };
 
+export const hasBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
+    } = data;
+
+    try {
+        await octokit.rest.git.getRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+        });
+
+        return true;
+    } catch (error) {
+        throw new GithubError(`test has branch ${branch}`, error);
+    }
+};
+
 export const deleteBranch = async (data) => {
     const {
         owner,

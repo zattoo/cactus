@@ -191,6 +191,23 @@ const createReleaseCandidatePullRequest = async ({
     const rcTempBranch = `temp/rc_${project}_${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
 
+    const hasRcBranch = await github.hasBranch({
+        owner,
+        repo,
+        branch: rcBranch,
+    });
+
+    const hasReleaseBranch = await github.hasBranch({
+        owner,
+        repo,
+        branch: releaseBranch,
+    });
+
+    console.log({
+        hasRcBranch,
+        hasReleaseBranch,
+    });
+
     await Promise.all([
         github.createBranch({
             owner,

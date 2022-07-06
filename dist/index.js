@@ -32031,6 +32031,26 @@ const getPayload = () => {
     return github.context.payload;
 };
 
+const hasBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
+    } = data;
+
+    try {
+        await octokit.rest.git.getRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+        });
+
+        return true;
+    } catch (error) {
+        throw new GithubError(`test has branch ${branch}`, error);
+    }
+};
+
 const deleteBranch = async (data) => {
     const {
         owner,
@@ -32383,6 +32403,23 @@ const createReleaseCandidatePullRequest = async ({
     const rcBranch = `rc/${project}/${releaseVersion}`;
     const rcTempBranch = `temp/rc_${project}_${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
+
+    const hasRcBranch = await hasBranch({
+        owner,
+        repo,
+        branch: rcBranch,
+    });
+
+    const hasReleaseBranch = await hasBranch({
+        owner,
+        repo,
+        branch: releaseBranch,
+    });
+
+    console.log({
+        hasRcBranch,
+        hasReleaseBranch,
+    });
 
     await Promise.all([
         createBranch({
