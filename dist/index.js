@@ -32442,9 +32442,9 @@ const createReleaseCandidatePullRequest = async ({
         files: updatedFiles,
     });
 
-    console.log({
-        test,
-    });
+    // console.log({
+    //     test,
+    // });
 
     await createBranch({
         owner,
