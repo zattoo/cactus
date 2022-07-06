@@ -32031,12 +32031,35 @@ const getPayload = () => {
     return github.context.payload;
 };
 
-const createBranch = async (data) => {
+const hasBranch = async (data) => {
     const {
         owner,
         repo,
         branch,
-        sha,
+    } = data;
+
+    try {
+        await octokit.rest.git.getRef({
+            owner,
+            repo,
+            ref: `heads/${branch}`,
+        });
+
+        return true;
+    } catch (error) {
+        if (error.message === 'Not Found') {
+            return false;
+        }
+
+        throw new GithubError(`Could not fetch information for branch ${branch}`, error);
+    }
+};
+
+const deleteBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
     } = data;
 
     try {
@@ -32050,6 +32073,21 @@ const createBranch = async (data) => {
             throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
+};
+
+const createBranch = async (data) => {
+    const {
+        owner,
+        repo,
+        branch,
+        sha,
+    } = data;
+
+    await deleteBranch({
+        owner,
+        repo,
+        branch,
+    });
 
     try {
         await octokit.rest.git.createRef({
@@ -32133,6 +32171,8 @@ const createCommit = async ({
             ref: `heads/${branch}`,
             sha: createdCommit.sha,
         });
+
+        return createdCommit;
     } catch (error) {
         throw new GithubError(`Failed to create commit on branch ${branch}`, error);
     }
@@ -32303,6 +32343,16 @@ const createVersionRaisePullRequest = async ({
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
 
+    const hasNextBranch = await hasBranch({
+        owner,
+        repo,
+        branch,
+    });
+
+    if (hasNextBranch) {
+        throw new Error(`${branch} already exists. You are probably trying to cut a version that was already cut`);
+    }
+
     await createBranch({
         owner,
         repo,
@@ -32361,7 +32411,28 @@ const createReleaseCandidatePullRequest = async ({
     const release = releaseVersion.slice(0, -2);
 
     const rcBranch = `rc/${project}/${releaseVersion}`;
+    const rcTempBranch = `temp/rc_${project}_${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
+
+    const [
+        hasRcBranch,
+        hasReleaseBranch
+    ] = await Promise.all([
+        hasBranch({
+            owner,
+            repo,
+            branch: rcBranch,
+        }),
+        hasBranch({
+            owner,
+            repo,
+            branch: releaseBranch,
+        }),
+    ]);
+
+    if (hasRcBranch || hasReleaseBranch) {
+        throw new Error(`${rcBranch} and ${releaseBranch} already exist. You are probably trying to cut a version that was already cut`);
+    }
 
     await Promise.all([
         createBranch({
@@ -32373,7 +32444,7 @@ const createReleaseCandidatePullRequest = async ({
         createBranch({
             owner,
             repo,
-            branch: rcBranch,
+            branch: rcTempBranch,
             sha: baseSha,
         }),
     ]);
@@ -32401,15 +32472,28 @@ const createReleaseCandidatePullRequest = async ({
         changelog,
     }
 
-    await createCommit({
+    const {sha: rcTempSha} = await createCommit({
         owner,
         repo,
-        branch: rcBranch,
+        branch: rcTempBranch,
         paths: {
             ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
         },
         files: updatedFiles,
+    });
+
+    await createBranch({
+        owner,
+        repo,
+        branch: rcBranch,
+        sha: rcTempSha,
+    });
+
+    await deleteBranch({
+        owner,
+        repo,
+        branch: rcTempBranch,
     });
 
     await createPullRequest({

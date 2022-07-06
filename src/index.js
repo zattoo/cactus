@@ -130,6 +130,16 @@ const createVersionRaisePullRequest = async ({
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
 
+    const hasNextBranch = await github.hasBranch({
+        owner,
+        repo,
+        branch,
+    });
+
+    if (hasNextBranch) {
+        throw new Error(`${branch} already exists. You are probably trying to cut a version that was already cut`);
+    }
+
     await github.createBranch({
         owner,
         repo,
@@ -188,7 +198,28 @@ const createReleaseCandidatePullRequest = async ({
     const release = releaseVersion.slice(0, -2);
 
     const rcBranch = `rc/${project}/${releaseVersion}`;
+    const rcTempBranch = `temp/rc_${project}_${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
+
+    const [
+        hasRcBranch,
+        hasReleaseBranch
+    ] = await Promise.all([
+        github.hasBranch({
+            owner,
+            repo,
+            branch: rcBranch,
+        }),
+        github.hasBranch({
+            owner,
+            repo,
+            branch: releaseBranch,
+        }),
+    ]);
+
+    if (hasRcBranch || hasReleaseBranch) {
+        throw new Error(`${rcBranch} and ${releaseBranch} already exist. You are probably trying to cut a version that was already cut`);
+    }
 
     await Promise.all([
         github.createBranch({
@@ -200,7 +231,7 @@ const createReleaseCandidatePullRequest = async ({
         github.createBranch({
             owner,
             repo,
-            branch: rcBranch,
+            branch: rcTempBranch,
             sha: baseSha,
         }),
     ]);
@@ -228,15 +259,28 @@ const createReleaseCandidatePullRequest = async ({
         changelog,
     }
 
-    await github.createCommit({
+    const {sha: rcTempSha} = await github.createCommit({
         owner,
         repo,
-        branch: rcBranch,
+        branch: rcTempBranch,
         paths: {
             ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
         },
         files: updatedFiles,
+    });
+
+    await github.createBranch({
+        owner,
+        repo,
+        branch: rcBranch,
+        sha: rcTempSha,
+    });
+
+    await github.deleteBranch({
+        owner,
+        repo,
+        branch: rcTempBranch,
     });
 
     await github.createPullRequest({
