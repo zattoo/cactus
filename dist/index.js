@@ -31981,7 +31981,7 @@ var date_fns = __nccwpck_require__(3314);
 ;// CONCATENATED MODULE: external "node:crypto"
 const external_node_crypto_namespaceObject = require("node:crypto");
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(5438);
+var lib_github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/error.js
 const cleanMessage = (message) => {
     // api error responses sometimes contain information as json with a string prefix
@@ -31994,7 +31994,7 @@ const cleanMessage = (message) => {
     return message;
 };
 
-class GithubError extends Error {
+class error_GithubError extends Error {
     constructor(message, error) {
         super(`${message}: ${cleanMessage(error.message)}`, {
             cause: error,
@@ -32024,11 +32024,11 @@ const BLOB_MODE_FILE = '100644';
 let octokit;
 
 const init = (token) => {
-    octokit = github.getOctokit(token);
+    octokit = lib_github.getOctokit(token);
 };
 
 const getPayload = () => {
-    return github.context.payload;
+    return lib_github.context.payload;
 };
 
 const createBranch = async (data) => {
@@ -32047,7 +32047,7 @@ const createBranch = async (data) => {
         });
     } catch (error) {
         if (error.message !== 'Reference does not exist') {
-            throw new GithubError(`Could not delete branch ${branch}`, error);
+            throw new error_GithubError(`Could not delete branch ${branch}`, error);
         }
     }
 
@@ -32059,7 +32059,7 @@ const createBranch = async (data) => {
             ref: `refs/heads/${branch}`,
         });
     } catch (error) {
-        throw new GithubError(`Could not create branch ${branch}`, error);
+        throw new error_GithubError(`Could not create branch ${branch}`, error);
     }
 };
 
@@ -32074,7 +32074,7 @@ const getRawFile = async (data) => {
 
         return file;
     } catch (error) {
-        throw new GithubError(`Failed to get file ${data.path}`, error);
+        throw new error_GithubError(`Failed to get file ${data.path}`, error);
     }
 };
 
@@ -32084,7 +32084,7 @@ const getLatestCommit = async (data) => {
 
         return latestCommit;
     } catch (error) {
-        throw new GithubError(`Failed to get latest commit from branch ${data.branch}`, error);
+        throw new error_GithubError(`Failed to get latest commit from branch ${data.branch}`, error);
     }
 };
 
@@ -32127,14 +32127,14 @@ const createCommit = async ({
             parents: [latestCommit.sha],
         }));
 
-        await octokit.rest.git.updateRef({
+        return await octokit.rest.git.updateRef({
             owner,
             repo,
             ref: `heads/${branch}`,
             sha: createdCommit.sha,
         });
     } catch (error) {
-        throw new GithubError(`Failed to create commit on branch ${branch}`, error);
+        throw new error_GithubError(`Failed to create commit on branch ${branch}`, error);
     }
 };
 
@@ -32303,7 +32303,7 @@ const createVersionRaisePullRequest = async ({
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
 
-    await createBranch({
+    await github.createBranch({
         owner,
         repo,
         branch,
@@ -32329,7 +32329,7 @@ const createVersionRaisePullRequest = async ({
         })).changelog,
     }
 
-    await createCommit({
+    await github.createCommit({
         owner,
         repo,
         branch,
@@ -32337,7 +32337,7 @@ const createVersionRaisePullRequest = async ({
         files: updatedFiles,
     });
 
-    await createPullRequest({
+    await github.createPullRequest({
         owner,
         repo,
         title: `Next ${project}`,
@@ -32361,6 +32361,7 @@ const createReleaseCandidatePullRequest = async ({
     const release = releaseVersion.slice(0, -2);
 
     const rcBranch = `rc/${project}/${releaseVersion}`;
+    const rcTempBranch = `temp/rc_${project}_${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
 
     await Promise.all([
@@ -32373,7 +32374,8 @@ const createReleaseCandidatePullRequest = async ({
         createBranch({
             owner,
             repo,
-            branch: rcBranch,
+            branch: rcTempBranch,
+            // branch: rcBranch,
             sha: baseSha,
         }),
     ]);
@@ -32401,10 +32403,11 @@ const createReleaseCandidatePullRequest = async ({
         changelog,
     }
 
-    await createCommit({
+    const test = await createCommit({
         owner,
         repo,
-        branch: rcBranch,
+        branch: rcTempBranch,
+        // branch: rcBranch,
         paths: {
             ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
@@ -32412,15 +32415,27 @@ const createReleaseCandidatePullRequest = async ({
         files: updatedFiles,
     });
 
-    await createPullRequest({
-        owner,
-        repo,
-        title: `Release ${releaseVersion}-${project}`,
-        body: `## Changelog\n\n${versionBody}\n\n`,
-        branch: rcBranch,
-        base: releaseBranch,
-        labels,
+    console.log({
+        test,
     });
+
+    // await github.createBranch({
+    //     owner,
+    //     repo,
+    //     branch: rcTempBranch,
+    //     // branch: rcBranch,
+    //     sha: baseSha,
+    // });
+
+    // await github.createPullRequest({
+    //     owner,
+    //     repo,
+    //     title: `Release ${releaseVersion}-${project}`,
+    //     body: `## Changelog\n\n${versionBody}\n\n`,
+    //     branch: rcBranch,
+    //     base: releaseBranch,
+    //     labels,
+    // });
 };
 
 (async () => {
@@ -32472,18 +32487,18 @@ const createReleaseCandidatePullRequest = async ({
     });
 
     await Promise.all([
-        createVersionRaisePullRequest({
-            owner,
-            repo,
-            baseSha,
-            project,
-            nextVersion,
-            releaseVersion,
-            mergeIntoBranch: defaultBranch,
-            files,
-            paths,
-            projectPath,
-        }),
+        // createVersionRaisePullRequest({
+        //     owner,
+        //     repo,
+        //     baseSha,
+        //     project,
+        //     nextVersion,
+        //     releaseVersion,
+        //     mergeIntoBranch: defaultBranch,
+        //     files,
+        //     paths,
+        //     projectPath,
+        // }),
         createReleaseCandidatePullRequest({
             owner,
             repo,

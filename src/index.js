@@ -188,6 +188,7 @@ const createReleaseCandidatePullRequest = async ({
     const release = releaseVersion.slice(0, -2);
 
     const rcBranch = `rc/${project}/${releaseVersion}`;
+    const rcTempBranch = `temp/rc_${project}_${releaseVersion}`;
     const releaseBranch = `release/${project}/${release}`;
 
     await Promise.all([
@@ -200,7 +201,8 @@ const createReleaseCandidatePullRequest = async ({
         github.createBranch({
             owner,
             repo,
-            branch: rcBranch,
+            branch: rcTempBranch,
+            // branch: rcBranch,
             sha: baseSha,
         }),
     ]);
@@ -228,10 +230,11 @@ const createReleaseCandidatePullRequest = async ({
         changelog,
     }
 
-    await github.createCommit({
+    const test = await github.createCommit({
         owner,
         repo,
-        branch: rcBranch,
+        branch: rcTempBranch,
+        // branch: rcBranch,
         paths: {
             ...paths,
             serviceFile: `${projectPath}/${project}/.release-service`,
@@ -239,15 +242,27 @@ const createReleaseCandidatePullRequest = async ({
         files: updatedFiles,
     });
 
-    await github.createPullRequest({
-        owner,
-        repo,
-        title: `Release ${releaseVersion}-${project}`,
-        body: `## Changelog\n\n${versionBody}\n\n`,
-        branch: rcBranch,
-        base: releaseBranch,
-        labels,
+    console.log({
+        test,
     });
+
+    // await github.createBranch({
+    //     owner,
+    //     repo,
+    //     branch: rcTempBranch,
+    //     // branch: rcBranch,
+    //     sha: baseSha,
+    // });
+
+    // await github.createPullRequest({
+    //     owner,
+    //     repo,
+    //     title: `Release ${releaseVersion}-${project}`,
+    //     body: `## Changelog\n\n${versionBody}\n\n`,
+    //     branch: rcBranch,
+    //     base: releaseBranch,
+    //     labels,
+    // });
 };
 
 (async () => {
@@ -299,18 +314,18 @@ const createReleaseCandidatePullRequest = async ({
     });
 
     await Promise.all([
-        createVersionRaisePullRequest({
-            owner,
-            repo,
-            baseSha,
-            project,
-            nextVersion,
-            releaseVersion,
-            mergeIntoBranch: defaultBranch,
-            files,
-            paths,
-            projectPath,
-        }),
+        // createVersionRaisePullRequest({
+        //     owner,
+        //     repo,
+        //     baseSha,
+        //     project,
+        //     nextVersion,
+        //     releaseVersion,
+        //     mergeIntoBranch: defaultBranch,
+        //     files,
+        //     paths,
+        //     projectPath,
+        // }),
         createReleaseCandidatePullRequest({
             owner,
             repo,

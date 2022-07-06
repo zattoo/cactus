@@ -120,7 +120,7 @@ export const createCommit = async ({
             parents: [latestCommit.sha],
         }));
 
-        await octokit.rest.git.updateRef({
+        return await octokit.rest.git.updateRef({
             owner,
             repo,
             ref: `heads/${branch}`,
