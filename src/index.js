@@ -4,6 +4,7 @@ import {format} from 'date-fns';
 import {randomBytes} from 'node:crypto';
 
 import * as github from './github-api';
+import * as gitService from './git';
 
 const exit = (error) => {
     core.debug(JSON.stringify(error, Object.getOwnPropertyNames(error)));
@@ -226,7 +227,7 @@ const createReleaseCandidatePullRequest = async ({
             owner,
             repo,
             branch: releaseBranch,
-            sha: baseSha,
+            sha: gitService.getBaseCommit(project),
         }),
         github.createBranch({
             owner,
