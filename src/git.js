@@ -32,7 +32,7 @@ export const getBaseCommit = (project) => {
         setUser();
     }
 
-    const previousReleaseBranch = execSyncToString(`git branch -r --list '**/release/${project}/**' | tail -1`);
+    const previousReleaseBranch = execSyncToString(`git branch -r --list 'release/${project}/**' | tail -1`);
 
     // return initial commit on main branch as fallback
     if (!previousReleaseBranch) {
