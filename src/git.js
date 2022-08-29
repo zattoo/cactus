@@ -41,7 +41,11 @@ export const getBaseCommit = (project, defaultBranch) => {
         return execSyncToString(`git rev-list --max-parents=0 origin/${defaultBranch} -1`);
     }
 
-    return execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
+    const baseCommit = execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
+
+    console.log(`base Commit for the upcoming release is: ${baseCommit}`);
+
+    return baseCommit;
 };
 
 
