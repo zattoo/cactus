@@ -24,7 +24,7 @@ const execSyncToString = (command) =>{
 export const setUser = () => {
     execSync('git config user.name "GitHub Actions Bot"');
     execSync('git config user.email "<>"');
-    execSync('git fetch --all');
+    execSync('git fetch --all --progress --depth=3000');
 
     initialized = true;
 };
