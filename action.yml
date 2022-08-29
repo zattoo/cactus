@@ -7,9 +7,6 @@ inputs:
   release_version:
     description: 'Version to release'
     required: false
-  next_version:
-    description: 'Version of the next release'
-    required: false
   project:
     description: 'Project to cut'
     required: true
