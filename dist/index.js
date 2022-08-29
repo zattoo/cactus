@@ -32229,36 +32229,34 @@ const execSyncToString = (command) =>{
     console.log(`>> ${command}`);
 
     return (0,external_node_child_process_namespaceObject.execSync)(command).toString().replace(/(\r\n|\n|\r| )/gm, '');
-}
+};
 
 const setUser = () => {
-    ;(0,external_node_child_process_namespaceObject.execSync)('git config user.name "GitHub Actions Bot"');
+    (0,external_node_child_process_namespaceObject.execSync)('git config user.name "GitHub Actions Bot"');
     (0,external_node_child_process_namespaceObject.execSync)('git config user.email "<>"');
+    (0,external_node_child_process_namespaceObject.execSync)('git fetch --all');
 
     initialized = true;
 };
 
 /**
  * @param {string} project
+ * @param {string} defaultBranch
  * @returns {string}
  */
-const getBaseCommit = (project) => {
+const getBaseCommit = (project, defaultBranch) => {
     if (!initialized) {
         setUser();
     }
 
-    console.log(project);
-
-    console.log(execSyncToString(`git branch --list 'release/${project}/**' | tail -1`))
-
-    const previousReleaseBranch = execSyncToString(`git branch -r --list 'release/${project}/**' | tail -1`);
+    const previousReleaseBranch = execSyncToString(`git branch -r --list '**/release/${project}/**' | tail -1`);
 
     // return initial commit on main branch as fallback
     if (!previousReleaseBranch) {
-        return execSyncToString('git rev-list --max-parents=0 HEAD -1');
+        return execSyncToString(`git rev-list --max-parents=0 origin/${defaultBranch} -1`);
     }
 
-    return execSyncToString(`git merge-base HEAD ${previousReleaseBranch}`);
+    return execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
 };
 
 
@@ -32461,6 +32459,7 @@ const createReleaseCandidatePullRequest = async ({
     paths,
     labels,
     projectPath,
+    defaultBranch,
 }) => {
     const release = releaseVersion.slice(0, -2);
 
@@ -32493,7 +32492,7 @@ const createReleaseCandidatePullRequest = async ({
             owner,
             repo,
             branch: releaseBranch,
-            sha: getBaseCommit(project),
+            sha: getBaseCommit(project, defaultBranch),
         }),
         createBranch({
             owner,
@@ -32632,6 +32631,7 @@ const createReleaseCandidatePullRequest = async ({
             paths,
             labels: rcLabels,
             projectPath,
+            defaultBranch,
         }),
     ]);
 })()

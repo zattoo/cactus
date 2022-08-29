@@ -195,6 +195,7 @@ const createReleaseCandidatePullRequest = async ({
     paths,
     labels,
     projectPath,
+    defaultBranch,
 }) => {
     const release = releaseVersion.slice(0, -2);
 
@@ -227,7 +228,7 @@ const createReleaseCandidatePullRequest = async ({
             owner,
             repo,
             branch: releaseBranch,
-            sha: gitService.getBaseCommit(project),
+            sha: gitService.getBaseCommit(project, defaultBranch),
         }),
         github.createBranch({
             owner,
@@ -366,6 +367,7 @@ const createReleaseCandidatePullRequest = async ({
             paths,
             labels: rcLabels,
             projectPath,
+            defaultBranch,
         }),
     ]);
 })()
