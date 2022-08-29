@@ -13,7 +13,7 @@ let initialized = false;
 const execSyncToString = (command) =>{
     console.log(`>> ${command}`);
 
-    return execSync(command).toString().replace(/(\r\n|\n|\r| )/gm, '');
+    return execSync(command, {stdio: [0, 1, 2]}).toString().replace(/(\r\n|\n|\r| )/gm, '');
 };
 
 export const setUser = () => {
