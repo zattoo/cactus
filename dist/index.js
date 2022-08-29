@@ -32245,8 +32245,6 @@ const setUser = () => {
  * @returns {string}
  */
 const getBaseCommit = (project, defaultBranch) => {
-
-    console.log(defaultBranch);
     if (!initialized) {
         setUser();
     }
@@ -32255,10 +32253,10 @@ const getBaseCommit = (project, defaultBranch) => {
 
     // return initial commit on main branch as fallback
     if (!previousReleaseBranch) {
-        return execSyncToString(`git rev-list --max-parents=0 ${defaultBranch} -1`);
+        return execSyncToString(`git rev-list --max-parents=0 origin/${defaultBranch} -1`);
     }
 
-    return execSyncToString(`git merge-base ${defaultBranch} ${previousReleaseBranch}`);
+    return execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
 };
 
 
