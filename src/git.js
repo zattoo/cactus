@@ -13,18 +13,13 @@ let initialized = false;
 const execSyncToString = (command) =>{
     console.log(`>> ${command}`);
 
-    try {
-        const result = execSync(command);
-        return result.toString().replace(/(\r\n|\n|\r| )/gm, '');
-    } catch (e) {
-        console.log(e);
-    }
+    return execSync(command).toString().replace(/(\r\n|\n|\r| )/gm, '');
 };
 
 export const setUser = () => {
     execSync('git config user.name "GitHub Actions Bot"');
     execSync('git config user.email "<>"');
-    execSync('git fetch --all --progress --depth=3000');
+    execSync('git fetch --depth=1000000');
 
     initialized = true;
 };

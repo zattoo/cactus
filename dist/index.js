@@ -32228,18 +32228,13 @@ let initialized = false;
 const execSyncToString = (command) =>{
     console.log(`>> ${command}`);
 
-    try {
-        const result = (0,external_node_child_process_namespaceObject.execSync)(command);
-        return result.toString().replace(/(\r\n|\n|\r| )/gm, '');
-    } catch (e) {
-        console.log(e);
-    }
+    return (0,external_node_child_process_namespaceObject.execSync)(command).toString().replace(/(\r\n|\n|\r| )/gm, '');
 };
 
 const setUser = () => {
     (0,external_node_child_process_namespaceObject.execSync)('git config user.name "GitHub Actions Bot"');
     (0,external_node_child_process_namespaceObject.execSync)('git config user.email "<>"');
-    (0,external_node_child_process_namespaceObject.execSync)('git fetch --all');
+    (0,external_node_child_process_namespaceObject.execSync)('git fetch --depth=1000000');
 
     initialized = true;
 };
