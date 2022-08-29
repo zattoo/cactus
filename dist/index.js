@@ -32228,7 +32228,12 @@ let initialized = false;
 const execSyncToString = (command) =>{
     console.log(`>> ${command}`);
 
-    return (0,external_node_child_process_namespaceObject.execSync)(command, {stdio: [0, 1, 2]}).toString().replace(/(\r\n|\n|\r| )/gm, '');
+    try {
+        const result = (0,external_node_child_process_namespaceObject.execSync)(command);
+        return result.toString().replace(/(\r\n|\n|\r| )/gm, '');
+    } catch (e) {
+        console.log(e);
+    }
 };
 
 const setUser = () => {
