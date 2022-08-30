@@ -6,7 +6,7 @@ inputs:
     required: true
   release_version:
     description: 'Version to release'
-    required: false
+    required: true
   project:
     description: 'Project to cut'
     required: true

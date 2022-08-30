@@ -76,6 +76,11 @@ export const createBranch = async (data) => {
         sha,
     } = data;
 
+    console.log('create Branch:');
+    console.log({
+        ...data,
+    })
+
     await deleteBranch({
         owner,
         repo,

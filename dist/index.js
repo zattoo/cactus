@@ -8980,6 +8980,11 @@ const createBranch = async (data) => {
         sha,
     } = data;
 
+    console.log('create Branch:');
+    console.log({
+        ...data,
+    })
+
     await deleteBranch({
         owner,
         repo,
@@ -9311,7 +9316,7 @@ const createReleaseCandidatePullRequest = async ({
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
-    const releaseVersion = core.getInput('release_version', {required: false});
+    const releaseVersion = core.getInput('release_version', {required: true});
     const projectPath = core.getInput('project_path', {required: false});
 
     init(token);
