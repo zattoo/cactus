@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [5.0.0] - Unreleased
+
+- Added full history between RC and Release
+- Removed coupling to Changelog
+- Removed next release update
+
 ## [4.1.1] - 06.07.2022
 
 - Fix branch protextion issues for `rc/**` branches

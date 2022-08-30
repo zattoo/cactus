@@ -76,10 +76,7 @@ export const createBranch = async (data) => {
         sha,
     } = data;
 
-    console.log('create Branch:');
-    console.log({
-        ...data,
-    })
+    console.log(`Creating branch: ${branch} / sha: ${sha}\n`);
 
     await deleteBranch({
         owner,

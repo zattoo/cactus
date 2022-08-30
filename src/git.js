@@ -19,8 +19,7 @@ const execSyncToString = (command) =>{
 export const setUser = () => {
     execSync('git config user.name "GitHub Actions Bot"');
     execSync('git config user.email "<>"');
-    // TBD
-    execSync('git fetch --depth=1000000');
+    execSync('git fetch');
 
     initialized = true;
 };
@@ -44,7 +43,7 @@ export const getBaseCommit = (project, defaultBranch) => {
 
     const baseCommit = execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
 
-    console.log(`base Commit for the upcoming release is: ${baseCommit}`);
+    console.log(`base commit for the upcoming release is: ${baseCommit}`);
 
     return baseCommit;
 };

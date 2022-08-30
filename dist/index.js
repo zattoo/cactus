@@ -8980,10 +8980,7 @@ const createBranch = async (data) => {
         sha,
     } = data;
 
-    console.log('create Branch:');
-    console.log({
-        ...data,
-    })
+    console.log(`Creating branch: ${branch} / sha: ${sha}\n`);
 
     await deleteBranch({
         owner,
@@ -9136,8 +9133,7 @@ const execSyncToString = (command) =>{
 const setUser = () => {
     (0,external_node_child_process_namespaceObject.execSync)('git config user.name "GitHub Actions Bot"');
     (0,external_node_child_process_namespaceObject.execSync)('git config user.email "<>"');
-    // TBD
-    (0,external_node_child_process_namespaceObject.execSync)('git fetch --depth=1000000');
+    (0,external_node_child_process_namespaceObject.execSync)('git fetch');
 
     initialized = true;
 };
@@ -9161,7 +9157,7 @@ const getBaseCommit = (project, defaultBranch) => {
 
     const baseCommit = execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
 
-    console.log(`base Commit for the upcoming release is: ${baseCommit}`);
+    console.log(`base commit for the upcoming release is: ${baseCommit}`);
 
     return baseCommit;
 };
