@@ -76,6 +76,8 @@ export const createBranch = async (data) => {
         sha,
     } = data;
 
+    console.log(`Creating branch: ${branch} / sha: ${sha}\n`);
+
     await deleteBranch({
         owner,
         repo,
@@ -175,7 +177,6 @@ export const createPullRequest = async ({
     owner,
     repo,
     title,
-    body,
     branch,
     base,
     labels,
@@ -185,7 +186,6 @@ export const createPullRequest = async ({
             owner,
             repo,
             title,
-            body,
             head: branch,
             base,
         });
