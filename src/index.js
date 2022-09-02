@@ -134,7 +134,6 @@ const createReleaseCandidatePullRequest = async ({
         owner,
         repo,
         title: `Release ${releaseVersion}-${project}`,
-        body: `## TBD`,
         branch: rcBranch,
         base: releaseBranch,
         labels,

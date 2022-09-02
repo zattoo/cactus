@@ -177,7 +177,6 @@ export const createPullRequest = async ({
     owner,
     repo,
     title,
-    body,
     branch,
     base,
     labels,
@@ -187,7 +186,6 @@ export const createPullRequest = async ({
             owner,
             repo,
             title,
-            body,
             head: branch,
             base,
         });

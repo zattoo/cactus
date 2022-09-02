@@ -16,7 +16,7 @@ const execSyncToString = (command) =>{
     return execSync(command).toString().replace(/(\r\n|\n|\r| )/gm, '');
 };
 
-export const setUser = () => {
+export const initUser = () => {
     execSync('git config user.name "GitHub Actions Bot"');
     execSync('git config user.email "<>"');
     execSync('git fetch');
@@ -31,7 +31,7 @@ export const setUser = () => {
  */
 export const getBaseCommit = (project, defaultBranch) => {
     if (!initialized) {
-        setUser();
+        initUser();
     }
 
     const previousReleaseBranch = execSyncToString(`git branch -r --list '**/release/${project}/**' | tail -1`);
@@ -43,7 +43,7 @@ export const getBaseCommit = (project, defaultBranch) => {
 
     const baseCommit = execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
 
-    console.log(`base commit for the upcoming release is: ${baseCommit}`);
+    console.log(`Base commit for the upcoming release is: ${baseCommit}`);
 
     return baseCommit;
 };

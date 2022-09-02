@@ -9081,7 +9081,6 @@ const createPullRequest = async ({
     owner,
     repo,
     title,
-    body,
     branch,
     base,
     labels,
@@ -9091,7 +9090,6 @@ const createPullRequest = async ({
             owner,
             repo,
             title,
-            body,
             head: branch,
             base,
         });
@@ -9130,7 +9128,7 @@ const execSyncToString = (command) =>{
     return (0,external_node_child_process_namespaceObject.execSync)(command).toString().replace(/(\r\n|\n|\r| )/gm, '');
 };
 
-const setUser = () => {
+const initUser = () => {
     (0,external_node_child_process_namespaceObject.execSync)('git config user.name "GitHub Actions Bot"');
     (0,external_node_child_process_namespaceObject.execSync)('git config user.email "<>"');
     (0,external_node_child_process_namespaceObject.execSync)('git fetch');
@@ -9145,7 +9143,7 @@ const setUser = () => {
  */
 const getBaseCommit = (project, defaultBranch) => {
     if (!initialized) {
-        setUser();
+        initUser();
     }
 
     const previousReleaseBranch = execSyncToString(`git branch -r --list '**/release/${project}/**' | tail -1`);
@@ -9157,7 +9155,7 @@ const getBaseCommit = (project, defaultBranch) => {
 
     const baseCommit = execSyncToString(`git merge-base origin/${defaultBranch} ${previousReleaseBranch}`);
 
-    console.log(`base commit for the upcoming release is: ${baseCommit}`);
+    console.log(`Base commit for the upcoming release is: ${baseCommit}`);
 
     return baseCommit;
 };
@@ -9301,7 +9299,6 @@ const createReleaseCandidatePullRequest = async ({
         owner,
         repo,
         title: `Release ${releaseVersion}-${project}`,
-        body: `## TBD`,
         branch: rcBranch,
         base: releaseBranch,
         labels,
