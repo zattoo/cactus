@@ -9129,9 +9129,9 @@ const execSyncToString = (command) =>{
 };
 
 const initUser = () => {
-    (0,external_node_child_process_namespaceObject.execSync)('git config user.name "GitHub Actions Bot"');
-    (0,external_node_child_process_namespaceObject.execSync)('git config user.email "<>"');
-    (0,external_node_child_process_namespaceObject.execSync)('git fetch');
+    execSync('git config user.name "GitHub Actions Bot"');
+    execSync('git config user.email "<>"');
+    execSync('git fetch');
 
     initialized = true;
 };
@@ -9142,9 +9142,9 @@ const initUser = () => {
  * @returns {string}
  */
 const getBaseCommit = (project, defaultBranch) => {
-    if (!initialized) {
-        initUser();
-    }
+    // if (!initialized) {
+    //     initUser();
+    // }
 
     const previousReleaseBranch = execSyncToString(`git branch -r --list '**/release/${project}/**' | tail -1`);
 

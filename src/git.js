@@ -30,9 +30,9 @@ export const initUser = () => {
  * @returns {string}
  */
 export const getBaseCommit = (project, defaultBranch) => {
-    if (!initialized) {
-        initUser();
-    }
+    // if (!initialized) {
+    //     initUser();
+    // }
 
     const previousReleaseBranch = execSyncToString(`git branch -r --list '**/release/${project}/**' | tail -1`);
 

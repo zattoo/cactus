@@ -86,12 +86,6 @@ like deploy.
 
 Optional. Version of the release. Defaults to the version sepcified in `/projects/{$project}/package.json`.
 
-### Next Version
-
-`next_version: string`
-
-Optional. Version of the next release after cut to add into the main development branch.
-
 ### Project
 
 `project: string`
@@ -127,10 +121,6 @@ on:
           - project-1
           - project-2
           - project-3
-      next_version:
-        type: string
-        description: Next Version after cut
-        required: true
 
 jobs:
   release:
@@ -139,11 +129,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: zattoo/cactus@v4
         with:
           token: ${{secrets.USER_TOKEN}}
           project: ${{github.event.inputs.project}}
-          next_version: ${{github.event.inputs.next_version}}
           labels: |
             release
             needs qa
