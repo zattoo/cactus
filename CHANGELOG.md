@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [5.0.0] - Unreleased
+## [5.0.0] - 02.09.2022
 
 - Added full history between RC and Release
 - Removed coupling to Changelog
