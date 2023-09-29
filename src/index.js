@@ -298,6 +298,7 @@ const createReleaseCandidatePullRequest = async ({
 };
 
 (async () => {
+    console.log('HEYYYYY');
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});
