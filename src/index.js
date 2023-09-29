@@ -14,6 +14,7 @@ const exit = (error) => {
 };
 
 const validateVersion = (releaseVersion, nextVersion) => {
+    console.log('validating Version');
     if (releaseVersion === nextVersion) {
         throw new Error('Version must be different');
     }
@@ -129,6 +130,8 @@ const createVersionRaisePullRequest = async ({
 }) => {
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
+
+    console.log('creating version raise pull request');
 
     const hasNextBranch = await github.hasBranch({
         owner,

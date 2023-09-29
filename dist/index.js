@@ -32083,11 +32083,15 @@ const createBranch = async (data) => {
         sha,
     } = data;
 
-    await deleteBranch({
-        owner,
-        repo,
-        branch,
-    });
+    try {
+        await deleteBranch({
+            owner,
+            repo,
+            branch,
+        });
+    } catch (error) {
+        console.log(`Could not delete branch ${branch}`, error);
+    }
 
     try {
         await octokit.rest.git.createRef({
@@ -32117,6 +32121,7 @@ const getRawFile = async (data) => {
 };
 
 const getLatestCommit = async (data) => {
+    console.log('getLatestCommit', data);
     try {
         const {data: {commit: latestCommit}} = await octokit.rest.repos.getBranch(data);
 
@@ -32227,6 +32232,7 @@ const exit = (error) => {
 };
 
 const validateVersion = (releaseVersion, nextVersion) => {
+    console.log('validating Version');
     if (releaseVersion === nextVersion) {
         throw new Error('Version must be different');
     }
@@ -32342,6 +32348,8 @@ const createVersionRaisePullRequest = async ({
 }) => {
     const branch = `next/${project}`;
     const version = nextVersion || releaseVersion;
+
+    console.log('creating version raise pull request');
 
     const hasNextBranch = await hasBranch({
         owner,

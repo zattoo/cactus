@@ -76,11 +76,15 @@ export const createBranch = async (data) => {
         sha,
     } = data;
 
-    await deleteBranch({
-        owner,
-        repo,
-        branch,
-    });
+    try {
+        await deleteBranch({
+            owner,
+            repo,
+            branch,
+        });
+    } catch (error) {
+        console.log(`Could not delete branch ${branch}`, error);
+    }
 
     try {
         await octokit.rest.git.createRef({
@@ -110,6 +114,7 @@ export const getRawFile = async (data) => {
 };
 
 export const getLatestCommit = async (data) => {
+    console.log('getLatestCommit', data);
     try {
         const {data: {commit: latestCommit}} = await octokit.rest.repos.getBranch(data);
 
