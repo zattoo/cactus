@@ -32070,7 +32070,8 @@ const deleteBranch = async (data) => {
         });
     } catch (error) {
         if (error.message !== 'Reference does not exist') {
-            throw new GithubError(`Could not delete branch ${branch}`, error);
+            console.log(`Could not delete branch ${branch}`, error);
+            // throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
 };
@@ -32516,6 +32517,7 @@ const createReleaseCandidatePullRequest = async ({
 };
 
 (async () => {
+    console.log('HEYYYYY');
     const token = core.getInput('token', {required: true});
     const rcLabels = core.getMultilineInput('labels', {required: false});
     const project = core.getInput('project', {required: true});

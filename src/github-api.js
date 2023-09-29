@@ -63,7 +63,8 @@ export const deleteBranch = async (data) => {
         });
     } catch (error) {
         if (error.message !== 'Reference does not exist') {
-            throw new GithubError(`Could not delete branch ${branch}`, error);
+            console.log(`Could not delete branch ${branch}`, error);
+            // throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
 };
