@@ -183,6 +183,19 @@ const createReleaseCandidatePullRequest = async ({
         branch: defaultBranch,
     });
 
+    console.log({
+        owner,
+        repo,
+        baseSha,
+        project,
+        releaseVersion,
+        files,
+        paths,
+        labels: rcLabels,
+        projectPath,
+        defaultBranch,
+    });
+
     await createReleaseCandidatePullRequest({
         owner,
         repo,
