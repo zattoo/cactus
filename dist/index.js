@@ -8966,6 +8966,8 @@ const deleteBranch = async (data) => {
             ref: `heads/${branch}`,
         });
     } catch (error) {
+        console.log(error, error.message);
+
         if (error.message !== 'Reference does not exist') {
             throw new GithubError(`Could not delete branch ${branch}`, error);
         }
