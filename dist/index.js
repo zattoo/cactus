@@ -8968,7 +8968,7 @@ const deleteBranch = async (data) => {
     } catch (error) {
         console.log(error, error.message);
 
-        if (error.message !== 'Reference does not exist') {
+        if (error.message !== 'Reference does not exist' && error.message !== 'Not Found') {
             throw new GithubError(`Could not delete branch ${branch}`, error);
         }
     }
@@ -9331,19 +9331,6 @@ const createReleaseCandidatePullRequest = async ({
         owner,
         repo,
         branch: defaultBranch,
-    });
-
-    console.log({
-        owner,
-        repo,
-        baseSha,
-        project,
-        releaseVersion,
-        files,
-        paths,
-        labels: rcLabels,
-        projectPath,
-        defaultBranch,
     });
 
     await createReleaseCandidatePullRequest({
