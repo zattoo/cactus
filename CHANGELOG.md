@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [5.0.1] - 14.05.2026
+
+- Fix previous release branch lookup to use natural version sort (avoids picking `2.9` over `2.12`)
+
 ## [5.0.0] - 02.09.2022
 
 - Added full history between RC and Release
