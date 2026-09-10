@@ -1,10 +1,11 @@
 {
   "name": "cactus",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "description": "Cactus Release Manager",
   "main": "action.yml",
   "scripts": {
-    "pack": "ncc build src/index.js -o dist"
+    "pack": "ncc build src/index.js -o dist",
+    "test": "tsc"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,8 @@
     "@actions/github": "5.0.3"
   },
   "devDependencies": {
-    "@vercel/ncc": "0.31.1"
+    "@types/node": "22.20.2",
+    "@vercel/ncc": "0.45.0",
+    "typescript": "7.0.2"
   }
 }

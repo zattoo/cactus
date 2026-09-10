@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## Unreleased
+
+### Infrastructure
+- Upgraded action runtime from `node16` to `node24`
+- Added `.nvmrc` (`v24`) as the source of truth for the Node version
+- Upgraded `@vercel/ncc` to `0.45.0` and rebuilt `dist`
+- Added TypeScript type checking via `npm test` and a `Types` CI job
+- Moved the Changelog check into its own workflow
+- Updated all actions
+
 ## [5.0.1] - 14.05.2026
 
 - Fix previous release branch lookup to use natural version sort (avoids picking `2.9` over `2.12`)

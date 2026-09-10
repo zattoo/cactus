@@ -18,5 +18,5 @@ inputs:
     description: 'List of labels to add to release candidate'
     required: false
 runs:
-  using: 'node16'
+  using: 'node24'
   main: 'dist/index.js'

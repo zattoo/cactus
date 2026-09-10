@@ -128,10 +128,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: zattoo/cactus@v4
+      - uses: zattoo/cactus@v5
         with:
           token: ${{secrets.USER_TOKEN}}
           project: ${{github.event.inputs.project}}
