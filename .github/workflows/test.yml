@@ -2,12 +2,14 @@ name: Test
 on: [pull_request]
 
 jobs:
-  changelog:
-    name: Changelog
-    if: contains(github.head_ref, 'dependabot') != true
+  types:
+    name: Types
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: zattoo/changelog@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          token: ${{github.token}}
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
