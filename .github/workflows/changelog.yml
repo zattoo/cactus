@@ -8,6 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: zattoo/changelog@v2
+      - uses: zattoo/changelog@v3
         with:
           token: ${{github.token}}
